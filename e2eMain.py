@@ -1,6 +1,10 @@
 import PySimpleGUI as sg
+import benchmarks.benchmark_WATERS as automotiveBench
+import helpers
 
 sg.theme('system default')
+
+# Definition of the user interface layout
 
 layoutMenu = [sg.Menu([['Help', ['Edit Me']], ['About', ['Edit Me']]],  k='-CUST MENUBAR-')]
 
@@ -10,7 +14,7 @@ layoutGeneral = [sg.Frame('General Settings', [
         [sg.Checkbox('Use custom seed', default=False, k='-CB2-', pad=((30,0),(0,0))), sg.Input(s=20, k='-Seed-')],
         [sg.Checkbox('homogeneous', default=False, k='-CB3-', pad=((30,0),(0,0)))],
     [sg.Radio('Load Taskset from File', "RadioGeneral", default=False, k='-RG2-', enable_events=True)],
-        [sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=50, k='-F_Input-', disabled=True), sg.Button('Browse', disabled=True)],
+        [sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=50, k='-F_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.txt"),), k="-Browse-", disabled=True)],
 ], expand_x=True)]
 
 layoutTaskset = [sg.Frame('Taskset Configuration', [
@@ -73,7 +77,7 @@ while True:
         window['-CB3-'].update(disabled=False)
         window['-Seed-'].update(disabled=False)
         window['-F_Input-'].update(disabled=True)
-        window['Browse'].update(disabled=True)
+        window['-Browse-'].update(disabled=True)
         window['-RT1-'].update(disabled=False)
         window['-RT2-'].update(disabled=False)
         window['-RC1-'].update(disabled=False)
@@ -83,12 +87,38 @@ while True:
         window['-CB3-'].update(disabled=True)
         window['-Seed-'].update(disabled=True)
         window['-F_Input-'].update(disabled=False)
-        window['Browse'].update(disabled=False)
+        window['-Browse-'].update(disabled=False)
         window['-RT1-'].update(disabled=True)
         window['-RT2-'].update(disabled=True)
         window['-RC1-'].update(disabled=True)
     elif event == 'Run':
-        # do something
-        print('Run')
+
+        # user selected generate Taskset
+        if window['-RG1-'].get():
+            
+            # selected automotive benchmark
+            if window['-RT1-'].get():
+                taskset = automotiveBench.gen_taskset(0.5)
+
+            # selected uniform benchmark
+            else:
+                taskset = None
+
+            taskset.print()
+            taskset.print_tasks()
+
+            # store generated taskset
+            if window['-CB1-'].get():
+                output_dir = helpers.check_or_make_output_directory("output/")
+                helpers.write_data(output_dir + "taskset.pickle", taskset)
+
+        # user selected load Taskset from file
+        if window['-RG2-'].get():
+            print(False)
+
+        sg.Window('Info',
+            [[sg.T('Run finished without any errors.')],
+            [sg.Push(), sg.B('OK'), sg.Push()]]).read(close=True)
+
 
 window.close()
