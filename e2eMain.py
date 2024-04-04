@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 import benchmarks.benchmark_WATERS as automotiveBench
+from e2eAnalyses.Davare2007 import davare
 import helpers
 
 sg.theme('system default')
@@ -14,11 +15,13 @@ layoutGeneral = [sg.Frame('General Settings', [
         [sg.Checkbox('Use custom seed', default=False, k='-CB2-', pad=((30,0),(0,0))), sg.Input(s=20, k='-Seed-')],
         [sg.Checkbox('homogeneous', default=False, k='-CB3-', pad=((30,0),(0,0)))],
     [sg.Radio('Load Taskset from File', "RadioGeneral", default=False, k='-RG2-', enable_events=True)],
-        [sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=50, k='-F_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.txt"),), k="-Browse-", disabled=True)],
+        [sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=50, k='-F_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.pickle"),), k="-Browse-", disabled=True)],
 ], expand_x=True)]
 
 layoutTaskset = [sg.Frame('Taskset Configuration', [
     [sg.Radio('Automotive Benchmark', "RadioTaskset", default=True, k='-RT1-')],        #   U, #Tasksets?
+        [sg.Text('Target Utilization:', pad=((35,0),(0,0))), sg.Slider(range=(0, 100), default_value=50, orientation='horizontal', key='-SL-', s=(20,10))],
+        [sg.Text('Number of Tasksets:', pad=((35,0),(0,0))), sg.Input(s=10, k='-ANOT_Input-')],
     [sg.Radio('Uniform Taskset Generation', "RadioTaskset", default=False, k='-RT2-')], #   n, U*, #Tasksets?
 ], expand_x=True)]
 
@@ -93,28 +96,48 @@ while True:
         window['-RC1-'].update(disabled=True)
     elif event == 'Run':
 
+        ### Create/Load Taskset ###
+
         # user selected generate Taskset
-        if window['-RG1-'].get():
+        if values['-RG1-']:
             
             # selected automotive benchmark
-            if window['-RT1-'].get():
-                taskset = automotiveBench.gen_taskset(0.5)
+            if values['-RT1-']:
+                target_utilization = values['-SL-']/100
+                number_of_tasksets = int(values['-ANOT_Input-'])
+                tasksets = [automotiveBench.gen_taskset(target_utilization) for _ in range(number_of_tasksets)]
 
             # selected uniform benchmark
             else:
-                taskset = None
-
-            taskset.print()
-            taskset.print_tasks()
+                tasksets = []
 
             # store generated taskset
-            if window['-CB1-'].get():
+            if values['-CB1-']:
                 output_dir = helpers.check_or_make_output_directory("output/")
-                helpers.write_data(output_dir + "taskset.pickle", taskset)
+                helpers.write_data(output_dir + "taskset.pickle", tasksets)
 
         # user selected load Taskset from file
-        if window['-RG2-'].get():
-            print(False)
+        if values['-RG2-']:
+            tasksets = helpers.load_data(values['-F_Input-'])
+
+        ### Generate Cause Effect Chains ###
+
+        cause_effect_chains = []
+        for taskset in tasksets:
+            taskset.compute_wcrts()
+            #taskset.print()
+            #taskset.print_tasks()
+            cause_effect_chains += automotiveBench.gen_ce_chains(taskset)
+
+        ### Run Analyses ###
+
+        res = []
+        for cause_effect_chain in cause_effect_chains:
+            res.append(davare(cause_effect_chain))
+
+        print(res)
+
+        ### Plot the results ###
 
         sg.Window('Info',
             [[sg.T('Run finished without any errors.')],

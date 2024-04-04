@@ -1,3 +1,7 @@
+'''
+Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/cechains/chain.py
+'''
+
 from tasks.taskset import TaskSet
 
 

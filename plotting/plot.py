@@ -1,3 +1,7 @@
+'''
+Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/plot.py
+'''
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (AutoMinorLocator)
 

@@ -1,6 +1,7 @@
 """Task set and cause-effect chain generation with WATERS benchmark.
 From the paper: 'Real world automotive benchmark for free' (WATERS 2015).
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/generator_WATERS.py
+and https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/benchmark_WATERS.py
 """
 from scipy import stats
 import numpy as np
