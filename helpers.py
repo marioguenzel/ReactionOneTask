@@ -26,16 +26,16 @@ def check_or_make_directory(dirname):
         print(f'Directory {dirname} created')
 
 
-def check_or_make_output_directory(dirname):
-    """check if the folder exists, otherwise create it,
-    returns the path of the created directory"""
+def make_output_directory():
+    """creates a new directory with the current date
+    and a sequential number counting up"""
     testrun = 1
-    while os.path.exists(f'{dirname}{date()}_Test{testrun:03d}/'):
+    while os.path.exists(f'output/{date()}_Test{testrun:03d}/'):
         testrun+=1
 
-    os.makedirs(f'{dirname}{date()}_Test{testrun:03d}/')
-    print(f'Directory {dirname}{date()}_Test{testrun:03d}/ created')
-    return f'{dirname}{date()}_Test{testrun:03d}/'
+    os.makedirs(f'output/{date()}_Test{testrun:03d}/')
+    print(f'Directory output/{date()}_Test{testrun:03d}/ created')
+    return f'output/{date()}_Test{testrun:03d}/'
 
 
 def write_data(filename, data):
