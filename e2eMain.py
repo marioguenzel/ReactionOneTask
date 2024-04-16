@@ -8,6 +8,22 @@ import plotting.plot as p
 import sys
 
 
+analysesDict = {
+    '-davare07-' : davare07,
+    '-becker16-' : None,
+    '-kloda18-' : None,
+    '-duerr19-' : duerr19,
+    '-martinez20_impl-' : None,
+    '-bi22-' : None,
+    '-guenzel23_impl-' : None,
+    '-hamann17-' : hamann17,
+    '-becker17-' : None,
+    '-kordon20-' : None,
+    '-martinez20_let-' : None,
+    '-guenzel23_let-' : None
+}
+
+
 def popUp(title, messages):
     view = list(map(lambda message : [sg.T(message)], messages))
     view.append([sg.Push(), sg.B('OK'), sg.Push()])
@@ -47,16 +63,16 @@ def inititalizeUI():
                 [sg.Checkbox('Becker 2016', default=False, k='-becker16-')],
                 [sg.Checkbox('Kloda 2018', default=False, k='-kloda18-')],
                 [sg.Checkbox('Dürr 2019', default=False, k='-duerr19-')],
-                [sg.Checkbox('Martinez 2020', default=False, k='-martinez20-')],
+                [sg.Checkbox('Martinez 2020', default=False, k='-martinez20_impl-')],
                 [sg.Checkbox('Bi 2022', default=False, k='-bi22-')],
-                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23-')]
+                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23_impl-')]
             ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]), 
             sg.Tab('LET Communication', [[sg.Column([
                 [sg.Checkbox('Hamann 2017 (baseline)', default=False, k='-hamann17-')],
                 [sg.Checkbox('Becker 2017', default=False, k='-becker17-')],
                 [sg.Checkbox('Kordon 2020', default=False, k='-kordon20-')],
-                [sg.Checkbox('Martinez 2020', default=False, k='-martinez20-')],
-                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23-')],
+                [sg.Checkbox('Martinez 2020', default=False, k='-martinez20_let-')],
+                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23_let-')],
             ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]])
         ]], expand_x=True)]
     ], expand_x=True)]
@@ -117,25 +133,24 @@ def updateUI(window, event, values):
         window['-ANOT_Input-'].update(disabled=True)
 
 
-def performAnalyses(cec, methods):
-    #TODO
-    return 0
+def performAnalyses(cause_effect_chains, methods):
+    latencies_all = []
+    
+    for method in methods:
+        if method == None:
+            latencies_all.append([])
+            continue
+        
+        latencies_single = []
+        for cause_effect_chain in cause_effect_chains:
+            latencies_single.append(method(cause_effect_chain))
+        
+        latencies_all.append(latencies_single)
+
+    return latencies_all
 
 
-if __name__ == "__main__":
-
-    args = sys.argv[1:]
-    if len(args) == 0:
-        print("User did not pass any arguments (launching visual-mode)")
-        #TODO
-
-    if len(args) > 0:
-        print("User specified following arguments (launching CLI-mode):")
-        print(args)
-        #TODO: check if args are valid
-        #TODO: launch cli-mode
-
-    window = inititalizeUI()
+def runVisualMode(window):
 
     while True:
         event, values = window.read()
@@ -146,11 +161,44 @@ if __name__ == "__main__":
 
         if event == 'Run':
 
+            ##################################
+            ### Gather all inputs from GUI ###
+            ##################################
+
+            generate_taskset = values['-RG1-']
+            store_generated_taskset = values['-CB1-']
+            use_custom_seed = values['-CB2-']
+            if generate_taskset and use_custom_seed:
+                try:
+                    custom_seed = int(values['-Seed-'])
+                except ValueError:
+                    popUp('ValueError', [f"Invalid seed '{values['-Seed-']}'!"])
+                    continue
+            load_taskset_from_file = values['-RG2-']
+            taskset_file_path = values['-F_Input-']
+            use_automotive_taskset = values['-RT1-']
+            target_utilization = values['-SL-']/100
+            if use_automotive_taskset:
+                try:
+                    number_of_tasksets = int(values['-ANOT_Input-'])
+                except ValueError:
+                    popUp('ValueError', [f"Invalid number of tasksets '{values['-ANOT_Input-']}'!"])
+                    continue
+            use_uniform_taskset_generation = values['-RT2-']
+            use_automotive_cause_effect_chain = values['-RC1-']
+            
+            selected_methods = []
+            for key in analysesDict.keys():
+                if values[key] == True:
+                    selected_methods.append(analysesDict[key])
+
+            print(values)
+            print(selected_methods)
+
             ##########################################
             ### Check whether all inputs are valid ###
             ##########################################
 
-            print(values)
             #TODO
 
             ###########################
@@ -160,18 +208,10 @@ if __name__ == "__main__":
             output_dir = helpers.make_output_directory()
 
             # user selected generate Taskset
-            if values['-RG1-']:
+            if generate_taskset:
                 
                 # selected automotive benchmark
-                if values['-RT1-']:
-                    target_utilization = values['-SL-']/100
-
-                    try:
-                        number_of_tasksets = int(values['-ANOT_Input-'])
-                    except ValueError:
-                        popUp('ValueError', [f"Invalid number of tasksets '{values['-ANOT_Input-']}'!"])
-                        continue
-                        
+                if use_automotive_taskset:                        
                     tasksets = [automotiveBench.gen_taskset(target_utilization) for _ in range(number_of_tasksets)]
 
                 # selected uniform benchmark
@@ -179,12 +219,12 @@ if __name__ == "__main__":
                     tasksets = []
 
                 # store generated taskset
-                if values['-CB1-']:
+                if store_generated_taskset:
                     helpers.write_data(output_dir + "taskset.pickle", tasksets)
 
             # user selected load Taskset from file
-            if values['-RG2-']:
-                tasksets = helpers.load_data(values['-F_Input-'])
+            if load_taskset_from_file:
+                tasksets = helpers.load_data(taskset_file_path)
 
             ####################################
             ### Generate Cause Effect Chains ###
@@ -227,4 +267,18 @@ if __name__ == "__main__":
             )
 
 
-    window.close()
+if __name__ == "__main__":
+
+    args = sys.argv[1:]
+    if len(args) == 0:
+        print("User did not pass any arguments (launching visual-mode)")
+        window = inititalizeUI()
+        runVisualMode(window)
+        window.close()
+
+    if len(args) > 0:
+        print("User specified following arguments (launching CLI-mode):")
+        print(args)
+        #TODO: check if args are valid
+        #TODO: launch cli-mode
+
