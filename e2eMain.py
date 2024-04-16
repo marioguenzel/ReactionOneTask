@@ -133,6 +133,10 @@ def updateUI(window, event, values):
         window['-ANOT_Input-'].update(disabled=True)
 
 
+def normalizeLatencies(toNormalize, baseline):
+    return [(b-a)/b for a,b in zip(toNormalize, baseline)]
+
+
 def performAnalyses(cause_effect_chains, methods):
     latencies_all = []
     
@@ -239,6 +243,10 @@ def runVisualMode(window):
             ### Run Analyses ###
             ####################
 
+            latencies = performAnalyses(cause_effect_chains, selected_methods)
+            print(latencies)
+
+            #(
             result_baseline = []
             result_duerr = []
 
@@ -247,14 +255,22 @@ def runVisualMode(window):
                 result_duerr.append(duerr19(cause_effect_chain))
 
             diff = [(b-a)/b for a,b in zip(result_duerr, result_baseline)]
+            #)
 
             ########################
             ### Plot the results ###
             ########################
 
+            # absolute plots
+            for i in range(len(latencies)):
+                if len(latencies[i]) > 0:
+                    p.plot(latencies[i], output_dir + selected_methods[i].__name__ + ".pdf")
+
+            #(
             p.plot(result_baseline, output_dir + "baseline.pdf")
             p.plot(result_duerr, output_dir + "duerr.pdf")
             p.plot(diff, output_dir + "duerr_precision_gain.pdf")
+            #)
 
             #######################
             ### Feedback pop-up ###
