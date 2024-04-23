@@ -19,7 +19,7 @@ List of papers with analyses methods relevant for the framework:
 | End-to-end timing analysis of cause-effect chains in automotive embedded systems         | (Becker 2017)    | Yes      | ?        | ?        | Yes   | MDA,MRT | Requested  |
 | Communication Centric Design in Complex Automotive Embedded Systems                      | (Hamann 2017)    | Yes      | Yes      | No       | Yes   | ?       | Integrated |
 | Latency analysis for data chains of real-time periodic tasks                             | (Kloda 2018)     | Yes      | No       | Yes      | No    | ?       | Received   |
-| End-to-End Timing Analysis of Sporadic Cause-Effect Chains in Distributed Systems        | (Dürr 2019)      | Yes      | Yes      | Yes      | (Yes) | ?       | Integrated |
+| End-to-End Timing Analysis of Sporadic Cause-Effect Chains in Distributed Systems        | (Dürr 2019)      | Yes      | Yes      | Yes      | (Yes) | MDA,MRT | Integrated |
 | Evaluation of the Age Latency of a Real-Time Communicating System using the LET paradigm | (Kordon 2020)    | Yes      | No       | No       | Yes   | MDA     | Requested  |
 | End-to-end latency characterization of task communication models for automotive systems  | (Martinez 2020)  | Yes      | No       | Yes      | Yes   | MDA,MRT | Requested  |
 | Efficient Maximum Data Age Analysis for Cause-Effect Chains in Automotive Systems        | (Bi 2022)        | Yes      | No       | Yes      | No    | MDA     | Missing    |
