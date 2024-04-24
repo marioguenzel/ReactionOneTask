@@ -34,21 +34,21 @@ class TaskSet:
     def append(self, obj):
         self._lst.append(obj)
 
-    def prio(self, tsk):
+    def prio(self, task):
         """Priority of a task"""
-        return self._lst.index(tsk)
+        return self._lst.index(task)
 
-    def higher_prio(self, tsk1, tsk2):
-        """tsk1 has higher prio than tsk2."""
-        return self.prio(tsk1) < self.prio(tsk2)
+    def higher_prio(self, task1, task2):
+        """task1 has higher prio than task2."""
+        return self.prio(task1) < self.prio(task2)
 
     def utilization(self):
-        return sum(tsk.utilization() for tsk in self)
+        return sum(task.utilization() for task in self)
 
     def communication(self):
-        if all('implicit' == tsk.comm.type for tsk in self):
+        if all('implicit' == task.comm.type for task in self):
             return 'implicit'
-        elif all('LET' == tsk.comm.type for tsk in self):
+        elif all('LET' == task.comm.type for task in self):
             return 'LET'
         else:
             return 'mixed'
@@ -58,7 +58,7 @@ class TaskSet:
         # First value
         val = getattr(self[0], feature).type
 
-        if all(val == getattr(tsk, feature).type for tsk in self):
+        if all(val == getattr(task, feature).type for task in self):
             return val
         else:
             return 'mixed'
@@ -82,8 +82,8 @@ class TaskSet:
         print(printstr)
 
     def print_tasks(self):
-        for tsk in self:
-            tsk.print()
+        for task in self:
+            task.print()
 
     def compute_wcrts(self):
         """Compute wcrts by TDA."""
@@ -93,11 +93,11 @@ class TaskSet:
 
     def hyperperiod(self):
         """Task set hyperperiod."""
-        return math.lcm(*[tsk.rel.period for tsk in self._lst])
+        return math.lcm(*[task.rel.period for task in self._lst])
 
     def max_phase(self):
         """Maximal phase of the task set."""
-        return max([tsk.rel.phase for tsk in self._lst])
+        return max([task.rel.phase for task in self._lst])
 
     def sort_dm(self):
         """Sort by deadline."""
@@ -114,37 +114,37 @@ def transform(taskset, precision=10000000):
         'comm': []
     }
 
-    for tsk in taskset:
+    for task in taskset:
         # get all relevant values:
-        tsk_vals = dict()
+        task_vals = dict()
         for targ in transform_arguments:
-            if hasattr(tsk, targ):
-                tsk_feat = getattr(tsk, targ)
-                tsk_vals[targ] = dict()
+            if hasattr(task, targ):
+                task_feat = getattr(task, targ)
+                task_vals[targ] = dict()
                 for targarg in transform_arguments[targ]:
-                    if hasattr(tsk_feat, targarg):
-                        tsk_vals[targ][targarg] = getattr(tsk_feat, targarg)
+                    if hasattr(task_feat, targarg):
+                        task_vals[targ][targarg] = getattr(task_feat, targarg)
 
         # Transform and set relevant values
-        for targ in tsk_vals:
-            feat = getattr(tsk, targ)
-            for targarg in tsk_vals[targ]:
-                if tsk_vals[targ][targarg] is not None:
+        for targ in task_vals:
+            feat = getattr(task, targ)
+            for targarg in task_vals[targ]:
+                if task_vals[targ][targarg] is not None:
                     setattr(feat, targarg,
-                            int(tsk_vals[targ][targarg] * precision))
+                            int(task_vals[targ][targarg] * precision))
 
 
-def tda(tsk, hp_tsks):
+def tda(task, hp_tasks):
     """Implementation of TDA to calculate worst-case response time.
     Source:
     https://github.com/kuanhsunchen/MissRateSimulator/blob/master/TDA.py
     """
-    c = tsk.ex.wcet  # WCET
+    c = task.wcet  # WCET
     r = c  # WCRT
     while True:
         i = 0  # interference
-        for itsk in hp_tsks:
-            i = i + _workload(itsk.rel.miniat, itsk.ex.wcet, r)
+        for itask in hp_tasks:
+            i = i + _workload(itask.min_iat, itask.wcet, r)
         if r < i + c:
             r = i + c
         else:

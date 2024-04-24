@@ -5,272 +5,63 @@ Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e
 '''
 
 ####################
-# Task Features.
-####################
-class TaskFeature:
-    _features = []
-
-    def __str__(self):
-        ret_str = self.__repr__() + ':\t'
-        for feat in self._features:
-            ret_str += f'{feat}={getattr(self, feat)}, '
-        return ret_str
-
-
-# Task Features: Release Pattern
-class ReleasePattern(TaskFeature):
-    _features = TaskFeature._features + ['type']
-    type = None
-
-
-class Sporadic(ReleasePattern):
-    type = 'sporadic'
-    _features = ReleasePattern._features + ['miniat', 'maxiat']
-
-    def __init__(self, maxiat=None, miniat=None, **kwargs):
-        # this
-        self.maxiat = maxiat
-        self.miniat = miniat
-
-    @property
-    def maxiat(self):
-        return self._maxiat
-
-    @maxiat.setter
-    def maxiat(self, value):
-        if value is not None:
-            if value < 0:
-                raise ValueError(f'Non-negative value expected. Received {value=}.')
-            if hasattr(self, '_miniat') and self.miniat is not None and value < self._miniat:
-                raise ValueError(f'miniat <= value expected. Received {self._miniat=} > {value=}.')
-        self._maxiat = value
-
-    @property
-    def miniat(self):
-        return self._miniat
-
-    @miniat.setter
-    def miniat(self, value):
-        if value is not None:
-            if value < 0:
-                raise ValueError(f'Non-negative value expected. Received {value=}.')
-            if hasattr(self, '_maxiat') and self._maxiat is not None and value > self._maxiat:
-                raise ValueError(f'value <= maxiat expected. Received {value=} > {self._maxiat=}.')
-        self._miniat = value
-
-
-class Periodic(Sporadic):
-    type = 'periodic'
-    _features = Sporadic._features + ['period', 'phase']
-
-    def __init__(self, period=None, phase=None, **kwargs):
-        # super
-        kwargs['miniat'] = period
-        kwargs['maxiat'] = period
-        super().__init__(**kwargs)
-
-        # this
-        self.period = period
-        self.phase = phase
-
-    @property
-    def period(self):
-        return self._period
-
-    @period.setter
-    def period(self, value):
-        if value is not None and value < 0:
-            raise ValueError(f'Non-negative value expected. Received {value=}.')
-        self._period = value
-
-
-# Task Features: Deadline
-class Deadline(TaskFeature):
-    type = None
-    _features = TaskFeature._features + ['type']
-
-
-class ArbitraryDeadline(Deadline):
-    type = 'arbitrary'
-    _features = Deadline._features + ['dl']
-
-    def __init__(self, dl=None, **kwargs):
-        # this
-        self.dl = dl
-
-
-class ConstrainedDeadline(ArbitraryDeadline):
-    type = 'constrained'
-
-    def __init__(self, dl=None, tsk=None, **kwargs):
-        self._base_tsk = tsk  # base task
-        # super
-        super().__init__(dl=dl, **kwargs)  # set deadline
-
-    @property
-    def dl(self):
-        return self._dl
-
-    @dl.setter
-    def dl(self, value):
-        if (hasattr(self, '_base_tsk') and self._base_tsk is not None and value is not None
-                and hasattr(self._base_tsk, 'rel')
-                and hasattr(self._base_tsk.rel, 'miniat')):
-            if self._base_tsk.rel.miniat < value:
-                raise ValueError(f'Expected value <= miniat. Received {value=} > {self._base_tsk.rel.miniat=}.')
-        self._dl = value
-
-
-class ImplicitDeadline(ConstrainedDeadline):
-    type = 'implicit'
-
-    @property
-    def dl(self):
-        """Deadline is always the minimum inter-arrival time of a task."""
-        if (hasattr(self, '_base_tsk')
-                and hasattr(self._base_tsk, 'rel')
-                and hasattr(self._base_tsk.rel, 'miniat')):
-            return self._base_tsk.rel.miniat
-        else:
-            return None
-
-    @dl.setter
-    def dl(self, value):
-        """No setting allowed, just a quick check."""
-        if value is not None and self.dl is not None and self.dl != value:
-            raise ValueError(f'DL=miniat expected for implicit deadline tasks. Want to set {self.dl=} to {value=}?')
-        else:
-            pass
-
-
-# Task Features: Execution Behavior
-# TODO add suspension
-# TODO this place can also be used to implement tasks with probabilistic execution behavior
-class Execution(TaskFeature):
-    type = None
-    _features = TaskFeature._features + ['type']
-
-
-class BCWCExecution(Execution):
-    type = 'bcwc'
-    _features = Execution._features + ['bcet', 'wcet']
-
-    def __init__(self, bcet=None, wcet=None, **kwargs):
-        self.bcet = bcet
-        self.wcet = wcet
-
-    @property
-    def bcet(self):
-        return self._bcet
-
-    @bcet.setter
-    def bcet(self, value):
-        if value is not None:
-            if value < 0:
-                raise ValueError(f'Non-negative value expected. Received {value=}.')
-            if hasattr(self, 'wcet') and self.wcet is not None:
-                if self.wcet < value:
-                    raise ValueError(f'wcet>=value expected. Received: {self.wcet=}<{value=}.')
-        self._bcet = value
-
-    @property
-    def wcet(self):
-        return self._wcet
-
-    @wcet.setter
-    def wcet(self, value):
-        if value is not None:
-            if value < 0:
-                raise ValueError(f'Non-negative value expected. Received {value=}.')
-            if hasattr(self, 'bcet') and self.bcet is not None:
-                if self.bcet > value:
-                    raise ValueError(f'bcet<=value expected. Received: {self.bcet=}>{value=}.')
-        self._wcet = value
-
-
-# Task Features: Communication Policy
-class Communication(TaskFeature):
-    _features = TaskFeature._features + ['type']
-    _comm_possibilities = ('implicit', 'LET')
-
-    def __init__(self, communication, **kwargs):
-        self.type = communication
-
-    @property
-    def type(self):
-        return self._type
-
-    @type.setter
-    def type(self, value):
-        if value is not None:
-            if value not in self._comm_possibilities:
-                raise ValueError(f'{value} is not in {self._comm_possibilities}.')
-        self._type = value
-
-
-####################
 # Task.
 ####################
 class Task:
     """A task."""
-    features = {  # list of features that can be set.
-        'release': ['rel', {
-            **dict.fromkeys(['sporadic', 'spor', 's'], Sporadic),
-            **dict.fromkeys(['periodic', 'per', 'p'], Periodic)
-        }],
-        'deadline': ['dl', {
-            **dict.fromkeys(['arbitrary', 'arb', 'a'], ArbitraryDeadline),
-            **dict.fromkeys(['constrained', 'constr', 'c'], ConstrainedDeadline),
-            **dict.fromkeys(['implicit', 'impl', 'i'], ImplicitDeadline)
-        }],
-        'execution': ['ex', {
-            **dict.fromkeys(['wcet', 'bcet', 'wc', 'bc', 'bcwc'], BCWCExecution)
-        }],
-        'communication': ['comm', {
-            **dict.fromkeys(['implicit', 'LET'], Communication)
-        }]
+    features = {  # list of possible features and their values
+        'release_pattern': ['sporadic', 'periodic'],
+        'deadline': ['arbitrary', 'constrained', 'implicit'],
+        'execution': ['wcet', 'bcet', 'wc', 'bc', 'bcwc'],
+        'communication': ['implicit', 'explicit', 'LET'],
+        'inter_ecu_communication': [True, False],
     }
 
     def __init__(self,
-                 release=None,
-                 deadline=None,
-                 execution=None,
-                 communication=None,
-                 **kwargs):
-        """Parameters that can be provided for different features:
+                 release_pattern,
+                 deadline_type,
+                 execution_behaviour,
+                 communication_policy,
+                 inter_ecu_communication,
+                 phase,
+                 min_iat,
+                 max_iat,
+                 period,
+                 bcet,
+                 wcet,
+                 deadline,
+                 priority
+                ):
 
-        - rel: release in ['sporadic', 'periodic']:
-            miniat, maxiat, period
-        - dl: deadline in ['arbitrary', 'constrained', 'implicit']:
-            dl
-        - ex: execution in ['bcwc']:
-            wcet, bcet
-        - comm: communication in ['implicit', 'LET']:
-            --
-        """
-        kwargs['tsk'] = self  # add pointer to task
+        if release_pattern not in self.features['release_pattern']:
+            raise ValueError(f'{release_pattern} is not a possible argument.')
+        
+        if deadline_type not in self.features['deadline']:
+            raise ValueError(f'{deadline_type} is not a possible argument.')
+        
+        if execution_behaviour not in self.features['execution']:
+            raise ValueError(f'{execution_behaviour} is not a possible argument.')
+        
+        if communication_policy not in self.features['communication']:
+            raise ValueError(f'{communication_policy} is not a possible argument.')
+        
+        if inter_ecu_communication not in self.features['inter_ecu_communication']:
+            raise ValueError(f'{inter_ecu_communication} is not a possible argument.')
 
-        # Add features.
-        if release is not None:
-            self.add_feature('release', release, **kwargs)
+        self.release_pattern = release_pattern
+        self.deadline_type = deadline_type
+        self.execution_behaviour = execution_behaviour
+        self.communication_policy = communication_policy
+        self.inter_ecu_communication = inter_ecu_communication
+        self.phase = phase
+        self.min_iat = min_iat
+        self.max_iat = max_iat
+        self.period = period
+        self.bcet = bcet
+        self.wcet = wcet
+        self.deadline = deadline
+        self.priority = priority
 
-        if deadline is not None:
-            self.add_feature('deadline', deadline, **kwargs)
-
-        if execution is not None:
-            self.add_feature('execution', execution, **kwargs)
-
-        if communication is not None:
-            self.add_feature('communication', communication, **kwargs)
-
-    def add_feature(self, feature, argument, **kwargs):
-        feature_attribute, possible_arguments = self.features[feature]
-        if argument not in possible_arguments.keys():
-            raise ValueError(f'{argument} is not a possible argument.')
-        kwargs[feature] = argument  # add feature and argument back
-
-        feature_class = possible_arguments[argument]
-        setattr(self, feature_attribute, feature_class(**kwargs))
 
     def print(self):
         """Quick print of all features for debugging."""
@@ -279,35 +70,19 @@ class Task:
         for feat in feat_dict.keys():
             print(feat, feat_dict[feat])
 
+
     def utilization(self):
         """Task utilization."""
-        return (self.ex.wcet / self.rel.miniat)
+        return (self.wcet / self.min_iat)
 
 
 if __name__ == '__main__':
     """Debugging."""
-    tsks = dict()
-    tsks['tnone'] = Task()
+    taskset = []
+    taskset.append(Task('sporadic', 'implicit', 'wc', 'implicit', False, 0, 5, 10, None, 1, 2, 5, 10))
 
-    tsks['tspor1'] = Task(release='s', miniat=100)
-    tsks['tspor2'] = Task(release='s', miniat=10, maxiat=20)
-    tsks['tper1'] = Task(release='p', period=10)
+    for task in taskset:
+        print('\n', task)
+        task.print()
 
-    tsks['tsporid'] = Task(release='spor', deadline='implicit', miniat=100)
-    tsks['tsporcd'] = Task(release='spor', deadline='constrained', miniat=100, dl=80)
-
-    tsks['timpl'] = Task(communication='implicit')
-    tsks['tLET'] = Task(communication='LET')
-
-    tsks['texec1'] = Task(execution='bcwc', bcet=10, wcet=20)
-    tsks['texec2'] = Task(execution='wc', wcet=100)
-
-    # Add features
-    tsks['texec2'].add_feature('release', 'periodic', period=10)
-    tsks['texec2'].add_feature('communication', 'LET')
-
-    for t in tsks.keys():
-        print('\n', t)
-        tsks[t].print()
-
-    breakpoint()
+    #breakpoint()

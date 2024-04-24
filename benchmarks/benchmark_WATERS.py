@@ -31,9 +31,7 @@ class task(dict):
 
 def task_transormation(tsk):
     """Transform task for creation to our task model for analysis."""
-    return Task(release='periodic', period=tsk['period'],
-                execution='wcet', wcet=tsk['execution'],
-                deadline='implicit')  # make implicit
+    return Task('periodic', 'implicit', 'wcet', 'implicit', False, 0, tsk['period'], tsk['period'], tsk['period'], tsk['execution'], tsk['execution'], tsk['period'], None)
 
 
 def sample_runnable_acet(period, amount=1, scalingFlag=False):
@@ -279,7 +277,7 @@ def gen_ce_chains(task_set):  # TODO update
 
     # Determine different periods of the tasks set.
     activation_patterns = list(set(map(
-        lambda tsk: tsk.rel.period, task_set)))
+        lambda task: task.period, task_set)))
 
     # there need to be at least 3 activation patterns, otherwise no chain for the taskset is created
     if len(activation_patterns) < 3:
@@ -299,7 +297,7 @@ def gen_ce_chains(task_set):  # TODO update
         period_filtered_task_set = []
         for period in involved_activation_patterns:
             period_filtered_task_set.append(
-                [tsk for tsk in task_set if tsk.rel.period == period])
+                [task for task in task_set if task.period == period])
 
         try:
             for filt_task_set in period_filtered_task_set:

@@ -5,7 +5,7 @@ Communication Centric Design in Complex Automotive Embedded Systems.
 """
 
 def hamann17(chain):
-    result = 0
-    for tsk in chain:
-        result += tsk.rel.maxiat + tsk.dl.dl
-    return result
+    latency = 0
+    for task in chain:
+        latency += task.max_iat + task.deadline
+    return latency
