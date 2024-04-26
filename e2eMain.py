@@ -1,8 +1,9 @@
 import PySimpleGUI as sg
 import benchmarks.benchmark_WATERS as automotiveBench
 from e2eAnalyses.Davare2007 import davare07
-from e2eAnalyses.Duerr2019 import duerr19
+from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
 from e2eAnalyses.Hamann2017 import hamann17
+from e2eAnalyses.Kloda2018 import kloda18
 import helpers
 import plotting.plot as p
 import sys
@@ -11,8 +12,9 @@ import sys
 analysesDict = {
     '-davare07-' : davare07,
     '-becker16-' : None,
-    '-kloda18-' : None,
-    '-duerr19-' : duerr19,
+    '-kloda18-' : kloda18,
+    '-duerr19_mrt-' : duerr_19_mrt,
+    '-duerr19_mrda-' : duerr_19_mrda,
     '-martinez20_impl-' : None,
     '-bi22-' : None,
     '-guenzel23_impl-' : None,
@@ -62,7 +64,8 @@ def inititalizeUI():
                 [sg.Checkbox('Davare 2007 (baseline)', default=False, k='-davare07-')],
                 [sg.Checkbox('Becker 2016', default=False, k='-becker16-')],
                 [sg.Checkbox('Kloda 2018', default=False, k='-kloda18-')],
-                [sg.Checkbox('Dürr 2019', default=False, k='-duerr19-')],
+                [sg.Checkbox('Dürr 2019 (MRT)', default=False, k='-duerr19_mrt-')],
+                [sg.Checkbox('Dürr 2019 (MRDA)', default=False, k='-duerr19_mrda-')],
                 [sg.Checkbox('Martinez 2020', default=False, k='-martinez20_impl-')],
                 [sg.Checkbox('Bi 2022', default=False, k='-bi22-')],
                 [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23_impl-')]
@@ -219,7 +222,7 @@ def runVisualMode(window):
                     tasksets = [automotiveBench.gen_taskset(target_utilization) for _ in range(number_of_tasksets)]
 
                 # selected uniform benchmark
-                else:
+                if use_uniform_taskset_generation:
                     tasksets = []
 
                 # store generated taskset
@@ -250,9 +253,26 @@ def runVisualMode(window):
             result_baseline = []
             result_duerr = []
 
+            result_duerr_mrt = []
+            result_duerr_mrda = []
+
+            result_kloda = []
+
             for cause_effect_chain in cause_effect_chains:
                 result_baseline.append(davare07(cause_effect_chain))
                 result_duerr.append(duerr19(cause_effect_chain))
+                result_duerr_mrt.append(duerr_19_mrt(cause_effect_chain))
+                result_duerr_mrda.append(duerr_19_mrda(cause_effect_chain))
+                result_kloda.append(kloda18(cause_effect_chain))
+
+            print('result_duerr')
+            print(result_duerr)
+            print('result_duerr_mrt')
+            print(result_duerr_mrt)
+            print('result_duerr_mrda')
+            print(result_duerr_mrda)
+            print('result_kloda')
+            print(result_kloda)
 
             diff = [(b-a)/b for a,b in zip(result_duerr, result_baseline)]
             #)

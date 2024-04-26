@@ -16,14 +16,14 @@ def duerr19(chain):
     return latency
 
 
-def reaction_duerr_19(chain):
+def duerr_19_mrt(chain):
     """Maximum reaction time analysis from Duerr (Theorem 5.4)"""
     wcrts = chain.base_ts.wcrts
     
     # Compute latency.
     latency = chain[0].max_iat + wcrts[chain[-1]]
     for task, next_task in zip(chain[:-1], chain[1:]):
-        if (task.priority > next_task.priority
+        if (chain.base_ts.higher_prio(next_task, task)
                 or next_task.inter_ecu_communication or task.inter_ecu_communication):
             part2 = wcrts[task]
         else:
@@ -33,14 +33,14 @@ def reaction_duerr_19(chain):
     return latency
 
 
-def age_duerr_19(self, chain):
+def duerr_19_mrda(chain):
     """Maximum data age analysis from Duerr (Theorem 5.10)"""
     wcrts = chain.base_ts.wcrts
 
     # Compute latency.
     latency = wcrts[chain[-1]]
     for task, next_task in zip(chain[:-1], chain[1:]):
-        if (task.priority > next_task.priority
+        if (chain.base_ts.higher_prio(next_task, task)
                 or next_task.inter_ecu_communication or task.inter_ecu_communication):
             part2 = wcrts[task]
         else:

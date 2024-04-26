@@ -11,6 +11,7 @@ class TaskSet:
     """A set of Task-Objects."""
 
     # Assumption: Task set ordered by priority
+    # Lower index = Higher Priority
 
     def __init__(self, *args):
         """Input: Task-Objects"""
@@ -46,9 +47,9 @@ class TaskSet:
         return sum(task.utilization() for task in self)
 
     def communication(self):
-        if all('implicit' == task.comm.type for task in self):
+        if all('implicit' == task.communication_policy for task in self):
             return 'implicit'
-        elif all('LET' == task.comm.type for task in self):
+        elif all('LET' == task.communication_policy for task in self):
             return 'LET'
         else:
             return 'mixed'
@@ -93,15 +94,15 @@ class TaskSet:
 
     def hyperperiod(self):
         """Task set hyperperiod."""
-        return math.lcm(*[task.rel.period for task in self._lst])
+        return math.lcm(*[task.period for task in self._lst])
 
     def max_phase(self):
         """Maximal phase of the task set."""
-        return max([task.rel.phase for task in self._lst])
+        return max([task.phase for task in self._lst])
 
     def sort_dm(self):
         """Sort by deadline."""
-        self._lst.sort(key=lambda x: x.dl.dl)
+        self._lst.sort(key=lambda x: x.deadline)
 
 
 def transform(taskset, precision=10000000):

@@ -25,13 +25,13 @@ class task(dict):
     def __init__(self, execution, period, deadline):
         """Initialize a task."""
         dict.__setitem__(self, "execution", float(execution))
-        dict.__setitem__(self, "period", float(period))
+        dict.__setitem__(self, "period", int(period))
         dict.__setitem__(self, "deadline", float(deadline))
 
 
-def task_transormation(tsk):
+def task_transormation(task):
     """Transform task for creation to our task model for analysis."""
-    return Task('periodic', 'implicit', 'wcet', 'implicit', False, 0, tsk['period'], tsk['period'], tsk['period'], tsk['execution'], tsk['execution'], tsk['period'], None)
+    return Task('periodic', 'implicit', 'wcet', 'implicit', False, 0, task['period'], task['period'], task['period'], task['execution'], task['execution'], task['period'], None)
 
 
 def sample_runnable_acet(period, amount=1, scalingFlag=False):
@@ -247,17 +247,17 @@ def gen_taskset(
         if util < util_target:  # add a task
             if len(taskset) == 0:
                 raise ValueError('Under this setting the targeted utilization of {util_target=} cannot be reached.')
-            new_tsk = taskset.pop()
-            this_taskset.append(new_tsk)
-            util += new_tsk['execution'] / new_tsk['period']
+            new_task = taskset.pop()
+            this_taskset.append(new_task)
+            util += new_task['execution'] / new_task['period']
         elif util > util_target + threshold:  # remove a task
-            old_tsk = this_taskset.pop()
-            util -= new_tsk['execution'] / old_tsk['period']
+            old_task = this_taskset.pop()
+            util -= new_task['execution'] / old_task['period']
         else:
             break
 
     # Transform to our taskset model
-    this_taskset = TaskSet(*[task_transormation(tsk) for tsk in this_taskset])
+    this_taskset = TaskSet(*[task_transormation(task) for task in this_taskset])
 
     return this_taskset
 
