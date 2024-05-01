@@ -1,8 +1,11 @@
-"""Analyses from Duerr et al. 2019, CASES:
+"""
+Analyses from Duerr et al. 2019, CASES:
 End-to-end timing analysis of sporadic cause-effect chains in distributed systems.
+
 - implicit
 - sporadic
-- Implementations are based on: https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L368
+
+Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L368
 """
 
 def duerr19(chain):

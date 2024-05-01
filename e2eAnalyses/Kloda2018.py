@@ -1,10 +1,14 @@
-"""Analysis from Kloda et al. 2018:
+"""
+Analysis from Kloda et al. 2018:
 Latency analysis for data chains of real-time periodic tasks.
+
 - implicit
 - periodic
-- Implementation based on https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L410
+
+Implementation based on https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L410
 """
 import math
+from cechains.chain import CEChain
 
 
 def kloda18(chain):
@@ -16,18 +20,19 @@ def kloda18(chain):
     latency = 0
     for release_first_task_in_chain in range(0, max(1, chain.base_ts.hyperperiod()), chain[0].period):
         # Compute latency for a given first job.
-        new_latency = kloda_rec(chain[::], release_first_task_in_chain, chain.base_ts.wcrts, beginning=True)
+        new_latency = kloda_rec(chain, release_first_task_in_chain, beginning=True)
         # Compare and store the results.
         latency = max(latency, new_latency)
     return latency
 
 
-def kloda_rec(chain, rel_producer, wcrts, beginning=True):
+def kloda_rec(chain, rel_producer, beginning=True):
     """Recursive function to compute the reaction time by klodas analysis.
 
     Note: The additional period is already added with the beginning=True
     option.
     """
+    wcrts = chain.base_ts.wcrts
     add = 0
     # Additional period at the beginning. (This is only done for the
     # initial case.)
@@ -40,7 +45,7 @@ def kloda_rec(chain, rel_producer, wcrts, beginning=True):
     if len(chain) == 1:
         return wcrts[producer_task] + add
 
-    rem_chain = chain[1::]  # remaining chain
+    rem_chain = CEChain(*list(chain[1::]), base_ts=chain.base_ts)  # remaining chain
     consumer_task = rem_chain[0]  # consumer
 
     # Intermediate cases. Compute difference between producer and consumer.
@@ -49,7 +54,7 @@ def kloda_rec(chain, rel_producer, wcrts, beginning=True):
     # value is higher. Note: We do not implement a processor change since
     # we consider only the single ECU case. (Kloda cannot be applied to
     # asynchronized ECUs.)
-    if chain.index(producer_task) < chain.index(chain[1]):
+    if chain.base_ts.higher_prio(producer_task, consumer_task):
         q = wcrts[producer_task]
     rel_consumer = (math.ceil((rel_producer + q) / consumer_task.period) * consumer_task.period)
-    return (add + rel_consumer - rel_producer + kloda_rec(rem_chain, rel_consumer, wcrts, beginning=False))
+    return (add + rel_consumer - rel_producer + kloda_rec(rem_chain, rel_consumer, beginning=False))

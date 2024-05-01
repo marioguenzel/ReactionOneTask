@@ -1,3 +1,11 @@
+"""
+Analyses from Guenzel et al., 2023:
+Timing Analysis of Cause-Effect Chains with Heterogeneous Communication Mechanisms
+
+Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed
+"""
+
+
 import math
 import itertools
 from tasks.task import Task
@@ -110,3 +118,8 @@ def _release(m, tsk):
     """Time of the m-th job release of a periodic task.
     (First job is at m=1.)"""
     return tsk.rel.phase + (m - 1) * tsk.rel.period
+
+
+
+def guenzel_23_mixed():
+    ...

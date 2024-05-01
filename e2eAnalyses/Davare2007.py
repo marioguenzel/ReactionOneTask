@@ -1,5 +1,7 @@
-"""Analysis from Davare et al. 2007, DAC:
+"""
+Analysis from Davare et al. 2007, DAC:
 Period optimization for hard real-time distributed automotive systems.
+
 - implicit
 - sporadic
 """

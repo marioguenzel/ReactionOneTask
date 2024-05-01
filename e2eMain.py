@@ -4,6 +4,8 @@ from e2eAnalyses.Davare2007 import davare07
 from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
 from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Kloda2018 import kloda18
+from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter
+from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mixed
 import helpers
 import plotting.plot as p
 import sys
@@ -17,12 +19,15 @@ analysesDict = {
     '-duerr19_mrda-' : duerr_19_mrda,
     '-martinez20_impl-' : None,
     '-bi22-' : None,
-    '-guenzel23_impl-' : None,
+    '-guenzel23_l_mrt-' : guenzel_23_local_mrt,
+    '-guenzel23_l_mda-' : guenzel_23_local_mda,
+    '-guenzel23_l_mrda-' : guenzel_23_local_mrda,
+    '-guenzel23_inter-' : guenzel_23_inter,
     '-hamann17-' : hamann17,
     '-becker17-' : None,
     '-kordon20-' : None,
     '-martinez20_let-' : None,
-    '-guenzel23_let-' : None
+    '-guenzel23_mixed-' : guenzel_23_mixed
 }
 
 
@@ -61,29 +66,32 @@ def inititalizeUI():
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
         [sg.TabGroup([[
             sg.Tab('Implicit Communication',[[sg.Column([
-                [sg.Checkbox('Davare 2007 (baseline)', default=False, k='-davare07-')],
+                [sg.Checkbox('Davare 2007 (baseline)', default=True, k='-davare07-', disabled=True)],
                 [sg.Checkbox('Becker 2016', default=False, k='-becker16-')],
                 [sg.Checkbox('Kloda 2018', default=False, k='-kloda18-')],
                 [sg.Checkbox('Dürr 2019 (MRT)', default=False, k='-duerr19_mrt-')],
                 [sg.Checkbox('Dürr 2019 (MRDA)', default=False, k='-duerr19_mrda-')],
                 [sg.Checkbox('Martinez 2020', default=False, k='-martinez20_impl-')],
                 [sg.Checkbox('Bi 2022', default=False, k='-bi22-')],
-                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23_impl-')]
+                [sg.Checkbox('Günzel 2023 (local MRT)', default=False, k='-guenzel23_l_mrt-')],
+                [sg.Checkbox('Günzel 2023 (local MDA)', default=False, k='-guenzel23_l_mda-')],
+                [sg.Checkbox('Günzel 2023 (local MRDA)', default=False, k='-guenzel23_l_mrda-')],
+                [sg.Checkbox('Günzel 2023 (inter)', default=False, k='-guenzel23_inter-')]
             ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]), 
             sg.Tab('LET Communication', [[sg.Column([
                 [sg.Checkbox('Hamann 2017 (baseline)', default=False, k='-hamann17-')],
                 [sg.Checkbox('Becker 2017', default=False, k='-becker17-')],
                 [sg.Checkbox('Kordon 2020', default=False, k='-kordon20-')],
                 [sg.Checkbox('Martinez 2020', default=False, k='-martinez20_let-')],
-                [sg.Checkbox('Günzel 2023', default=False, k='-guenzel23_let-')],
+                [sg.Checkbox('Günzel 2023 (mixed)', default=False, k='-guenzel23_mixed-')],
             ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]])
         ]], expand_x=True)]
     ], expand_x=True)]
 
     layoutPlot = [sg.Frame('Plot Configuration', [
-        [sg.Checkbox('create normalized plots (latency reduction compared to baseline)', default=True, k='-T1-')],
-        [sg.Checkbox('create absolute plots', default=False, k='-T1-')],
-        [sg.Checkbox('save raw analyses results', default=False, k='-T1-')]
+        [sg.Checkbox('create normalized plots (latency reduction compared to baseline)', default=True, k='-CBP1-')],
+        [sg.Checkbox('create absolute plots', default=False, k='-CBP2-')],
+        [sg.Checkbox('save raw analyses results', default=False, k='-CBP3-')]
     ], expand_x=True, expand_y=True)]
 
     ttk_style = 'default'
@@ -193,6 +201,9 @@ def runVisualMode(window):
                     continue
             use_uniform_taskset_generation = values['-RT2-']
             use_automotive_cause_effect_chain = values['-RC1-']
+            create_normalized_plots = values['-CBP1-']
+            create_absolute_plots = values['-CBP2-']
+            save_raw_analyses_results = values['-CBP3-']
             
             selected_methods = []
             for key in analysesDict.keys():
@@ -233,13 +244,22 @@ def runVisualMode(window):
             if load_taskset_from_file:
                 tasksets = helpers.load_data(taskset_file_path)
 
+            # remove tasksets with tasks that miss their deadline
+            valid_tasksets = tasksets.copy()
+            for taskset in tasksets:
+                taskset.compute_wcrts()
+                for task in taskset:
+                    if taskset.wcrts[task] > task.deadline:
+                        valid_tasksets.remove(taskset)
+                        break
+            tasksets = valid_tasksets
+
             ####################################
             ### Generate Cause Effect Chains ###
             ####################################
 
             cause_effect_chains = []
             for taskset in tasksets:
-                taskset.compute_wcrts()
                 cause_effect_chains += automotiveBench.gen_ce_chains(taskset)
 
             ####################
@@ -247,50 +267,43 @@ def runVisualMode(window):
             ####################
 
             latencies = performAnalyses(cause_effect_chains, selected_methods)
-            print(latencies)
-
-            #(
-            result_baseline = []
-            result_duerr = []
-
-            result_duerr_mrt = []
-            result_duerr_mrda = []
-
-            result_kloda = []
-
-            for cause_effect_chain in cause_effect_chains:
-                result_baseline.append(davare07(cause_effect_chain))
-                result_duerr.append(duerr19(cause_effect_chain))
-                result_duerr_mrt.append(duerr_19_mrt(cause_effect_chain))
-                result_duerr_mrda.append(duerr_19_mrda(cause_effect_chain))
-                result_kloda.append(kloda18(cause_effect_chain))
-
-            print('result_duerr')
-            print(result_duerr)
-            print('result_duerr_mrt')
-            print(result_duerr_mrt)
-            print('result_duerr_mrda')
-            print(result_duerr_mrda)
-            print('result_kloda')
-            print(result_kloda)
-
-            diff = [(b-a)/b for a,b in zip(result_duerr, result_baseline)]
-            #)
 
             ########################
             ### Plot the results ###
             ########################
 
-            # absolute plots
-            for i in range(len(latencies)):
-                if len(latencies[i]) > 0:
-                    p.plot(latencies[i], output_dir + selected_methods[i].__name__ + ".pdf")
+            analyses_names = []
+            for i in range(len(selected_methods)):
+                analyses_names.append(selected_methods[i].__name__)
+                print(analyses_names[i])
+                print(latencies[i])
 
-            #(
-            p.plot(result_baseline, output_dir + "baseline.pdf")
-            p.plot(result_duerr, output_dir + "duerr.pdf")
-            p.plot(diff, output_dir + "duerr_precision_gain.pdf")
-            #)
+            # normalized plots
+            normalized_latencies = []
+            if create_normalized_plots:
+                for i in range(1, len(latencies)):
+                    if len(latencies[i]) > 0:
+                        normalized_latencies.append(normalizeLatencies(latencies[i], latencies[0]))
+                        p.plot(normalized_latencies[i-1], output_dir + analyses_names[i] + "_normalized.pdf", title=(analyses_names[i] + " (normalized)"))
+
+                # only do comparison if there is something to compare
+                if len(latencies) >= 3:
+                    p.plot(normalized_latencies, output_dir + "normalized.pdf", xticks=analyses_names[1:], title="Normalized Comparison")
+
+            # absolute plots
+            if create_absolute_plots:
+                for i in range(len(latencies)):
+                    if len(latencies[i]) > 0:
+                        p.plot(latencies[i], output_dir + analyses_names[i] + ".pdf")
+
+                # only do comparison if there is something to compare
+                if len(latencies) >= 3:
+                    p.plot(latencies, output_dir + "absolute.pdf", xticks=analyses_names, title="Absolute Comparison")
+
+
+            if save_raw_analyses_results:
+                ...
+                # TODO
 
             #######################
             ### Feedback pop-up ###

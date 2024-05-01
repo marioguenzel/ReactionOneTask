@@ -1,6 +1,6 @@
-'''
+"""
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/plot.py
-'''
+"""
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (AutoMinorLocator)
@@ -18,6 +18,8 @@ def plot(data, filename, xticks=None, title='', yticks=None, ylimits=None, yscal
 
     if xticks is not None:
         plt.xticks(list(range(1, len(xticks) + 1)), xticks)
+    else:
+        plt.xticks([])
 
     if yticks is not None:
         plt.yticks(yticks)

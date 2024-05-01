@@ -1,5 +1,7 @@
-"""Analysis from Hamann et al. 2017:
+"""
+Analysis from Hamann et al. 2017:
 Communication Centric Design in Complex Automotive Embedded Systems.
+
 - LET
 - sporadic
 """

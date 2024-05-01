@@ -1,5 +1,7 @@
-"""Task set and cause-effect chain generation with WATERS benchmark.
+"""
+Task set and cause-effect chain generation with WATERS benchmark.
 From the paper: 'Real world automotive benchmark for free' (WATERS 2015).
+
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/generator_WATERS.py
 and https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/benchmark_WATERS.py
 """
@@ -31,7 +33,20 @@ class task(dict):
 
 def task_transormation(task):
     """Transform task for creation to our task model for analysis."""
-    return Task('periodic', 'implicit', 'wcet', 'implicit', False, 0, task['period'], task['period'], task['period'], task['execution'], task['execution'], task['period'], None)
+    return Task(
+        release_pattern='periodic', 
+        deadline_type='implicit', 
+        execution_behaviour='wcet', 
+        communication_policy='implicit', 
+        inter_ecu_communication=False, 
+        phase=0, 
+        min_iat=task['period'], 
+        max_iat=task['period'], 
+        period=task['period'], 
+        bcet=task['execution'], 
+        wcet=task['execution'], 
+        deadline=task['deadline'], 
+        priority=None)
 
 
 def sample_runnable_acet(period, amount=1, scalingFlag=False):

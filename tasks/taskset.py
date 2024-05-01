@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-
-'''
+"""
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/tasks/taskset.py
-'''
+"""
 
 import math
 
@@ -16,6 +14,9 @@ class TaskSet:
     def __init__(self, *args):
         """Input: Task-Objects"""
         self._lst = list(args)
+        self.schedules = dict()     # needed for guenzel_23_inter
+        for task in self._lst:
+            task.priority = self._lst.index(task)
 
     def __len__(self):
         return self._lst.__len__()
@@ -32,8 +33,12 @@ class TaskSet:
     def __iter__(self):
         yield from self._lst
 
-    def append(self, obj):
-        self._lst.append(obj)
+    def index(self, task):
+        return self._lst.index(task)
+
+    def append(self, task):
+        self._lst.append(task)
+        task.priority = self._lst.index(task)
 
     def prio(self, task):
         """Priority of a task"""

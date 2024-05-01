@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''
+"""
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/tasks/task.py
-'''
+"""
 
 ####################
 # Task.
