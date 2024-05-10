@@ -69,6 +69,7 @@ class Task:
         feat_dict = self.__dict__
         for feat in feat_dict.keys():
             print(feat, feat_dict[feat])
+        print("")
 
 
     def utilization(self):

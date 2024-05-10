@@ -109,6 +109,12 @@ class TaskSet:
         """Sort by deadline."""
         self._lst.sort(key=lambda x: x.deadline)
 
+    def rate_monotonic_scheduling(self):
+        """change priorities of tasks according to RMS"""
+        self._lst.sort(key=lambda x: x.period)
+        for task in self._lst:
+            task.priority = self._lst.index(task)
+
 
 def transform(taskset, precision=10000000):
     """"Multiplies the following values for each task with precision and makes integer.
