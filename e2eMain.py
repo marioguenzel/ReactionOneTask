@@ -8,8 +8,9 @@ from e2eAnalyses.Kloda2018 import kloda18
 from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter
 from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mixed
 import helpers
-import plotting.plot as p
+import plotting.plot as plot
 import sys
+from multiprocessing import Pool
 
 
 analysesDict = {
@@ -51,6 +52,7 @@ def inititalizeUI():
             [sg.Checkbox('Use custom seed', default=False, k='-CB2-', pad=((30,0),(0,0))), sg.Input(s=20, k='-Seed-')],
         [sg.Radio('Load Taskset from File', "RadioGeneral", default=False, k='-RG2-', enable_events=True)],
             [sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=50, k='-F_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.pickle"),), k="-Browse-", disabled=True)],
+        [sg.Text('Threads:'), sg.Input(s=10, k='-Threads_Input-', default_text='1')],
     ], expand_x=True)]
 
     layoutTaskset = [sg.Frame('Taskset Configuration', [
@@ -169,17 +171,16 @@ def normalizeLatencies(toNormalize, baseline):
     return [(b-a)/b for a,b in zip(toNormalize, baseline)]
 
 
-def performAnalyses(cause_effect_chains, methods):
+def performAnalyses(cause_effect_chains, methods, number_of_threads):
     latencies_all = []
     
     for method in methods:
         if method == None:
             latencies_all.append([])
             continue
-        
-        latencies_single = []
-        for cause_effect_chain in cause_effect_chains:
-            latencies_single.append(method(cause_effect_chain))
+
+        with Pool(number_of_threads) as pool:
+            latencies_single = pool.map(method, cause_effect_chains)
         
         latencies_all.append(latencies_single)
 
@@ -211,6 +212,11 @@ def runVisualMode(window):
                     popUp('ValueError', [f"Invalid seed '{values['-Seed-']}'!"])
                     continue
             load_taskset_from_file = values['-RG2-']
+            try:
+                number_of_threads = int(values['-Threads_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid number of threads '{values['-Threads_Input-']}'!"])
+                continue
             taskset_file_path = values['-F_Input-']
             use_automotive_taskset = values['-RT1-']
             use_uniform_taskset_generation = values['-RT2-']
@@ -241,7 +247,6 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max period '{values['-PMAX_Input-']}'!"])
                 continue
-
             use_automotive_cause_effect_chain = values['-RC1-']
             create_normalized_plots = values['-CBP1-']
             create_absolute_plots = values['-CBP2-']
@@ -272,20 +277,21 @@ def runVisualMode(window):
                 
                 # selected automotive benchmark
                 if use_automotive_taskset:                        
-                    tasksets = [automotiveBench.gen_taskset(target_utilization) for _ in range(number_of_tasksets)]
+                    with Pool(number_of_threads) as pool:
+                        tasksets = pool.map(automotiveBench.gen_taskset, [target_utilization] * number_of_tasksets)
 
                 # selected uniform benchmark
                 if use_uniform_taskset_generation:
-                    tasksets = [uniformBench.gen_taskset(
-                        target_utilization, 
-                        min_number_of_tasks, 
-                        max_number_of_tasks,
-                        min_period,
-                        max_period,
-                        use_semi_harmonic_periods,
-                        False
-                        )
-                    for _ in range(number_of_tasksets)]
+                    with Pool(number_of_threads) as pool:
+                        tasksets = pool.starmap(uniformBench.gen_taskset, [(
+                            target_utilization, 
+                            min_number_of_tasks, 
+                            max_number_of_tasks,
+                            min_period,
+                            max_period,
+                            use_semi_harmonic_periods,
+                            False
+                        )] * number_of_tasksets)
 
                 # store generated taskset
                 if store_generated_taskset:
@@ -298,8 +304,6 @@ def runVisualMode(window):
             for taskset in tasksets:
                 taskset.rate_monotonic_scheduling()
                 taskset.compute_wcrts()
-                taskset.print_tasks()
-                taskset.print()
 
 
             # remove tasksets with tasks that miss their deadline
@@ -325,7 +329,7 @@ def runVisualMode(window):
             ### Run Analyses ###
             ####################
 
-            latencies = performAnalyses(cause_effect_chains, selected_methods)
+            latencies = performAnalyses(cause_effect_chains, selected_methods, number_of_threads)
 
             ########################
             ### Plot the results ###
@@ -343,21 +347,21 @@ def runVisualMode(window):
                 for i in range(1, len(latencies)):
                     if len(latencies[i]) > 0:
                         normalized_latencies.append(normalizeLatencies(latencies[i], latencies[0]))
-                        p.plot(normalized_latencies[i-1], output_dir + analyses_names[i] + "_normalized.pdf", title=(analyses_names[i] + " (normalized)"))
+                        plot.plot(normalized_latencies[i-1], output_dir + analyses_names[i] + "_normalized.pdf", title=(analyses_names[i] + " (normalized)"))
 
                 # only do comparison if there is something to compare
                 if len(latencies) >= 3:
-                    p.plot(normalized_latencies, output_dir + "normalized.pdf", xticks=analyses_names[1:], title="Normalized Comparison")
+                    plot.plot(normalized_latencies, output_dir + "normalized.pdf", xticks=analyses_names[1:], title="Normalized Comparison")
 
             # absolute plots
             if create_absolute_plots:
                 for i in range(len(latencies)):
                     if len(latencies[i]) > 0:
-                        p.plot(latencies[i], output_dir + analyses_names[i] + ".pdf")
+                        plot.plot(latencies[i], output_dir + analyses_names[i] + ".pdf")
 
                 # only do comparison if there is something to compare
                 if len(latencies) >= 3:
-                    p.plot(latencies, output_dir + "absolute.pdf", xticks=analyses_names, title="Absolute Comparison")
+                    plot.plot(latencies, output_dir + "absolute.pdf", xticks=analyses_names, title="Absolute Comparison")
 
 
             if save_raw_analyses_results:
