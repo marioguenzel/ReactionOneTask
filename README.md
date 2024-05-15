@@ -15,9 +15,9 @@ List of papers with analyses methods relevant for the framework:
 | Paper Title                                                                              | Short Name       | Periodic | Sporadic | Implicit | LET   | Result       | Status     |
 |------------------------------------------------------------------------------------------|------------------|----------|----------|----------|-------|--------------|------------|
 | Period Optimization for Hard Real-time Distributed Automotive Systems                    | (Davare 2007)    | Yes      | (Yes)    | Yes      | No    | MRT          | Integrated |
-| Synthesizing Job-Level Dependencies for Automotive Multi-rate Effect Chains              | (Becker 2016)    | Yes      | No       | Yes      | No    | MRT          | Requested  |
-| End-to-end timing analysis of cause-effect chains in automotive embedded systems         | (Becker 2017)    | Yes      | ?        | ?        | Yes   | MDA/MRT      | Requested  |
-| Communication Centric Design in Complex Automotive Embedded Systems                      | (Hamann 2017)    | Yes      | Yes      | No       | Yes   | ?            | Integrated |
+| Synthesizing Job-Level Dependencies for Automotive Multi-rate Effect Chains              | (Becker 2016)    | Yes      | No       | Yes      | No    | MRDA         | Requested  |
+| End-to-end timing analysis of cause-effect chains in automotive embedded systems         | (Becker 2017)    | Yes      | No       | Yes      | Yes   | MRDA         | Requested  |
+| Communication Centric Design in Complex Automotive Embedded Systems                      | (Hamann 2017)    | Yes      | Yes      | No       | Yes   | MDA/MRT      | Integrated |
 | Latency analysis for data chains of real-time periodic tasks                             | (Kloda 2018)     | Yes      | No       | Yes      | No    | MDA/MRT      | Integrated |
 | End-to-End Timing Analysis of Sporadic Cause-Effect Chains in Distributed Systems        | (Dürr 2019)      | Yes      | Yes      | Yes      | (Yes) | MRDA,MDA/MRT | Integrated |
 | Evaluation of the Age Latency of a Real-Time Communicating System using the LET paradigm | (Kordon 2020)    | Yes      | No       | No       | Yes   | MDA          | Requested  |
