@@ -295,7 +295,8 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max period '{values['-PMAX_Input-']}'!"])
                 continue
-            use_automotive_cause_effect_chain = values['-RC1-']
+            generate_automotive_cecs = values['-RC1-']
+            generate_random_cecs = values['-RC2-']
             try:
                 min_number_of_chains = int(values['-NumberChainsMin_Input-'])
             except ValueError:
@@ -384,8 +385,13 @@ def runVisualMode(window):
             ####################################
 
             cause_effect_chains = []
-            for taskset in tasksets:
-                cause_effect_chains += automotiveBench.gen_ce_chains(taskset, min_number_of_chains, max_number_of_chains)
+            if generate_automotive_cecs:
+                for taskset in tasksets:
+                    cause_effect_chains += automotiveBench.gen_ce_chains(taskset, min_number_of_chains, max_number_of_chains)
+
+            if generate_random_cecs:
+                # TODO
+                ...
 
             print(len(cause_effect_chains))
 
@@ -436,8 +442,18 @@ def runVisualMode(window):
 
 
             if save_raw_analyses_results:
-                ...
-                # TODO
+                selected_methods = set(selected_analysis_methods + selected_normalization_methods)
+                names_all = []
+                latencies_all = []
+                for method in selected_methods:
+                    names_all.append(method.name_short)
+                    latencies_all.append(method.latencies)
+
+                helpers.export_to_csv(
+                    output_dir + "results.csv",
+                    names_all,
+                    latencies_all
+                )
 
             #######################
             ### Feedback pop-up ###

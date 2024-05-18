@@ -5,6 +5,7 @@ Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e
 import time
 import pickle
 import os
+import csv
 
 
 def time_now():
@@ -51,3 +52,11 @@ def load_data(filename):
     file.close()
     print(f'Data loaded from {filename}')
     return data
+
+
+def export_to_csv(filename, names, latencies):
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(names)
+        for i in range(len(latencies[0])):
+            writer.writerow([latencies[j][i] for j in range(len(latencies))])
