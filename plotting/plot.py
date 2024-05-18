@@ -42,4 +42,5 @@ def plot(data, filename, xticks=None, title='', yticks=None, ylimits=None, yscal
 
     # plt.show()
     fig.savefig(filename)
+    plt.close(fig)
     print(f'plot {filename} created')

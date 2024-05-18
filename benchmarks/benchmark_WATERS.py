@@ -281,7 +281,7 @@ def gen_taskset(
 # Cause-effect chain generation.
 ###
 
-def gen_ce_chains(task_set):  # TODO update
+def gen_ce_chains(task_set, number_chains_min, number_chains_max):  # TODO update
     """Generate CE chains based on task sets as object of tasks.taskset.TaskSet.
     Each task is object of tasks.task.Task."""
     distribution_involved_activation_patterns = stats.rv_discrete(
@@ -289,6 +289,10 @@ def gen_ce_chains(task_set):  # TODO update
     distribution_number_of_tasks = stats.rv_discrete(
         values=([2, 3, 4, 5], [0.3, 0.4, 0.2, 0.1]))
     ce_chains = []
+    if number_chains_min == number_chains_max:
+        number_chains = number_chains_min
+    else:
+        number_chains = np.random.randint(number_chains_min, number_chains_max)
 
     # Determine different periods of the tasks set.
     activation_patterns = list(set(map(
@@ -299,7 +303,7 @@ def gen_ce_chains(task_set):  # TODO update
         return []
 
     # Generate 30 to 60 cause-effect chains for each input task set
-    for _ in range(int(np.random.randint(30, 60))):
+    while len(ce_chains) < number_chains:
         tasks_in_chain = []
 
         # Activation patterns of the cause-effect chain.
