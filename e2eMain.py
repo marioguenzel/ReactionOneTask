@@ -63,25 +63,25 @@ def inititalizeUI():
     layoutMenu = [sg.Menu([['Help', ['Edit Me']], ['About', ['Edit Me']]], k='-MENUBAR-')]
 
     layoutGeneral = [sg.Frame('General Settings', [
-        [sg.Radio('Generate Taskset', "RadioGeneral", default=True, k='-RG1-', enable_events=True), sg.Checkbox('Store generated Taskset', default=False, k='-CB1-', pad=((60,0),(0,0)))],
-        [sg.Radio('Load Taskset from File', "RadioGeneral", default=False, k='-RG2-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-F_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.pickle"),), k="-Browse-", disabled=True)],
+        [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
+        [sg.Radio('Load Cause-Effect Chains from File', "RadioGeneral", default=False, k='-Load_CEC_Radio-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-File_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.pickle"),), k="-Browse-", disabled=True)],
         [sg.Text('Threads:'), sg.Input(s=5, k='-Threads_Input-', default_text='1')],
     ], expand_x=True)]
 
     layoutTaskset = [sg.Frame('Taskset Configuration', [
-        [sg.Radio('Automotive Benchmark', "RadioTaskset", default=True, k='-RT1-', enable_events=True)],        #   U, #Tasksets?
-        [sg.Radio('Uniform Taskset Generation', "RadioTaskset", default=False, k='-RT2-', enable_events=True)], #   n, U*, #Tasksets?
-            [sg.Checkbox('Semi-harmonic periods', default=True, k='-CBT1-', pad=((30,0),(0,0)), disabled=True)],
+        [sg.Radio('Automotive Benchmark', "RadioTaskset", default=True, k='-Automotive_Taskset_Radio-', enable_events=True)],        #   U, #Tasksets?
+        [sg.Radio('Uniform Taskset Generation', "RadioTaskset", default=False, k='-Uniform_Taskset_Radio-', enable_events=True)], #   n, U*, #Tasksets?
+            [sg.Checkbox('Semi-harmonic periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True)],
             [sg.Text('Min number Tasks:', pad=((35,0),(0,0))), sg.Input(s=5, k='-MINT_Input-', disabled=True, default_text='40'), sg.Text('Max number Tasks:'), sg.Input(s=5, k='-MAXT_Input-', disabled=True, default_text='60')],
             [sg.Text('Min Period:', pad=((35,0),(0,0))), sg.Input(s=10, k='-PMIN_Input-', disabled=True, default_text='1'), sg.Text('Max Period:'), sg.Input(s=10, k='-PMAX_Input-', disabled=True, default_text='2000')],
         [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(5,1))],
-        [sg.Text('Number of Tasksets:'), sg.Input(s=10, k='-ANOT_Input-', default_text='1')],
+        [sg.Text('Number of Tasksets:'), sg.Input(s=10, k='-Number_Tasksets_Input-', default_text='1')],
     ], expand_x=True)]
 
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
-        [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-RC1-')],
-        [sg.Radio('Random CECs', "RadioChain", default=False, k='-RC2-')],
-        [sg.Text('Min Chains:'), sg.Input(s=5, k='-NumberChainsMin_Input-', default_text='30'), sg.Text('Max Chains:'), sg.Input(s=5, k='-NumberChainsMax_Input-', default_text='60')]
+        [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-Automotive_CEC_Radio-')],
+        [sg.Radio('Random CECs', "RadioChain", default=False, k='-Random_CEC_Radio-')],
+        [sg.Text('Min Chains:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')]
     ], expand_x=True)]
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
@@ -156,44 +156,52 @@ def inititalizeUI():
 
 
 def updateUI(window, event, values):
-    if event == '-RG1-':
-        window['-CB1-'].update(disabled=False)
-        window['-F_Input-'].update(disabled=True)
+    if event == '-Generate_CEC_Radio-':
+        window['-Store_CECs_Box-'].update(disabled=False)
+        window['-File_Input-'].update(disabled=True)
         window['-Browse-'].update(disabled=True)
-        window['-RT1-'].update(disabled=False)
-        window['-RT2-'].update(disabled=False)
+        window['-Automotive_Taskset_Radio-'].update(disabled=False)
+        window['-Uniform_Taskset_Radio-'].update(disabled=False)
         window['-Utilization_Spin-'].update(disabled=False)
-        window['-ANOT_Input-'].update(disabled=False)
-        if values['-RT2-']:
-            window['-CBT1-'].update(disabled=False)
+        window['-Number_Tasksets_Input-'].update(disabled=False)
+        if values['-Uniform_Taskset_Radio-']:
+            window['-Semi_harmonic_Box-'].update(disabled=False)
             window['-MINT_Input-'].update(disabled=False)
             window['-MAXT_Input-'].update(disabled=False)
             window['-PMIN_Input-'].update(disabled=False)
             window['-PMAX_Input-'].update(disabled=False)
+        window['-Automotive_CEC_Radio-'].update(disabled=False)
+        window['-Random_CEC_Radio-'].update(disabled=False)
+        window['-Number_Chains_Min_Input-'].update(disabled=False)
+        window['-Number_Chains_Max_Input-'].update(disabled=False)
 
-    if event == '-RG2-':
-        window['-CB1-'].update(disabled=True)
-        window['-F_Input-'].update(disabled=False)
+    if event == '-Load_CEC_Radio-':
+        window['-Store_CECs_Box-'].update(disabled=True)
+        window['-File_Input-'].update(disabled=False)
         window['-Browse-'].update(disabled=False)
-        window['-RT1-'].update(disabled=True)
-        window['-RT2-'].update(disabled=True)
+        window['-Automotive_Taskset_Radio-'].update(disabled=True)
+        window['-Uniform_Taskset_Radio-'].update(disabled=True)
         window['-Utilization_Spin-'].update(disabled=True)
-        window['-ANOT_Input-'].update(disabled=True)
-        window['-CBT1-'].update(disabled=True)
+        window['-Number_Tasksets_Input-'].update(disabled=True)
+        window['-Semi_harmonic_Box-'].update(disabled=True)
+        window['-MINT_Input-'].update(disabled=True)
+        window['-MAXT_Input-'].update(disabled=True)
+        window['-PMIN_Input-'].update(disabled=True)
+        window['-PMAX_Input-'].update(disabled=True)
+        window['-Automotive_CEC_Radio-'].update(disabled=True)
+        window['-Random_CEC_Radio-'].update(disabled=True)
+        window['-Number_Chains_Min_Input-'].update(disabled=True)
+        window['-Number_Chains_Max_Input-'].update(disabled=True)
+
+    if event == '-Automotive_Taskset_Radio-':
+        window['-Semi_harmonic_Box-'].update(disabled=True)
         window['-MINT_Input-'].update(disabled=True)
         window['-MAXT_Input-'].update(disabled=True)
         window['-PMIN_Input-'].update(disabled=True)
         window['-PMAX_Input-'].update(disabled=True)
 
-    if event == '-RT1-':
-        window['-CBT1-'].update(disabled=True)
-        window['-MINT_Input-'].update(disabled=True)
-        window['-MAXT_Input-'].update(disabled=True)
-        window['-PMIN_Input-'].update(disabled=True)
-        window['-PMAX_Input-'].update(disabled=True)
-
-    if event == '-RT2-':
-        window['-CBT1-'].update(disabled=False)
+    if event == '-Uniform_Taskset_Radio-':
+        window['-Semi_harmonic_Box-'].update(disabled=False)
         window['-MINT_Input-'].update(disabled=False)
         window['-MAXT_Input-'].update(disabled=False)
         window['-PMIN_Input-'].update(disabled=False)
@@ -251,17 +259,17 @@ def runVisualMode(window):
             ### Gather all inputs from GUI ###
             ##################################
 
-            generate_taskset = values['-RG1-']
-            store_generated_taskset = values['-CB1-']
-            load_taskset_from_file = values['-RG2-']
+            generate_cecs = values['-Generate_CEC_Radio-']
+            store_generated_cecs = values['-Store_CECs_Box-']
+            load_cecs_from_file = values['-Load_CEC_Radio-']
             try:
                 number_of_threads = int(values['-Threads_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of threads '{values['-Threads_Input-']}'!"])
                 continue
-            taskset_file_path = values['-F_Input-']
-            use_automotive_taskset = values['-RT1-']
-            use_uniform_taskset_generation = values['-RT2-']
+            cecs_file_path = values['-File_Input-']
+            use_automotive_taskset = values['-Automotive_Taskset_Radio-']
+            use_uniform_taskset_generation = values['-Uniform_Taskset_Radio-']
             try:
                 target_utilization = int(values['-Utilization_Spin-'])/100
                 if target_utilization > 1 or target_utilization < 0:
@@ -270,11 +278,11 @@ def runVisualMode(window):
                 popUp('ValueError', [f"Invalid target utilization '{values['-Utilization_Spin-']}'!"])
                 continue
             try:
-                number_of_tasksets = int(values['-ANOT_Input-'])
+                number_of_tasksets = int(values['-Number_Tasksets_Input-'])
             except ValueError:
-                popUp('ValueError', [f"Invalid number of tasksets '{values['-ANOT_Input-']}'!"])
+                popUp('ValueError', [f"Invalid number of tasksets '{values['-Number_Tasksets_Input-']}'!"])
                 continue
-            use_semi_harmonic_periods = values['-CBT1-']
+            use_semi_harmonic_periods = values['-Semi_harmonic_Box-']
             try:
                 min_number_of_tasks = int(values['-MINT_Input-'])
             except ValueError:
@@ -295,17 +303,17 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max period '{values['-PMAX_Input-']}'!"])
                 continue
-            generate_automotive_cecs = values['-RC1-']
-            generate_random_cecs = values['-RC2-']
+            generate_automotive_cecs = values['-Automotive_CEC_Radio-']
+            generate_random_cecs = values['-Random_CEC_Radio-']
             try:
-                min_number_of_chains = int(values['-NumberChainsMin_Input-'])
+                min_number_of_chains = int(values['-Number_Chains_Min_Input-'])
             except ValueError:
-                popUp('ValueError', [f"Invalid min number of chains '{values['-NumberChainsMin_Input-']}'!"])
+                popUp('ValueError', [f"Invalid min number of chains '{values['-Number_Chains_Min_Input-']}'!"])
                 continue
             try:
-                max_number_of_chains = int(values['-NumberChainsMax_Input-'])
+                max_number_of_chains = int(values['-Number_Chains_Max_Input-'])
             except ValueError:
-                popUp('ValueError', [f"Invalid max number of chains '{values['-NumberChainsMax_Input-']}'!"])
+                popUp('ValueError', [f"Invalid max number of chains '{values['-Number_Chains_Max_Input-']}'!"])
                 continue
             create_normalized_plots = values['-CBP1-']
             create_absolute_plots = values['-CBP2-']
@@ -331,14 +339,14 @@ def runVisualMode(window):
 
             #TODO
 
-            ###########################
-            ### Create/Load Taskset ###
-            ###########################
+            ######################
+            ### Create Taskset ###
+            ######################
 
             output_dir = helpers.make_output_directory()
 
-            # user selected generate Taskset
-            if generate_taskset:
+            # first create a taskset
+            if generate_cecs:
                 
                 # selected automotive benchmark
                 if use_automotive_taskset:                        
@@ -358,40 +366,40 @@ def runVisualMode(window):
                             False
                         )] * number_of_tasksets)
 
-                # store generated taskset
-                if store_generated_taskset:
-                    helpers.write_data(output_dir + "taskset.pickle", tasksets)
+                for taskset in tasksets:
+                    taskset.rate_monotonic_scheduling()
+                    taskset.compute_wcrts()
 
-            # user selected load Taskset from file
-            if load_taskset_from_file:
-                tasksets = helpers.load_data(taskset_file_path)
+                # remove tasksets with tasks that miss their deadline
+                valid_tasksets = tasksets.copy()
+                for taskset in tasksets:
+                    for task in taskset:
+                        if taskset.wcrts[task] > task.deadline:
+                            valid_tasksets.remove(taskset)
+                            break
+                tasksets = valid_tasksets
 
-            for taskset in tasksets:
-                taskset.rate_monotonic_scheduling()
-                taskset.compute_wcrts()
-
-
-            # remove tasksets with tasks that miss their deadline
-            valid_tasksets = tasksets.copy()
-            for taskset in tasksets:
-                for task in taskset:
-                    if taskset.wcrts[task] > task.deadline:
-                        valid_tasksets.remove(taskset)
-                        break
-            tasksets = valid_tasksets
-
-            ####################################
-            ### Generate Cause Effect Chains ###
-            ####################################
+            #########################################
+            ### Generate/Load Cause Effect Chains ###
+            #########################################
 
             cause_effect_chains = []
-            if generate_automotive_cecs:
-                for taskset in tasksets:
-                    cause_effect_chains += automotiveBench.gen_ce_chains(taskset, min_number_of_chains, max_number_of_chains)
 
-            if generate_random_cecs:
-                # TODO
-                ...
+            if generate_cecs:
+                if generate_automotive_cecs:
+                    for taskset in tasksets:
+                        cause_effect_chains += automotiveBench.gen_ce_chains(taskset, min_number_of_chains, max_number_of_chains)
+
+                if generate_random_cecs:
+                    # TODO
+                    ...
+
+                if store_generated_cecs:
+                    helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
+
+            # user selected load CECs from file
+            if load_cecs_from_file:
+                cause_effect_chains = helpers.load_data(cecs_file_path)
 
             print(len(cause_effect_chains))
 
