@@ -5,3 +5,7 @@ End-to-end timing analysis of cause-effect chains in automotive embedded systems
 - ?
 - ?
 """
+
+def becker17(chain):
+
+    return -1

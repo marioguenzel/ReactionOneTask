@@ -5,3 +5,7 @@ Efficient Maximum Data Age Analysis for Cause-Effect Chains in Automotive System
 - implicit
 - periodic
 """
+
+def bi22(chain):
+
+    return -1

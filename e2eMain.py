@@ -2,11 +2,16 @@ import PySimpleGUI as sg
 import benchmarks.benchmark_WATERS as automotiveBench
 import benchmarks.benchmark_Uniform as uniformBench
 from e2eAnalyses.Davare2007 import davare07
-from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
-from e2eAnalyses.Hamann2017 import hamann17
+from e2eAnalyses.Becker2016 import becker16
+from e2eAnalyses.Becker2017 import becker17
 from e2eAnalyses.Kloda2018 import kloda18
+from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
+from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
+from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter
 from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mixed
+from e2eAnalyses.Bi2022 import bi22
+from e2eAnalyses.Kordon2020 import kordon20
 import helpers
 import plotting.plot as plot
 import sys
@@ -15,37 +20,40 @@ from multiprocessing import Pool
 
 class AnalysisMethod:
 
-    def __init__(self, analysis_function, name, name_short):
+    def __init__(self, analysis_function, name, name_short, features):
         self.analysis = analysis_function
         self.name = name
         self.name_short = name_short
+        self.features = features
         self.latencies = []
 
     def reset(self):
         self.latencies = []
 
     def normalize(self, baseline):
-        # TODO: maybe error handling, if lengths are not equal
-        return [(b-a)/b for a,b in zip(self.latencies, baseline.latencies)]
+        if len(self.latencies) != len(baseline.latencies):
+            return []
+        else:
+            return [(b-a)/b for a,b in zip(self.latencies, baseline.latencies)]
 
 
 analysesDict = {
-    'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07'),
-    'becker16' : None,                                                                                          # TODO
-    'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18'),
-    'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)'),
-    'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)'),
-    'martinez20_impl' : None,                                                                                   # TODO
-    'bi22' : None,                                                                                              # TODO
-    'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)'),
-    'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)'),
-    'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)'),
-    'guenzel23_inter' : AnalysisMethod(guenzel_23_inter, 'Günzel 2023 (inter)', 'G23(I)'),                      # TODO
-    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17'),
-    'becker17' : None,                                                                                          # TODO
-    'kordon20' : None,                                                                                          # TODO
-    'martinez20_let' : None,                                                                                    # TODO
-    'guenzel23_mixed' : AnalysisMethod(guenzel_23_mixed, 'Günzel 2023 (mixed)', 'G23(MIX)')                     # TODO
+    'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
+    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),                                                         # TODO
+    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
+    'becker17' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit', 'let']),                                                  # TODO
+    'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
+    'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
+    'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
+    'martinez20_impl' : AnalysisMethod(martinez20_impl, 'Martinez 2020 (Impl)', 'M20(Impl)', features=['periodic', 'implicit']),                            # TODO
+    'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                               # TODO
+    'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                     # TODO
+    'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),                                                                     # TODO
+    'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'let']),
+    'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'let']),
+    'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'let']),
+    'guenzel23_inter' : AnalysisMethod(guenzel_23_inter, 'Günzel 2023 (inter)', 'G23(I)', features=['periodic', 'implicit', 'let', 'inter']),               # TODO
+    'guenzel23_mixed' : AnalysisMethod(guenzel_23_mixed, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed'])  # TODO
 }
 
 
@@ -86,48 +94,24 @@ def inititalizeUI():
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
         [sg.TabGroup([[
-            sg.Tab('Implicit Communication',[[sg.Column([
-                [sg.Checkbox('Davare 2007 (baseline)', default=False, k='davare07')],
-                [sg.Checkbox('Becker 2016', default=False, k='becker16')],
-                [sg.Checkbox('Kloda 2018', default=False, k='kloda18')],
-                [sg.Checkbox('Dürr 2019 (MRT)', default=False, k='duerr19_mrt')],
-                [sg.Checkbox('Dürr 2019 (MRDA)', default=False, k='duerr19_mrda')],
-                [sg.Checkbox('Martinez 2020', default=False, k='martinez20_impl')],
-                [sg.Checkbox('Bi 2022', default=False, k='bi22')],
-                [sg.Checkbox('Günzel 2023 (local MRT)', default=False, k='guenzel23_l_mrt')],
-                [sg.Checkbox('Günzel 2023 (local MDA)', default=False, k='guenzel23_l_mda')],
-                [sg.Checkbox('Günzel 2023 (local MRDA)', default=False, k='guenzel23_l_mrda')],
-                [sg.Checkbox('Günzel 2023 (inter)', default=False, k='guenzel23_inter')]
-            ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]), 
-            sg.Tab('LET Communication', [[sg.Column([
-                [sg.Checkbox('Hamann 2017 (baseline)', default=False, k='hamann17')],
-                [sg.Checkbox('Becker 2017', default=False, k='becker17')],
-                [sg.Checkbox('Kordon 2020', default=False, k='kordon20')],
-                [sg.Checkbox('Martinez 2020', default=False, k='martinez20_let')],
-                [sg.Checkbox('Günzel 2023 (mixed)', default=False, k='guenzel23_mixed')],
-            ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]])
+            sg.Tab('Implicit Communication',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features], 
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            ), 
+            sg.Tab('LET Communication',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'let' in method.features], 
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            )
         ]], expand_x=True),
         sg.TabGroup([[
-            sg.Tab('Implicit Communication',[[sg.Column([
-                [sg.Checkbox('Davare 2007 (baseline)', default=True, k='n_davare07')],
-                [sg.Checkbox('Becker 2016', default=False, k='n_becker16')],
-                [sg.Checkbox('Kloda 2018', default=False, k='n_kloda18')],
-                [sg.Checkbox('Dürr 2019 (MRT)', default=False, k='n_duerr19_mrt')],
-                [sg.Checkbox('Dürr 2019 (MRDA)', default=False, k='n_duerr19_mrda')],
-                [sg.Checkbox('Martinez 2020', default=False, k='n_martinez20_impl')],
-                [sg.Checkbox('Bi 2022', default=False, k='n_bi22')],
-                [sg.Checkbox('Günzel 2023 (local MRT)', default=False, k='n_guenzel23_l_mrt')],
-                [sg.Checkbox('Günzel 2023 (local MDA)', default=False, k='n_guenzel23_l_mda')],
-                [sg.Checkbox('Günzel 2023 (local MRDA)', default=False, k='n_guenzel23_l_mrda')],
-                [sg.Checkbox('Günzel 2023 (inter)', default=False, k='n_guenzel23_inter')]
-            ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]), 
-            sg.Tab('LET Communication', [[sg.Column([
-                [sg.Checkbox('Hamann 2017 (baseline)', default=False, k='n_hamann17')],
-                [sg.Checkbox('Becker 2017', default=False, k='n_becker17')],
-                [sg.Checkbox('Kordon 2020', default=False, k='n_kordon20')],
-                [sg.Checkbox('Martinez 2020', default=False, k='n_martinez20_let')],
-                [sg.Checkbox('Günzel 2023 (mixed)', default=False, k='n_guenzel23_mixed')],
-            ], expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]])
+            sg.Tab('Implicit Communication',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features],  
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            ),  
+            sg.Tab('LET Communication',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'let' in method.features], 
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            )
         ]], expand_x=True)
         ]
     ], expand_x=True)]

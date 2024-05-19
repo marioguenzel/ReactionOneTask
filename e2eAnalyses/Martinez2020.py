@@ -5,3 +5,12 @@ End-to-end latency characterization of task communication models for automotive 
 - implicit/LET
 - periodic
 """
+
+def martinez20_impl(chain):
+
+    return -1
+
+
+def martinez20_let(chain):
+
+    return -1
