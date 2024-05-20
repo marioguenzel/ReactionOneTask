@@ -33,6 +33,14 @@ class TaskSet:
     def __iter__(self):
         yield from self._lst
 
+    @property
+    def lst(self):
+        return self._lst
+
+    @lst.setter
+    def lst(self, new_lst):
+        self._lst = new_lst
+
     def index(self, task):
         return self._lst.index(task)
 

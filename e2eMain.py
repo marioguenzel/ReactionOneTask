@@ -79,7 +79,7 @@ def inititalizeUI():
     layoutTaskset = [sg.Frame('Taskset Configuration', [
         [sg.Radio('Automotive Benchmark', "RadioTaskset", default=True, k='-Automotive_Taskset_Radio-', enable_events=True)],        #   U, #Tasksets?
         [sg.Radio('Uniform Taskset Generation', "RadioTaskset", default=False, k='-Uniform_Taskset_Radio-', enable_events=True)], #   n, U*, #Tasksets?
-            [sg.Checkbox('Semi-harmonic periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True)],
+            [sg.Checkbox('Semi-harmonic periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True, enable_events=True)],
             [sg.Text('Min number Tasks:', pad=((35,0),(0,0))), sg.Input(s=5, k='-MINT_Input-', disabled=True, default_text='40'), sg.Text('Max number Tasks:'), sg.Input(s=5, k='-MAXT_Input-', disabled=True, default_text='60')],
             [sg.Text('Min Period:', pad=((35,0),(0,0))), sg.Input(s=10, k='-PMIN_Input-', disabled=True, default_text='1'), sg.Text('Max Period:'), sg.Input(s=10, k='-PMAX_Input-', disabled=True, default_text='2000')],
         [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(5,1))],
@@ -87,8 +87,8 @@ def inititalizeUI():
     ], expand_x=True)]
 
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
-        [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-Automotive_CEC_Radio-')],
-        [sg.Radio('Random CECs', "RadioChain", default=False, k='-Random_CEC_Radio-')],
+        [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-Automotive_CEC_Radio-', enable_events=True)],
+        [sg.Radio('Random CECs', "RadioChain", default=False, k='-Random_CEC_Radio-', enable_events=True), sg.Text('Min Tasks:'), sg.Input(s=5, k='-Number_Tasks_Min_Input-', default_text='2', disabled=True), sg.Text('Max Tasks:'), sg.Input(s=5, k='-Number_Tasks_Max_Input-', default_text='10', disabled=True)],
         [sg.Text('Min Chains:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')]
     ], expand_x=True)]
 
@@ -154,8 +154,12 @@ def updateUI(window, event, values):
             window['-MAXT_Input-'].update(disabled=False)
             window['-PMIN_Input-'].update(disabled=False)
             window['-PMAX_Input-'].update(disabled=False)
-        window['-Automotive_CEC_Radio-'].update(disabled=False)
+        if values['-Semi_harmonic_Box-']:
+            window['-Automotive_CEC_Radio-'].update(disabled=False)
         window['-Random_CEC_Radio-'].update(disabled=False)
+        if values['-Random_CEC_Radio-']:
+            window['-Number_Tasks_Min_Input-'].update(disabled=False)
+            window['-Number_Tasks_Max_Input-'].update(disabled=False)
         window['-Number_Chains_Min_Input-'].update(disabled=False)
         window['-Number_Chains_Max_Input-'].update(disabled=False)
 
@@ -174,6 +178,8 @@ def updateUI(window, event, values):
         window['-PMAX_Input-'].update(disabled=True)
         window['-Automotive_CEC_Radio-'].update(disabled=True)
         window['-Random_CEC_Radio-'].update(disabled=True)
+        window['-Number_Tasks_Min_Input-'].update(disabled=True)
+        window['-Number_Tasks_Max_Input-'].update(disabled=True)
         window['-Number_Chains_Min_Input-'].update(disabled=True)
         window['-Number_Chains_Max_Input-'].update(disabled=True)
 
@@ -190,6 +196,22 @@ def updateUI(window, event, values):
         window['-MAXT_Input-'].update(disabled=False)
         window['-PMIN_Input-'].update(disabled=False)
         window['-PMAX_Input-'].update(disabled=False)
+
+    if event == '-Automotive_CEC_Radio-':
+        window['-Number_Tasks_Min_Input-'].update(disabled=True)
+        window['-Number_Tasks_Max_Input-'].update(disabled=True)
+
+    if event == '-Random_CEC_Radio-':
+        window['-Number_Tasks_Min_Input-'].update(disabled=False)
+        window['-Number_Tasks_Max_Input-'].update(disabled=False)
+
+    if event == '-Semi_harmonic_Box-':
+        if values['-Semi_harmonic_Box-']:
+            window['-Automotive_CEC_Radio-'].update(disabled=False)
+        else:
+            window['-Automotive_CEC_Radio-'].update(disabled=True)
+            window['-Random_CEC_Radio-'].update(value=True)
+
 
 
 
@@ -290,6 +312,16 @@ def runVisualMode(window):
             generate_automotive_cecs = values['-Automotive_CEC_Radio-']
             generate_random_cecs = values['-Random_CEC_Radio-']
             try:
+                min_number_tasks_in_chain = int(values['-Number_Tasks_Min_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid min number of tasks '{values['-Number_Tasks_Min_Input-']}'!"])
+                continue
+            try:
+                max_number_tasks_in_chain = int(values['-Number_Tasks_Max_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid max number of tasks '{values['-Number_Tasks_Max_Input-']}'!"])
+                continue
+            try:
                 min_number_of_chains = int(values['-Number_Chains_Min_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid min number of chains '{values['-Number_Chains_Min_Input-']}'!"])
@@ -372,11 +404,21 @@ def runVisualMode(window):
             if generate_cecs:
                 if generate_automotive_cecs:
                     for taskset in tasksets:
-                        cause_effect_chains += automotiveBench.gen_ce_chains(taskset, min_number_of_chains, max_number_of_chains)
+                        cause_effect_chains += automotiveBench.gen_ce_chains(
+                            taskset, 
+                            min_number_of_chains, 
+                            max_number_of_chains
+                        )
 
                 if generate_random_cecs:
-                    # TODO
-                    ...
+                    for taskset in tasksets:
+                        cause_effect_chains += uniformBench.gen_cause_effect_chains(
+                            taskset, 
+                            min_number_tasks_in_chain, 
+                            max_number_tasks_in_chain, 
+                            min_number_of_chains, 
+                            max_number_of_chains
+                        )
 
                 if store_generated_cecs:
                     helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)

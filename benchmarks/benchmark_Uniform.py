@@ -11,6 +11,7 @@ import numpy as np
 import random
 from tasks.task import Task
 from tasks.taskset import TaskSet
+from cechains.chain import CEChain
 
 
 def gen_taskset(
@@ -62,6 +63,34 @@ def gen_taskset(
         tasks.append(task)
 
     return TaskSet(*tasks)
+
+
+def gen_cause_effect_chains(
+        task_set, 
+        number_tasks_min, 
+        number_tasks_max, 
+        number_chains_min, 
+        number_chains_max):
+    cause_effect_chains = []
+
+    if number_chains_min == number_chains_max:
+        number_chains = number_chains_min
+    else:
+        number_chains = np.random.randint(number_chains_min, number_chains_max)
+
+    for _ in range(number_chains):
+        tasks_in_chain = []
+
+        if number_tasks_min == number_tasks_max:
+            number_tasks = number_tasks_min
+        else:
+            number_tasks = np.random.randint(number_tasks_min, number_tasks_max)
+
+        tasks_in_chain = random.sample(task_set.lst, number_tasks)
+        random.shuffle(tasks_in_chain)
+        cause_effect_chains.append(CEChain(*tasks_in_chain, base_ts=task_set))
+
+    return cause_effect_chains
 
 
 # help functions
