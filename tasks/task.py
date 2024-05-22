@@ -11,9 +11,9 @@ class Task:
     """A task."""
     features = {  # list of possible features and their values
         'release_pattern': ['sporadic', 'periodic'],
-        'deadline': ['arbitrary', 'constrained', 'implicit'],
-        'execution': ['wcet', 'bcet', 'wc', 'bc', 'bcwc'],
-        'communication': ['implicit', 'explicit', 'LET'],
+        'deadline_type': ['arbitrary', 'constrained', 'implicit'],
+        'execution_behaviour': ['wcet', 'bcet', 'wc', 'bc', 'bcwc'],
+        'communication_policy': ['implicit', 'explicit', 'LET'],
         'inter_ecu_communication': [True, False],
     }
 
@@ -36,13 +36,13 @@ class Task:
         if release_pattern not in self.features['release_pattern']:
             raise ValueError(f'{release_pattern} is not a possible argument.')
         
-        if deadline_type not in self.features['deadline']:
+        if deadline_type not in self.features['deadline_type']:
             raise ValueError(f'{deadline_type} is not a possible argument.')
         
-        if execution_behaviour not in self.features['execution']:
+        if execution_behaviour not in self.features['execution_behaviour']:
             raise ValueError(f'{execution_behaviour} is not a possible argument.')
         
-        if communication_policy not in self.features['communication']:
+        if communication_policy not in self.features['communication_policy']:
             raise ValueError(f'{communication_policy} is not a possible argument.')
         
         if inter_ecu_communication not in self.features['inter_ecu_communication']:

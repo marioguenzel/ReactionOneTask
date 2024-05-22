@@ -3,6 +3,7 @@ Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e
 """
 
 import math
+from tasks.task import Task
 
 
 class TaskSet:
@@ -68,11 +69,11 @@ class TaskSet:
             return 'mixed'
 
     def check_feature(self, feature):
-        assert feature in ['comm', 'ex', 'rel', 'dl']
+        assert feature in Task.features.keys()
         # First value
-        val = getattr(self[0], feature).type
+        val = getattr(self[0], feature)
 
-        if all(val == getattr(task, feature).type for task in self):
+        if all(val == getattr(task, feature) for task in self):
             return val
         else:
             return 'mixed'

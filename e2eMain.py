@@ -9,7 +9,7 @@ from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
 from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
 from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter
-from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mixed
+from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mix_pessimistic, guenzel_23_mix, guenzel_23_mix_improved
 from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
 import helpers
@@ -40,21 +40,23 @@ class AnalysisMethod:
 
 analysesDict = {
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
-    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),                                                         # TODO
+    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),                                                                                         # TODO
     'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
-    'becker17' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit', 'let']),                                                  # TODO
+    'becker17' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit', 'let']),                                                                                  # TODO
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
     'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
-    'martinez20_impl' : AnalysisMethod(martinez20_impl, 'Martinez 2020 (Impl)', 'M20(Impl)', features=['periodic', 'implicit']),                            # TODO
-    'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                               # TODO
-    'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                     # TODO
-    'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),                                                                     # TODO
+    'martinez20_impl' : AnalysisMethod(martinez20_impl, 'Martinez 2020 (Impl)', 'M20(Impl)', features=['periodic', 'implicit']),                                                            # TODO
+    'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                                                               # TODO
+    'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                                                     # TODO
+    'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),                                                                                                     # TODO
     'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'let']),
     'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'let']),
     'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'let']),
-    'guenzel23_inter' : AnalysisMethod(guenzel_23_inter, 'Günzel 2023 (inter)', 'G23(I)', features=['periodic', 'implicit', 'let', 'inter']),               # TODO
-    'guenzel23_mixed' : AnalysisMethod(guenzel_23_mixed, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed'])  # TODO
+    'guenzel23_inter' : AnalysisMethod(guenzel_23_inter, 'Günzel 2023 (inter)', 'G23(I)', features=['periodic', 'implicit', 'let', 'inter']),                                               # TODO
+    'guenzel23_mixed_pess' : AnalysisMethod(guenzel_23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
+    'guenzel23_mixed' : AnalysisMethod(guenzel_23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
+    'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed, improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed'])
 }
 
 
@@ -97,22 +99,30 @@ def inititalizeUI():
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
         [sg.TabGroup([[
-            sg.Tab('Implicit Communication',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features], 
+            sg.Tab('Implicit Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features and 'mixed' not in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ), 
-            sg.Tab('LET Communication',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'let' in method.features], 
+            sg.Tab('LET Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'let' in method.features and 'mixed' not in method.features], 
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            ),
+            sg.Tab('Mixed Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'mixed' in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             )
         ]], expand_x=True),
         sg.TabGroup([[
-            sg.Tab('Implicit Communication',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features],  
+            sg.Tab('Implicit Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features and 'mixed' not in method.features],  
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ),  
-            sg.Tab('LET Communication',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'let' in method.features], 
+            sg.Tab('LET Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'let' in method.features and 'mixed' not in method.features], 
+                expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
+            ),
+            sg.Tab('Mixed Com',[[sg.Column(
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'mixed' in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             )
         ]], expand_x=True)
@@ -277,6 +287,8 @@ def runVisualMode(window):
             ### Gather all inputs from GUI ###
             ##################################
 
+            print(values)
+
             # General
             generate_cecs = values['-Generate_CEC_Radio-']
             store_generated_cecs = values['-Store_CECs_Box-']
@@ -375,7 +387,6 @@ def runVisualMode(window):
             create_absolute_plots = values['-CBP2-']
             save_raw_analyses_results = values['-CBP3-']
 
-            print(values)
             print(selected_analysis_methods)
             print(selected_normalization_methods)
 
@@ -484,7 +495,8 @@ def runVisualMode(window):
                         if method.latencies != []:
                             plot.plot(method.normalize(baseline), 
                                       output_dir + method.name_short + "_normalized_to_" + baseline.name_short + ".pdf", 
-                                      title=method.name_short + " (normalized to " + baseline.name_short + ")"
+                                      title=method.name_short + " (normalized to " + baseline.name_short + ")",
+                                      ylimits=(0, 1.0)
                             )
 
                     # only do comparison if there is something to compare
@@ -492,7 +504,8 @@ def runVisualMode(window):
                         plot.plot([method.normalize(baseline) for method in selected_analysis_methods], 
                                   output_dir + "normalized_to_" + baseline.name_short + ".pdf", 
                                   xticks=[method.name_short for method in selected_analysis_methods], 
-                                  title="Relative Comparison (normalized to " + baseline.name_short + ")")
+                                  title="Relative Comparison (normalized to " + baseline.name_short + ")",
+                                  ylimits=(0, 1.0))
 
             # absolute plots
             if create_absolute_plots:
