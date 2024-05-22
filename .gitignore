@@ -162,3 +162,5 @@ cython_debug/
 
 # Ignore output folder of the e2e evaluation framework
 output/
+
+debug.py

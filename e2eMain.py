@@ -15,6 +15,7 @@ from e2eAnalyses.Kordon2020 import kordon20
 import helpers
 import plotting.plot as plot
 import sys
+import random as random
 from multiprocessing import Pool
 
 
@@ -82,14 +83,16 @@ def inititalizeUI():
             [sg.Checkbox('Semi-harmonic periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True, enable_events=True)],
             [sg.Text('Min number Tasks:', pad=((35,0),(0,0))), sg.Input(s=5, k='-MINT_Input-', disabled=True, default_text='40'), sg.Text('Max number Tasks:'), sg.Input(s=5, k='-MAXT_Input-', disabled=True, default_text='60')],
             [sg.Text('Min Period:', pad=((35,0),(0,0))), sg.Input(s=10, k='-PMIN_Input-', disabled=True, default_text='1'), sg.Text('Max Period:'), sg.Input(s=10, k='-PMAX_Input-', disabled=True, default_text='2000')],
-        [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(5,1))],
+        [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(3,1))],
         [sg.Text('Number of Tasksets:'), sg.Input(s=10, k='-Number_Tasksets_Input-', default_text='1')],
+        [sg.Text('Ratio of sporadic Tasks in Taskset:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-Sporadic_Ratio_Spin-', s=(3,1))],
+        [sg.Text('Ratio of Tasks using LET communication:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-LET_Ratio_Spin-', s=(3,1))],
     ], expand_x=True)]
 
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
         [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-Automotive_CEC_Radio-', enable_events=True)],
         [sg.Radio('Random CECs', "RadioChain", default=False, k='-Random_CEC_Radio-', enable_events=True), sg.Text('Min Tasks:'), sg.Input(s=5, k='-Number_Tasks_Min_Input-', default_text='2', disabled=True), sg.Text('Max Tasks:'), sg.Input(s=5, k='-Number_Tasks_Max_Input-', default_text='10', disabled=True)],
-        [sg.Text('Min Chains:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')]
+        [sg.Text('Min Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')]
     ], expand_x=True)]
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
@@ -148,6 +151,8 @@ def updateUI(window, event, values):
         window['-Uniform_Taskset_Radio-'].update(disabled=False)
         window['-Utilization_Spin-'].update(disabled=False)
         window['-Number_Tasksets_Input-'].update(disabled=False)
+        if values['-Automotive_Taskset_Radio-']:
+            window['-Automotive_CEC_Radio-'].update(disabled=False)
         if values['-Uniform_Taskset_Radio-']:
             window['-Semi_harmonic_Box-'].update(disabled=False)
             window['-MINT_Input-'].update(disabled=False)
@@ -162,6 +167,8 @@ def updateUI(window, event, values):
             window['-Number_Tasks_Max_Input-'].update(disabled=False)
         window['-Number_Chains_Min_Input-'].update(disabled=False)
         window['-Number_Chains_Max_Input-'].update(disabled=False)
+        window['-Sporadic_Ratio_Spin-'].update(disabled=False)
+        window['-LET_Ratio_Spin-'].update(disabled=False)
 
     if event == '-Load_CEC_Radio-':
         window['-Store_CECs_Box-'].update(disabled=True)
@@ -182,6 +189,8 @@ def updateUI(window, event, values):
         window['-Number_Tasks_Max_Input-'].update(disabled=True)
         window['-Number_Chains_Min_Input-'].update(disabled=True)
         window['-Number_Chains_Max_Input-'].update(disabled=True)
+        window['-Sporadic_Ratio_Spin-'].update(disabled=True)
+        window['-LET_Ratio_Spin-'].update(disabled=True)
 
     if event == '-Automotive_Taskset_Radio-':
         window['-Semi_harmonic_Box-'].update(disabled=True)
@@ -189,6 +198,7 @@ def updateUI(window, event, values):
         window['-MAXT_Input-'].update(disabled=True)
         window['-PMIN_Input-'].update(disabled=True)
         window['-PMAX_Input-'].update(disabled=True)
+        window['-Automotive_CEC_Radio-'].update(disabled=False)
 
     if event == '-Uniform_Taskset_Radio-':
         window['-Semi_harmonic_Box-'].update(disabled=False)
@@ -196,6 +206,8 @@ def updateUI(window, event, values):
         window['-MAXT_Input-'].update(disabled=False)
         window['-PMIN_Input-'].update(disabled=False)
         window['-PMAX_Input-'].update(disabled=False)
+        if not values['-Semi_harmonic_Box-']:
+            window['-Automotive_CEC_Radio-'].update(disabled=True)
 
     if event == '-Automotive_CEC_Radio-':
         window['-Number_Tasks_Min_Input-'].update(disabled=True)
@@ -265,6 +277,7 @@ def runVisualMode(window):
             ### Gather all inputs from GUI ###
             ##################################
 
+            # General
             generate_cecs = values['-Generate_CEC_Radio-']
             store_generated_cecs = values['-Store_CECs_Box-']
             load_cecs_from_file = values['-Load_CEC_Radio-']
@@ -274,6 +287,8 @@ def runVisualMode(window):
                 popUp('ValueError', [f"Invalid number of threads '{values['-Threads_Input-']}'!"])
                 continue
             cecs_file_path = values['-File_Input-']
+
+            # Taskset
             use_automotive_taskset = values['-Automotive_Taskset_Radio-']
             use_uniform_taskset_generation = values['-Uniform_Taskset_Radio-']
             try:
@@ -309,6 +324,18 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max period '{values['-PMAX_Input-']}'!"])
                 continue
+            try:
+                sporadic_ratio = int(values['-Sporadic_Ratio_Spin-'])/100
+            except ValueError:
+                popUp('ValueError', [f"Invalid sporadic tasks ratio '{values['-Sporadic_Ratio_Spin-']}'!"])
+                continue
+            try:
+                let_ratio = int(values['-LET_Ratio_Spin-'])/100
+            except ValueError:
+                popUp('ValueError', [f"Invalid ratio for LET communication '{values['-LET_Ratio_Spin-']}'!"])
+                continue
+
+            # Cause-effect chains
             generate_automotive_cecs = values['-Automotive_CEC_Radio-']
             generate_random_cecs = values['-Random_CEC_Radio-']
             try:
@@ -331,10 +358,8 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max number of chains '{values['-Number_Chains_Max_Input-']}'!"])
                 continue
-            create_normalized_plots = values['-CBP1-']
-            create_absolute_plots = values['-CBP2-']
-            save_raw_analyses_results = values['-CBP3-']
             
+            # Analysis
             selected_analysis_methods = []
             for method in analysesDict.keys():
                 if values[method] == True:
@@ -344,6 +369,11 @@ def runVisualMode(window):
             for method in analysesDict.keys():
                 if values['n_' + method] == True:
                     selected_normalization_methods.append(analysesDict[method])
+            
+            # Plots
+            create_normalized_plots = values['-CBP1-']
+            create_absolute_plots = values['-CBP2-']
+            save_raw_analyses_results = values['-CBP3-']
 
             print(values)
             print(selected_analysis_methods)
@@ -383,6 +413,10 @@ def runVisualMode(window):
                         )] * number_of_tasksets)
 
                 for taskset in tasksets:
+                    for task in random.sample(taskset.lst, int(len(taskset.lst) * sporadic_ratio)):
+                        task.release_pattern = 'sporadic'
+                    for task in random.sample(taskset.lst, int(len(taskset.lst) * let_ratio)):
+                        task.communication_policy = 'LET'
                     taskset.rate_monotonic_scheduling()
                     taskset.compute_wcrts()
 
