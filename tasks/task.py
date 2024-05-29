@@ -14,7 +14,6 @@ class Task:
         'deadline_type': ['arbitrary', 'constrained', 'implicit'],
         'execution_behaviour': ['wcet', 'bcet', 'wc', 'bc', 'bcwc'],
         'communication_policy': ['implicit', 'explicit', 'LET'],
-        'inter_ecu_communication': [True, False],
     }
 
     def __init__(self,
@@ -22,7 +21,6 @@ class Task:
                  deadline_type,
                  execution_behaviour,
                  communication_policy,
-                 inter_ecu_communication,
                  phase,
                  min_iat,
                  max_iat,
@@ -44,15 +42,11 @@ class Task:
         
         if communication_policy not in self.features['communication_policy']:
             raise ValueError(f'{communication_policy} is not a possible argument.')
-        
-        if inter_ecu_communication not in self.features['inter_ecu_communication']:
-            raise ValueError(f'{inter_ecu_communication} is not a possible argument.')
 
         self.release_pattern = release_pattern
         self.deadline_type = deadline_type
         self.execution_behaviour = execution_behaviour
         self.communication_policy = communication_policy
-        self.inter_ecu_communication = inter_ecu_communication
         self.phase = phase
         self.min_iat = min_iat
         self.max_iat = max_iat

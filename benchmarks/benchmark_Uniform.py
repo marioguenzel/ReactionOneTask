@@ -50,7 +50,6 @@ def gen_taskset(
             deadline_type='implicit', 
             execution_behaviour='wcet', 
             communication_policy='implicit', 
-            inter_ecu_communication=False, 
             phase=0, 
             min_iat=periods[i], 
             max_iat=periods[i], 

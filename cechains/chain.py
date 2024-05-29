@@ -14,6 +14,9 @@ class CEChain(TaskSet):
 
     def length(self):
         return len(self._lst)
+    
+    def contains(self, task):
+        return self._lst.count(task) > 0
 
 
 if __name__ == '__main__':

@@ -8,6 +8,8 @@ End-to-end timing analysis of sporadic cause-effect chains in distributed system
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L368
 """
 
+import itertools
+
 def duerr19(chain):
     wcrts = chain.base_ts.wcrts
     latency = 0
@@ -19,15 +21,18 @@ def duerr19(chain):
     return latency
 
 
-def duerr_19_mrt(chain):
+def duerr_19_mrt(*local_chains):
     """Maximum reaction time analysis from Duerr (Theorem 5.4)"""
-    wcrts = chain.base_ts.wcrts
+    inter_chain = list(local_chains)
+    wcrts = get_all_wcrts(inter_chain)
+    tasks = list(itertools.chain(*[local_chain.lst for local_chain in inter_chain]))
     
     # Compute latency.
-    latency = chain[0].max_iat + wcrts[chain[-1]]
-    for task, next_task in zip(chain[:-1], chain[1:]):
-        if (chain.base_ts.higher_prio(next_task, task)
-                or next_task.inter_ecu_communication or task.inter_ecu_communication):
+    latency = tasks[0].max_iat + wcrts[tasks[-1]]
+    for task, next_task in zip(tasks[:-1], tasks[1:]):
+        ecu1 = get_ecu(inter_chain, task)
+        ecu2 = get_ecu(inter_chain, next_task)
+        if ecu1 != ecu2 or inter_chain[ecu1].base_ts.higher_prio(next_task, task):
             part2 = wcrts[task]
         else:
             part2 = 0
@@ -36,18 +41,37 @@ def duerr_19_mrt(chain):
     return latency
 
 
-def duerr_19_mrda(chain):
+def duerr_19_mrda(*local_chains):
     """Maximum data age analysis from Duerr (Theorem 5.10)"""
-    wcrts = chain.base_ts.wcrts
+    inter_chain = list(local_chains)
+    wcrts = get_all_wcrts(inter_chain)
+    tasks = list(itertools.chain(*[local_chain.lst for local_chain in inter_chain]))
 
     # Compute latency.
-    latency = wcrts[chain[-1]]
-    for task, next_task in zip(chain[:-1], chain[1:]):
-        if (chain.base_ts.higher_prio(next_task, task)
-                or next_task.inter_ecu_communication or task.inter_ecu_communication):
+    latency = wcrts[tasks[-1]]
+    for task, next_task in zip(tasks[:-1], tasks[1:]):
+        ecu1 = get_ecu(inter_chain, task)
+        ecu2 = get_ecu(inter_chain, next_task)
+        if ecu1 != ecu2 or inter_chain[ecu1].base_ts.higher_prio(next_task, task):
             part2 = wcrts[task]
         else:
             part2 = 0
         latency += task.max_iat + part2
 
     return latency
+
+
+# helper functions
+
+def get_all_wcrts(inter_chain):
+    wcrts = dict()
+    for local_chain in inter_chain:
+        wcrts = wcrts | local_chain.base_ts.wcrts
+    return wcrts
+
+
+def get_ecu(inter_chain, task):
+    for i in range(len(inter_chain)):
+        if inter_chain[i].contains(task):
+            return i
+    return -1

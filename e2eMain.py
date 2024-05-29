@@ -8,7 +8,7 @@ from e2eAnalyses.Kloda2018 import kloda18
 from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
 from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
 from e2eAnalyses.Hamann2017 import hamann17
-from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter
+from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter_mrt, guenzel_23_inter_mrda
 from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mix_pessimistic, guenzel_23_mix, guenzel_23_mix_improved
 from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
@@ -17,6 +17,8 @@ import plotting.plot as plot
 import sys
 import random as random
 from multiprocessing import Pool
+from cechains.chain import CEChain
+import itertools
 
 
 class AnalysisMethod:
@@ -42,7 +44,8 @@ analysesDict = {
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
     'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),                                                                                         # TODO
     'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
-    'becker17' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit', 'let']),                                                                                  # TODO
+    'becker17_impl' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit']),                                                                                  # TODO
+    'becker17_let' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'let']),                                                                                  # TODO
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
     'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
@@ -50,10 +53,11 @@ analysesDict = {
     'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                                                               # TODO
     'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                                                     # TODO
     'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),                                                                                                     # TODO
-    'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'let']),
-    'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'let']),
-    'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'let']),
-    'guenzel23_inter' : AnalysisMethod(guenzel_23_inter, 'Günzel 2023 (inter)', 'G23(I)', features=['periodic', 'implicit', 'let', 'inter']),                                               # TODO
+    'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit']),
+    'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit']),
+    'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit']),
+    'guenzel_23_inter_mrt' : AnalysisMethod(guenzel_23_inter_mrt, 'Günzel 2023 (inter MRT)', 'G23(I-MRT)', features=['periodic', 'implicit', 'inter']),                              # TODO
+    'guenzel_23_inter_mrda' : AnalysisMethod(guenzel_23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter']),                          # TODO
     'guenzel23_mixed_pess' : AnalysisMethod(guenzel_23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed' : AnalysisMethod(guenzel_23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed, improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed'])
@@ -94,13 +98,18 @@ def inititalizeUI():
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
         [sg.Radio('Automotive Benchmark', "RadioChain", default=True, k='-Automotive_CEC_Radio-', enable_events=True)],
         [sg.Radio('Random CECs', "RadioChain", default=False, k='-Random_CEC_Radio-', enable_events=True), sg.Text('Min Tasks:'), sg.Input(s=5, k='-Number_Tasks_Min_Input-', default_text='2', disabled=True), sg.Text('Max Tasks:'), sg.Input(s=5, k='-Number_Tasks_Max_Input-', default_text='10', disabled=True)],
-        [sg.Text('Min Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')]
+        [sg.Text('Min Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Min_Input-', default_text='30'), sg.Text('Max Chains per Taskset:'), sg.Input(s=5, k='-Number_Chains_Max_Input-', default_text='60')],
+        [sg.Checkbox('Interconnected CECs', default=False, k='-Inter_CECs_Box-', enable_events=True), sg.Text('Min ECUs:'), sg.Input(s=3, k='-Min_ECUs_Input-', default_text='2', disabled=True), sg.Text('Max ECUs:'), sg.Input(s=3, k='-Max_ECUs_Input-', default_text='5', disabled=True), sg.Text('Number of inter Chains:'), sg.Input(s=7, k='-Number_Interconnected_Chains_Input-', default_text='1000', disabled=True)]
     ], expand_x=True)]
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
         [sg.TabGroup([[
             sg.Tab('Implicit Com',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features and 'mixed' not in method.features], 
+                [[sg.Checkbox(method.name, default=False, k=method_key)] 
+                    for method_key, method 
+                    in analysesDict.items() 
+                    if 'implicit' in method.features 
+                    and 'mixed' not in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ), 
             sg.Tab('LET Com',[[sg.Column(
@@ -179,6 +188,15 @@ def updateUI(window, event, values):
         window['-Number_Chains_Max_Input-'].update(disabled=False)
         window['-Sporadic_Ratio_Spin-'].update(disabled=False)
         window['-LET_Ratio_Spin-'].update(disabled=False)
+        window['-Inter_CECs_Box-'].update(disabled=False)
+        if values['-Inter_CECs_Box-']:
+            window['-Min_ECUs_Input-'].update(disabled=False)
+            window['-Max_ECUs_Input-'].update(disabled=False)
+            window['-Number_Interconnected_Chains_Input-'].update(disabled=False)
+            for method_key, method in analysesDict.items():
+                if not 'inter' in method.features:
+                    window[method_key].update(False, disabled=True)
+                    window['n_'+method_key].update(False, disabled=True)
 
     if event == '-Load_CEC_Radio-':
         window['-Store_CECs_Box-'].update(disabled=True)
@@ -201,6 +219,14 @@ def updateUI(window, event, values):
         window['-Number_Chains_Max_Input-'].update(disabled=True)
         window['-Sporadic_Ratio_Spin-'].update(disabled=True)
         window['-LET_Ratio_Spin-'].update(disabled=True)
+        window['-Inter_CECs_Box-'].update(disabled=True)
+        window['-Min_ECUs_Input-'].update(disabled=True)
+        window['-Max_ECUs_Input-'].update(disabled=True)
+        window['-Number_Interconnected_Chains_Input-'].update(disabled=True)
+        for method_key, method in analysesDict.items():
+            if not 'inter' in method.features:
+                window[method_key].update(disabled=False)
+                window['n_'+method_key].update(disabled=False)
 
     if event == '-Automotive_Taskset_Radio-':
         window['-Semi_harmonic_Box-'].update(disabled=True)
@@ -234,6 +260,24 @@ def updateUI(window, event, values):
             window['-Automotive_CEC_Radio-'].update(disabled=True)
             window['-Random_CEC_Radio-'].update(value=True)
 
+    if event == '-Inter_CECs_Box-':
+        if values['-Inter_CECs_Box-']:
+            window['-Min_ECUs_Input-'].update(disabled=False)
+            window['-Max_ECUs_Input-'].update(disabled=False)
+            window['-Number_Interconnected_Chains_Input-'].update(disabled=False)
+            for method_key, method in analysesDict.items():
+                if not 'inter' in method.features:
+                    window[method_key].update(False, disabled=True)
+                    window['n_'+method_key].update(False, disabled=True)
+        else:
+            window['-Min_ECUs_Input-'].update(disabled=True)
+            window['-Max_ECUs_Input-'].update(disabled=True)
+            window['-Number_Interconnected_Chains_Input-'].update(disabled=True)
+            for method_key, method in analysesDict.items():
+                if not 'inter' in method.features:
+                    window[method_key].update(disabled=False)
+                    window['n_'+method_key].update(disabled=False)
+
 
 
 
@@ -260,8 +304,12 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
             latencies_all.append(method.latencies)
             continue
 
-        with Pool(number_of_threads) as pool:
-            latencies_single = pool.map(method.analysis, cause_effect_chains)
+        if isinstance(cause_effect_chains[0], tuple):
+            with Pool(number_of_threads) as pool:
+                latencies_single = pool.starmap(method.analysis, cause_effect_chains)
+        else:
+            with Pool(number_of_threads) as pool:
+                latencies_single = pool.map(method.analysis, cause_effect_chains)
         
         latencies_all.append(latencies_single)
         method.latencies = latencies_single
@@ -270,6 +318,23 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
         ... #TODO
 
     return latencies_all
+
+
+def create_interconnected_cecs(cause_effect_chains, min_ecus, max_ecus, number_of_chains):
+    interconncected_chains = []
+    print(cause_effect_chains)
+
+    while len(interconncected_chains) < number_of_chains:
+        n = random.randint(min_ecus, max_ecus)
+        candidates = random.sample(cause_effect_chains, n)
+        
+        # only add candidate if cecs have different base ts
+        tasksets = set([cec.base_ts for cec in candidates])
+        if len(tasksets) == n:
+            random.shuffle(candidates)
+            interconncected_chains.append(tuple(candidates))
+
+    return interconncected_chains
 
 
 def runVisualMode(window):
@@ -370,6 +435,22 @@ def runVisualMode(window):
             except ValueError:
                 popUp('ValueError', [f"Invalid max number of chains '{values['-Number_Chains_Max_Input-']}'!"])
                 continue
+            generate_interconnected_cecs = values['-Inter_CECs_Box-']
+            try:
+                min_number_ecus = int(values['-Min_ECUs_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid min number of ECUs '{values['-Min_ECUs_Input-']}'!"])
+                continue
+            try:
+                max_number_ecus = int(values['-Max_ECUs_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid max number of ECUs '{values['-Max_ECUs_Input-']}'!"])
+                continue
+            try:
+                number_of_inter_cecs = int(values['-Number_Interconnected_Chains_Input-'])
+            except ValueError:
+                popUp('ValueError', [f"Invalid number of interconnected CECs '{values['-Number_Interconnected_Chains_Input-']}'!"])
+                continue
             
             # Analysis
             selected_analysis_methods = []
@@ -464,6 +545,9 @@ def runVisualMode(window):
                             min_number_of_chains, 
                             max_number_of_chains
                         )
+
+                if generate_interconnected_cecs:
+                    cause_effect_chains = create_interconnected_cecs(cause_effect_chains, min_number_ecus, max_number_ecus, number_of_inter_cecs)
 
                 if store_generated_cecs:
                     helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
