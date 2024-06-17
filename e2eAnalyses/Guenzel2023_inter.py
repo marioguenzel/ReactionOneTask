@@ -10,6 +10,7 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 
 import math
 from tasks.task import Task
+from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 import utilities.event_simulator as es
 import utilities.analyzer_our as a_our
@@ -76,36 +77,12 @@ def schedule_task_set(ce_chains, task_set, print_status=False):
 
 def change_taskset_bcet(task_set, rat):
     """Copy task set and change the wcet/bcet of each task by a given ratio."""
-    new_task_set = [task.copy() for task in task_set]
+    new_task_set = TaskSet(*[task.copy() for task in task_set])
     for task in new_task_set:
         task.wcet = math.ceil(rat * task.wcet)
         task.bcet = math.ceil(rat * task.bcet)
     # Note: ceiling function makes sure there is never execution of 0
     return new_task_set
-
-
-def cutting_thm_implicit(inter_ch, attr_1, attr_2, bcet):
-    """Cutting Theorem for implicit communication policy."""
-    res = 0
-    for entry in inter_ch[:-1]:
-        if isinstance(entry, CEChain):
-            res += getattr(entry, attr_1)[bcet]
-        elif isinstance(entry, Task):
-            res += getattr(entry, "period")
-            res += getattr(entry, "rt")
-
-    res += getattr(inter_ch[-1], attr_2)[bcet]
-    return res
-
-
-def cutting_thm_mrda(inter_ch, bcet):
-    """Our inter-ECU analysis when applying the Cutting theorem. (implicit communication)"""
-    return cutting_thm_implicit(inter_ch, "our_mda", "our_mrda", bcet)
-
-
-def cutting_thm_mrt(inter_ch, bcet):
-    """Our inter-ECU analysis when applying the Cutting theorem. (implicit communication)"""
-    return cutting_thm_implicit(inter_ch, "our_mrt", "our_mrt", bcet)
 
 
 def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):

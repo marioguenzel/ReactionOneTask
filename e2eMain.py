@@ -10,8 +10,10 @@ from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
 from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter_mrt, guenzel_23_inter_mrda
 from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mix_pessimistic, guenzel_23_mix, guenzel_23_mix_improved
+from e2eAnalyses.Guenzel2023_equi import guenzel_23_equi_mda, guenzel_23_equi_mrt
 from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
+from e2eAnalyses.newAnalysis import newAna
 import helpers
 import plotting.plot as plot
 import sys
@@ -60,7 +62,10 @@ analysesDict = {
     'guenzel_23_inter_mrda' : AnalysisMethod(guenzel_23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter']),                          # TODO
     'guenzel23_mixed_pess' : AnalysisMethod(guenzel_23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed' : AnalysisMethod(guenzel_23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed, improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed'])
+    'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed, improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
+    'guenzel_23_equi_mda': AnalysisMethod(guenzel_23_equi_mda, 'Günzel 2023 (equi, MDA)', 'G23(EQUI-MDA)', features=['periodic', 'sporadic', 'let']),
+    'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
+    'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
 }
 
 
@@ -567,10 +572,6 @@ def runVisualMode(window):
             ########################
             ### Plot the results ###
             ########################
-
-            for method in selected_analysis_methods:
-                print(method.name)
-                print(method.latencies)
 
             # normalized plots
             if create_normalized_plots:

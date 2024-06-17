@@ -69,6 +69,23 @@ class Task:
     def utilization(self):
         """Task utilization."""
         return (self.wcet / self.min_iat)
+    
+
+    def copy(self):
+        return Task(
+            self.release_pattern,
+            self.deadline_type,
+            self.execution_behaviour,
+            self.communication_policy,
+            self.phase,
+            self.min_iat,
+            self.max_iat,
+            self.period,
+            self.bcet,
+            self.wcet,
+            self.deadline,
+            self.priority
+        )
 
 
 if __name__ == '__main__':
