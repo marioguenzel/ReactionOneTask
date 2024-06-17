@@ -201,7 +201,7 @@ def schedule_task_set(ce_chains, task_set, print_status=False):
         hyper_period = task_set.hyperperiod()
 
         sched_interval = (
-            8 * hyper_period
+            2 * hyper_period
             + max_phase  # interval from paper
             + latency_upper_bound  # upper bound job chain length
             + max_period
@@ -294,7 +294,7 @@ def our_mrt_mRda_lst(chain, bcet_lst, wcet=1.0):
     Fi = find_fi(chain, schedules[wcet], schedules[wcet])
 
     # find analysis interval
-    analysis_end = 10 * chain.hyperperiod() + chain.max_phase()
+    analysis_end = 6 * chain.base_ts.hyperperiod() + chain.base_ts.max_phase()
 
     # choose point for partitioning
     # just choose the task with highest period
