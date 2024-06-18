@@ -79,9 +79,8 @@ def change_taskset_bcet(task_set, rat):
     """Copy task set and change the wcet/bcet of each task by a given ratio."""
     new_task_set = TaskSet(*[task.copy() for task in task_set])
     for task in new_task_set:
-        task.wcet = math.ceil(rat * task.wcet)
-        task.bcet = math.ceil(rat * task.bcet)
-    # Note: ceiling function makes sure there is never execution of 0
+        task.wcet = rat * task.wcet
+        task.bcet = rat * task.bcet
     return new_task_set
 
 
