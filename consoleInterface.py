@@ -1,82 +1,6 @@
 from framework import *
 
 
-def generate_cecs():
-    ######################
-    ### Create Taskset ###
-    ######################
-
-    output_dir = helpers.make_output_directory()
-
-    # first create a taskset
-
-    # # selected automotive benchmark
-    # if use_automotive_taskset:                        
-    #     tasksets = generate_automotive_tasksets(
-    #         target_utilization, 
-    #         number_of_tasksets, 
-    #         number_of_threads
-    #     )
-
-    # # selected uniform benchmark
-    # if use_uniform_taskset_generation:
-    #     tasksets = generate_uniform_tasksets(
-    #         target_utilization, 
-    #         min_number_of_tasks, 
-    #         max_number_of_tasks, 
-    #         min_period, 
-    #         max_period, 
-    #         use_semi_harmonic_periods,
-    #         number_of_tasksets,
-    #         number_of_threads
-    #     )
-
-    # for taskset in tasksets:
-    #     adjust_taskset_release_pattern(taskset, sporadic_ratio)
-    #     adjust_taskset_communication_policy(taskset, let_ratio)
-    #     taskset.rate_monotonic_scheduling()
-    #     taskset.compute_wcrts()
-
-    # # remove tasksets with tasks that miss their deadline
-    # tasksets = remove_invalid_tasksets(tasksets)
-
-
-    #########################################
-    ### Generate/Load Cause Effect Chains ###
-    #########################################
-
-    cause_effect_chains = []
-
-    # if generate_automotive_cecs:
-    #     cause_effect_chains = generate_automotive_cecs(
-    #         tasksets, 
-    #         min_number_of_chains, 
-    #         max_number_of_chains
-    #     )
-
-    # if generate_random_cecs:
-    #     cause_effect_chains = generate_random_cecs(
-    #         tasksets, 
-    #         min_number_tasks_in_chain, 
-    #         max_number_tasks_in_chain, 
-    #         min_number_of_chains, 
-    #         max_number_of_chains
-    #     )
-
-    # if generate_interconnected_cecs:
-    #     cause_effect_chains = create_interconnected_cecs(
-    #         cause_effect_chains, 
-    #         min_number_ecus, 
-    #         max_number_ecus, 
-    #         number_of_inter_cecs
-    #     )
-
-    # if store_generated_cecs:
-    #     helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
-
-    return cause_effect_chains
-
-
 def analyze_cecs(cecs_file_path,
                  selected_analysis_methods,
                  selected_normalization_methods,
@@ -145,9 +69,33 @@ def runCLIMode(args):
     ##################
 
     if args[0] == 'generate-cecs':
-        ...
+
+        number_of_threads = 1
+        output_dir = ''
+
+        # parameters for taskset generation
+        taskset_generation_params = dict(default_taskset_generation_params)
+
+        # parameters for cec generation
+        cec_generation_params = dict(default_cec_generation_params)
+
+
         # TODO
-        generate_cecs()
+
+        print('[Info] number_of_threads:', number_of_threads, '(default: 1)')
+
+        # check if given arguments are valid
+        # TODO
+
+        if output_dir == '':
+            output_dir = helpers.make_output_directory()
+
+        generate_cecs(
+            taskset_generation_params,
+            cec_generation_params,
+            number_of_threads,
+            output_dir
+        )
 
     if args[0] == 'analyze-cecs':
 
@@ -222,7 +170,7 @@ def runCLIMode(args):
         print('[Info] Selected file:', cecs_file_path)
         print('[Info] Number of threads:', number_of_threads)
 
-        # check if given parameters are valid
+        # check if given arguments are valid
         # TODO
 
         output_dir = analyze_cecs(
