@@ -1,4 +1,19 @@
 from framework import *
+import getopt
+
+
+def replace_value(dict, key, new_value):
+    old_value = dict[key]
+    if new_value == '':
+        dict[key] = True
+        return
+    if isinstance(old_value, int):
+        dict[key] = int(new_value)
+        return
+    if isinstance(old_value, float):
+        dict[key] = float(new_value)
+        return
+    raise ValueError('Could not parse value for', key)
 
 
 def analyze_cecs(cecs_file_path,
@@ -73,16 +88,34 @@ def runCLIMode(args):
         number_of_threads = 1
         output_dir = ''
 
-        # parameters for taskset generation
+        # get default parameters
         taskset_generation_params = dict(default_taskset_generation_params)
-
-        # parameters for cec generation
         cec_generation_params = dict(default_cec_generation_params)
 
+        taskset_generation_params['use_automotive_taskset_generation'] = False
+        taskset_generation_params['use_semi_harmonic_periods'] = False
+        cec_generation_params['generate_automotive_cecs'] = False
 
-        # TODO
+        options, arguments = getopt.getopt(
+            args[1:],
+            "t:o:",
+            [param + '=' for param in list(taskset_generation_params.keys()) if not isinstance(taskset_generation_params[param], bool)] + 
+            [param for param in list(taskset_generation_params.keys()) if isinstance(taskset_generation_params[param], bool)] +
+            [param + '=' for param in list(cec_generation_params.keys()) if not isinstance(cec_generation_params[param], bool)] + 
+            [param for param in list(cec_generation_params.keys()) if isinstance(cec_generation_params[param], bool)]
+        )
 
-        print('[Info] number_of_threads:', number_of_threads, '(default: 1)')
+        for option, value in options:
+            print(option, value)
+            option = option.replace('-', '')
+            if option in taskset_generation_params.keys():
+                replace_value(taskset_generation_params, option, value)
+            if option in cec_generation_params.keys():
+                replace_value(cec_generation_params, option, value)
+            if option == 't':
+                number_of_threads = int(value)
+            if option == 'o':
+                output_dir = value
 
         # check if given arguments are valid
         # TODO
@@ -90,10 +123,20 @@ def runCLIMode(args):
         if output_dir == '':
             output_dir = helpers.make_output_directory()
 
+        # Debug Output
+
+        print('[Info] number_of_threads:', number_of_threads)
+        print('[Info] output_dir:', output_dir)
+
+        print(taskset_generation_params)
+        print(cec_generation_params)
+
+
         generate_cecs(
             taskset_generation_params,
             cec_generation_params,
             number_of_threads,
+            True,
             output_dir
         )
 

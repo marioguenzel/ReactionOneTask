@@ -67,11 +67,11 @@ analysesDict = {
 
 # default parameters for taskset generation
 default_taskset_generation_params = {
-    'use_automotive_taskset': True,
-    'use_uniform_taskset': False,
+    'use_automotive_taskset_generation': True,
+    'use_uniform_taskset_generation': False,
 
     'target_util': 0.5,
-    'number_tasksets': 1,
+    'number_of_tasksets': 1,
     'sporadic_ratio': 0.0,
     'let_ratio': 0.0,
 
@@ -84,8 +84,8 @@ default_taskset_generation_params = {
 
 # default parameters for cec generation
 default_cec_generation_params = {
-    'automotive_cecs': True,
-    'random_cecs': False,
+    'generate_automotive_cecs': True,
+    'generate_random_cecs': False,
 
     'min_number_of_chains': 30,
     'max_number_of_chains': 60,
@@ -93,7 +93,7 @@ default_cec_generation_params = {
     'min_number_of_tasks_in_chain': 2,
     'max_number_of_tasks_in_chain': 10,
 
-    'interconnected_chains': False,
+    'generate_interconnected_cecs': False,
     'min_number_ecus': 2,
     'max_number_ecus': 5,
     'number_of_inter_cecs': 1000
@@ -156,34 +156,28 @@ def create_interconnected_cecs(cause_effect_chains, min_ecus, max_ecus, number_o
     return interconncected_chains
 
 
-def generate_automotive_tasksets(target_utilization, 
-                               number_of_tasksets, 
-                               number_of_threads):
+def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
     tasksets = []
     with Pool(number_of_threads) as pool:
-        tasksets = pool.map(automotiveBench.gen_taskset, [target_utilization] * number_of_tasksets)
+        tasksets = pool.map(
+            automotiveBench.gen_taskset, 
+            [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets']
+        )
     return tasksets
 
 
-def generate_uniform_tasksets(target_utilization, 
-                            min_number_of_tasks, 
-                            max_number_of_tasks, 
-                            min_period, 
-                            max_period, 
-                            use_semi_harmonic_periods,
-                            number_of_tasksets,
-                            number_of_threads):
+def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
     tasksets = []
     with Pool(number_of_threads) as pool:
         tasksets = pool.starmap(uniformBench.gen_taskset, [(
-            target_utilization, 
-            min_number_of_tasks, 
-            max_number_of_tasks,
-            min_period,
-            max_period,
-            use_semi_harmonic_periods,
+            taskset_generation_params['target_util'], 
+            taskset_generation_params['min_number_of_tasks'], 
+            taskset_generation_params['max_number_of_tasks'],
+            taskset_generation_params['min_period'],
+            taskset_generation_params['max_period'],
+            taskset_generation_params['use_semi_harmonic_periods'],
             False
-        )] * number_of_tasksets)
+        )] * taskset_generation_params['number_of_tasksets'])
     return tasksets
 
 
@@ -208,28 +202,30 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
         task.communication_policy = 'LET'
 
 
-def generate_automotive_cecs(tasksets, min_number_of_chains, max_number_of_chains):
+def generate_automotive_cecs(tasksets, cec_generation_params):
     cause_effect_chains = []
     for taskset in tasksets:
-        cause_effect_chains += automotiveBench.gen_ce_chains(taskset, 
-                                                             min_number_of_chains, 
-                                                             max_number_of_chains)
+        cause_effect_chains.append(
+            automotiveBench.gen_ce_chains(
+                taskset,
+                cec_generation_params['min_number_of_chains'], 
+                cec_generation_params['max_number_of_chains']
+            )
+        )
     return cause_effect_chains
 
 
-def generate_random_cecs(tasksets, 
-                       min_number_tasks_in_chain, 
-                       max_number_tasks_in_chain, 
-                       min_number_of_chains, 
-                       max_number_of_chains):
+def generate_random_cecs(tasksets, cec_generation_params):
     cause_effect_chains = []
     for taskset in tasksets:
-        cause_effect_chains += uniformBench.gen_cause_effect_chains(
-            taskset, 
-            min_number_tasks_in_chain, 
-            max_number_tasks_in_chain, 
-            min_number_of_chains, 
-            max_number_of_chains
+        cause_effect_chains.append(
+            uniformBench.gen_cause_effect_chains(
+                taskset, 
+                cec_generation_params['min_number_tasks_in_chain'], 
+                cec_generation_params['max_number_tasks_in_chain'], 
+                cec_generation_params['min_number_of_chains'], 
+                cec_generation_params['max_number_of_chains']
+            )
         )
     return cause_effect_chains
 
@@ -237,43 +233,35 @@ def generate_random_cecs(tasksets,
 def generate_cecs(taskset_generation_params,
                   cec_generation_params,
                   number_of_threads,
+                  store_generated_cecs,
                   output_dir):
     
     ######################
     ### Create Taskset ###
     ######################
 
-    # first create a taskset
+    # selected automotive benchmark
+    if taskset_generation_params['use_automotive_taskset_generation']:
+        tasksets = generate_automotive_tasksets(
+            taskset_generation_params, 
+            number_of_threads
+        )
 
-    # # selected automotive benchmark
-    # if use_automotive_taskset:                        
-    #     tasksets = generate_automotive_tasksets(
-    #         target_utilization, 
-    #         number_of_tasksets, 
-    #         number_of_threads
-    #     )
+    # selected uniform benchmark
+    if taskset_generation_params['use_uniform_taskset_generation']:
+        tasksets = generate_uniform_tasksets(
+            taskset_generation_params,
+            number_of_threads
+        )
 
-    # # selected uniform benchmark
-    # if use_uniform_taskset_generation:
-    #     tasksets = generate_uniform_tasksets(
-    #         target_utilization, 
-    #         min_number_of_tasks, 
-    #         max_number_of_tasks, 
-    #         min_period, 
-    #         max_period, 
-    #         use_semi_harmonic_periods,
-    #         number_of_tasksets,
-    #         number_of_threads
-    #     )
+    for taskset in tasksets:
+        adjust_taskset_release_pattern(taskset, taskset_generation_params['sporadic_ratio'])
+        adjust_taskset_communication_policy(taskset, taskset_generation_params['let_ratio'])
+        taskset.rate_monotonic_scheduling()
+        taskset.compute_wcrts()
 
-    # for taskset in tasksets:
-    #     adjust_taskset_release_pattern(taskset, sporadic_ratio)
-    #     adjust_taskset_communication_policy(taskset, let_ratio)
-    #     taskset.rate_monotonic_scheduling()
-    #     taskset.compute_wcrts()
-
-    # # remove tasksets with tasks that miss their deadline
-    # tasksets = remove_invalid_tasksets(tasksets)
+    # remove tasksets with tasks that miss their deadline
+    tasksets = remove_invalid_tasksets(tasksets)
 
 
     #########################################
@@ -282,32 +270,26 @@ def generate_cecs(taskset_generation_params,
 
     cause_effect_chains = []
 
-    # if generate_automotive_cecs:
-    #     cause_effect_chains = generate_automotive_cecs(
-    #         tasksets, 
-    #         min_number_of_chains, 
-    #         max_number_of_chains
-    #     )
+    if cec_generation_params['generate_automotive_cecs']:
+        cause_effect_chains = generate_automotive_cecs(
+            tasksets, 
+            cec_generation_params
+        )
 
-    # if generate_random_cecs:
-    #     cause_effect_chains = generate_random_cecs(
-    #         tasksets, 
-    #         min_number_tasks_in_chain, 
-    #         max_number_tasks_in_chain, 
-    #         min_number_of_chains, 
-    #         max_number_of_chains
-    #     )
+    if cec_generation_params['generate_random_cecs']:
+        cause_effect_chains = generate_random_cecs(
+            tasksets, 
+            cec_generation_params
+        )
 
-    # if generate_interconnected_cecs:
-    #     cause_effect_chains = create_interconnected_cecs(
-    #         cause_effect_chains, 
-    #         min_number_ecus, 
-    #         max_number_ecus, 
-    #         number_of_inter_cecs
-    #     )
+    if cec_generation_params['generate_interconnected_cecs']:
+        cause_effect_chains = create_interconnected_cecs(
+            cause_effect_chains, 
+            cec_generation_params
+        )
 
-    # if store_generated_cecs:
-    #     helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
+    if store_generated_cecs:
+        helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
 
     return cause_effect_chains
 
