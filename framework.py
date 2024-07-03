@@ -13,6 +13,7 @@ from e2eAnalyses.Guenzel2023_equi import guenzel_23_equi_mda, guenzel_23_equi_mr
 from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.newAnalysis import newAna
+from e2eAnalyses.newAnalysis2 import newAna2
 import helpers
 import plotting.plot as plot
 import random as random
@@ -62,6 +63,7 @@ analysesDict = {
     'guenzel_23_equi_mda': AnalysisMethod(guenzel_23_equi_mda, 'Günzel 2023 (equi, MDA)', 'G23(EQUI-MDA)', features=['periodic', 'sporadic', 'let']),
     'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
     'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
+    'newAna2': AnalysisMethod(newAna2, 'newAna2', 'newAna2', features=['periodic', 'sporadic', 'implicit']),
 }
 
 
@@ -224,7 +226,7 @@ def generate_random_cecs(tasksets, cec_generation_params):
             cec_generation_params['min_number_of_chains'], 
             cec_generation_params['max_number_of_chains']
         )
-        
+
     return cause_effect_chains
 
 
