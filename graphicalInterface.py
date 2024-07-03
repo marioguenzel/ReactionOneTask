@@ -232,6 +232,9 @@ def runVisualMode(window):
             ### Gather all inputs from GUI ###
             ##################################
 
+            taskset_params = dict(default_taskset_generation_params)
+            cec_params = dict(default_cec_generation_params)
+
             print(values)
 
             # General
@@ -246,88 +249,88 @@ def runVisualMode(window):
             cecs_file_path = values['-File_Input-']
 
             # Taskset
-            use_automotive_taskset = values['-Automotive_Taskset_Radio-']
-            use_uniform_taskset_generation = values['-Uniform_Taskset_Radio-']
+            taskset_params['use_automotive_taskset_generation'] = values['-Automotive_Taskset_Radio-']
+            taskset_params['use_uniform_taskset_generation'] = values['-Uniform_Taskset_Radio-']
             try:
-                target_utilization = int(values['-Utilization_Spin-'])/100
-                if target_utilization > 1 or target_utilization < 0:
+                taskset_params['target_util'] = int(values['-Utilization_Spin-'])/100
+                if taskset_params['target_util'] > 1 or taskset_params['target_util'] < 0:
                     raise ValueError
             except ValueError:
                 popUp('ValueError', [f"Invalid target utilization '{values['-Utilization_Spin-']}'!"])
                 continue
             try:
-                number_of_tasksets = int(values['-Number_Tasksets_Input-'])
+                taskset_params['number_of_tasksets'] = int(values['-Number_Tasksets_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of tasksets '{values['-Number_Tasksets_Input-']}'!"])
                 continue
-            use_semi_harmonic_periods = values['-Semi_harmonic_Box-']
+            taskset_params['use_semi_harmonic_periods'] = values['-Semi_harmonic_Box-']
             try:
-                min_number_of_tasks = int(values['-MINT_Input-'])
+                taskset_params['min_number_of_tasks'] = int(values['-MINT_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of min tasks '{values['-MINT_Input-']}'!"])
                 continue
             try:
-                max_number_of_tasks = int(values['-MAXT_Input-'])
+                taskset_params['max_number_of_tasks'] = int(values['-MAXT_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of max tasks '{values['-MAXT_Input-']}'!"])
                 continue
             try:
-                min_period = int(values['-PMIN_Input-'])
+                taskset_params['min_period'] = int(values['-PMIN_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid min period '{values['-PMIN_Input-']}'!"])
                 continue
             try:
-                max_period = int(values['-PMAX_Input-'])
+                taskset_params['max_period'] = int(values['-PMAX_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid max period '{values['-PMAX_Input-']}'!"])
                 continue
             try:
-                sporadic_ratio = int(values['-Sporadic_Ratio_Spin-'])/100
+                taskset_params['sporadic_ratio'] = int(values['-Sporadic_Ratio_Spin-'])/100
             except ValueError:
                 popUp('ValueError', [f"Invalid sporadic tasks ratio '{values['-Sporadic_Ratio_Spin-']}'!"])
                 continue
             try:
-                let_ratio = int(values['-LET_Ratio_Spin-'])/100
+                taskset_params['let_ratio'] = int(values['-LET_Ratio_Spin-'])/100
             except ValueError:
                 popUp('ValueError', [f"Invalid ratio for LET communication '{values['-LET_Ratio_Spin-']}'!"])
                 continue
 
             # Cause-effect chains
-            automotive_cecs = values['-Automotive_CEC_Radio-']
-            random_cecs = values['-Random_CEC_Radio-']
+            cec_params['generate_automotive_cecs'] = values['-Automotive_CEC_Radio-']
+            cec_params['generate_random_cecs'] = values['-Random_CEC_Radio-']
             try:
-                min_number_tasks_in_chain = int(values['-Number_Tasks_Min_Input-'])
+                cec_params['min_number_of_tasks_in_chain'] = int(values['-Number_Tasks_Min_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid min number of tasks '{values['-Number_Tasks_Min_Input-']}'!"])
                 continue
             try:
-                max_number_tasks_in_chain = int(values['-Number_Tasks_Max_Input-'])
+                cec_params['max_number_of_tasks_in_chain'] = int(values['-Number_Tasks_Max_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid max number of tasks '{values['-Number_Tasks_Max_Input-']}'!"])
                 continue
             try:
-                min_number_of_chains = int(values['-Number_Chains_Min_Input-'])
+                cec_params['min_number_of_chains'] = int(values['-Number_Chains_Min_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid min number of chains '{values['-Number_Chains_Min_Input-']}'!"])
                 continue
             try:
-                max_number_of_chains = int(values['-Number_Chains_Max_Input-'])
+                cec_params['max_number_of_chains'] = int(values['-Number_Chains_Max_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid max number of chains '{values['-Number_Chains_Max_Input-']}'!"])
                 continue
-            interconnected_cecs = values['-Inter_CECs_Box-']
+            cec_params['generate_interconnected_cecs'] = values['-Inter_CECs_Box-']
             try:
-                min_number_ecus = int(values['-Min_ECUs_Input-'])
+                cec_params['min_number_ecus'] = int(values['-Min_ECUs_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid min number of ECUs '{values['-Min_ECUs_Input-']}'!"])
                 continue
             try:
-                max_number_ecus = int(values['-Max_ECUs_Input-'])
+                cec_params['max_number_ecus'] = int(values['-Max_ECUs_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid max number of ECUs '{values['-Max_ECUs_Input-']}'!"])
                 continue
             try:
-                number_of_inter_cecs = int(values['-Number_Interconnected_Chains_Input-'])
+                cec_params['number_of_inter_cecs'] = int(values['-Number_Interconnected_Chains_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of interconnected CECs '{values['-Number_Interconnected_Chains_Input-']}'!"])
                 continue
@@ -368,25 +371,16 @@ def runVisualMode(window):
             if generate_cecs:
                 
                 # selected automotive benchmark
-                if use_automotive_taskset:                        
-                    tasksets = generate_automotive_tasksets(target_utilization, 
-                                                        number_of_tasksets, 
-                                                        number_of_threads)
+                if taskset_params['use_automotive_taskset_generation']:                        
+                    tasksets = generate_automotive_tasksets(taskset_params, number_of_threads)
 
                 # selected uniform benchmark
-                if use_uniform_taskset_generation:
-                    tasksets = generate_uniform_tasksets(target_utilization, 
-                                                    min_number_of_tasks, 
-                                                    max_number_of_tasks, 
-                                                    min_period, 
-                                                    max_period, 
-                                                    use_semi_harmonic_periods,
-                                                    number_of_tasksets,
-                                                    number_of_threads)
+                if taskset_params['use_uniform_taskset_generation']:
+                    tasksets = generate_uniform_tasksets(taskset_params, number_of_threads)
 
                 for taskset in tasksets:
-                    adjust_taskset_release_pattern(taskset, sporadic_ratio)
-                    adjust_taskset_communication_policy(taskset, let_ratio)
+                    adjust_taskset_release_pattern(taskset, taskset_params['sporadic_ratio'])
+                    adjust_taskset_communication_policy(taskset, taskset_params['let_ratio'])
                     taskset.rate_monotonic_scheduling()
                     taskset.compute_wcrts()
 
@@ -401,29 +395,14 @@ def runVisualMode(window):
             cause_effect_chains = []
 
             if generate_cecs:
-                if automotive_cecs:
-                    cause_effect_chains = generate_automotive_cecs(
-                        tasksets, 
-                        min_number_of_chains, 
-                        max_number_of_chains
-                    )
+                if cec_params['generate_automotive_cecs']:
+                    cause_effect_chains = generate_automotive_cecs(tasksets, cec_params)
 
-                if random_cecs:
-                    cause_effect_chains = generate_random_cecs(
-                        tasksets, 
-                        min_number_tasks_in_chain, 
-                        max_number_tasks_in_chain, 
-                        min_number_of_chains, 
-                        max_number_of_chains
-                    )
+                if cec_params['generate_random_cecs']:
+                    cause_effect_chains = generate_random_cecs(tasksets, cec_params)
 
-                if interconnected_cecs:
-                    cause_effect_chains = create_interconnected_cecs(
-                        cause_effect_chains, 
-                        min_number_ecus, 
-                        max_number_ecus, 
-                        number_of_inter_cecs
-                    )
+                if cec_params['generate_interconnected_cecs']:
+                    cause_effect_chains = create_interconnected_cecs(cause_effect_chains, cec_params)
 
                 if store_generated_cecs:
                     helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)

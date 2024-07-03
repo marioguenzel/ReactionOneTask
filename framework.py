@@ -139,12 +139,12 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
     return latencies_all
 
 
-def create_interconnected_cecs(cause_effect_chains, min_ecus, max_ecus, number_of_chains):
+def create_interconnected_cecs(cause_effect_chains, cec_params):
     interconncected_chains = []
     print(cause_effect_chains)
 
-    while len(interconncected_chains) < number_of_chains:
-        n = random.randint(min_ecus, max_ecus)
+    while len(interconncected_chains) < cec_params['number_of_inter_cecs']:
+        n = random.randint(cec_params['min_number_ecus'], cec_params['max_number_ecus'])
         candidates = random.sample(cause_effect_chains, n)
         
         # only add candidate if cecs have different base ts
@@ -205,28 +205,26 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
 def generate_automotive_cecs(tasksets, cec_generation_params):
     cause_effect_chains = []
     for taskset in tasksets:
-        cause_effect_chains.append(
-            automotiveBench.gen_ce_chains(
-                taskset,
-                cec_generation_params['min_number_of_chains'], 
-                cec_generation_params['max_number_of_chains']
-            )
+        cause_effect_chains += automotiveBench.gen_ce_chains(
+            taskset,
+            cec_generation_params['min_number_of_chains'], 
+            cec_generation_params['max_number_of_chains']
         )
+        
     return cause_effect_chains
 
 
 def generate_random_cecs(tasksets, cec_generation_params):
     cause_effect_chains = []
     for taskset in tasksets:
-        cause_effect_chains.append(
-            uniformBench.gen_cause_effect_chains(
-                taskset, 
-                cec_generation_params['min_number_tasks_in_chain'], 
-                cec_generation_params['max_number_tasks_in_chain'], 
-                cec_generation_params['min_number_of_chains'], 
-                cec_generation_params['max_number_of_chains']
-            )
+        cause_effect_chains += uniformBench.gen_cause_effect_chains(
+            taskset, 
+            cec_generation_params['min_number_tasks_in_chain'], 
+            cec_generation_params['max_number_tasks_in_chain'], 
+            cec_generation_params['min_number_of_chains'], 
+            cec_generation_params['max_number_of_chains']
         )
+        
     return cause_effect_chains
 
 
