@@ -32,7 +32,7 @@ debug_flag = False  # flag to have breakpoint() when errors occur
 def find_next_fw(curr_task, nxt_task, curr_index, base_ts):
     wemax = curr_task.period * curr_index + base_ts.wcrts[curr_task]     # approximated wemax with wcrt
 
-    idx = wemax / nxt_task.period
+    idx = math.floor(wemax / nxt_task.period)
     while nxt_task.period * idx < wemax:
         idx +=1
 
@@ -42,7 +42,7 @@ def find_next_fw(curr_task, nxt_task, curr_index, base_ts):
 def find_next_bw(curr_task, prev_task, curr_index, base_ts):
     remin = curr_task.period * curr_index   # approximated remin with release time of job
 
-    idx = remin / prev_task.period
+    idx = math.ceil(remin / prev_task.period)
     while prev_task.period * idx + base_ts.wcrts[prev_task] > remin:
         idx -=1
 
@@ -136,7 +136,7 @@ class BwJobChain(JobChain):
                 task, prev_task, abstr[-1], ce_chain.base_ts)
             abstr.append(idx)  # intermediate entries
 
-            if idx == -1:  # check if incomplete
+            if idx < 0:  # check if incomplete
                 break
 
         # Turn around the chain
@@ -168,8 +168,8 @@ class PartitionedJobChain:
         - chain = cause-effect chain
         - number = which chain"""
         assert 0 <= part < len(chain), "part is out of possible interval"
-        self.bw = BwJobChain(chain[: part + 1], number)
-        self.fw = FwJobChain(chain[part:], number + 1)  # forward job chain part
+        self.bw = BwJobChain(CEChain(*list(chain[: part + 1]), base_ts=chain.base_ts), number)
+        self.fw = FwJobChain(CEChain(*list(chain[part:]), base_ts=chain.base_ts), number + 1)  # forward job chain part
         self.complete = self.bw.complete  # complete iff bw chain complete
         self.base_ce_chain = chain
 
