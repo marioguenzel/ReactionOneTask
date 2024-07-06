@@ -6,7 +6,7 @@ To install the necessary (python) packages run the following commands:
 
 ```
 sudo apt-get install python3-tk
-pip install -v "pysimplegui==4.60.5"
+pip install pySimpleGUI/PySimpleGUI-4.60.5.tar.gz
 pip install scipy numpy matplotlib
 ```
 ## Analyses Overview
