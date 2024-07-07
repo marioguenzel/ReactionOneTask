@@ -14,6 +14,7 @@ from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.newAnalysis import newAna
 from e2eAnalyses.newAnalysis2 import newAna2
+from e2eAnalyses.BeckerSimple import mrda
 import helpers
 import plotting.plot as plot
 import random as random
@@ -64,6 +65,7 @@ analysesDict = {
     'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
     'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
     'newAna2': AnalysisMethod(newAna2, 'newAna2', 'newAna2', features=['periodic', 'sporadic', 'implicit']),
+    'beckerSimple': AnalysisMethod(mrda, 'beckerSimple', 'beckerSimple', features=['periodic', 'sporadic', 'implicit']),
 }
 
 
