@@ -14,7 +14,7 @@ from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.newAnalysis import newAna
 from e2eAnalyses.newAnalysis2 import newAna2
-from e2eAnalyses.BeckerSimple import mrda
+from e2eAnalyses.BeckerSimple import beckerSimple
 import helpers
 import plotting.plot as plot
 import random as random
@@ -42,7 +42,7 @@ class AnalysisMethod:
 
 analysesDict = {
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
-    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),                                                                                         # TODO
+    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),
     'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
     'becker17_impl' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit']),                                                                                  # TODO
     'becker17_let' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'let']),                                                                                  # TODO
@@ -65,7 +65,7 @@ analysesDict = {
     'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
     'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
     'newAna2': AnalysisMethod(newAna2, 'newAna2', 'newAna2', features=['periodic', 'sporadic', 'implicit']),
-    'beckerSimple': AnalysisMethod(mrda, 'beckerSimple', 'beckerSimple', features=['periodic', 'sporadic', 'implicit']),
+    'beckerSimple': AnalysisMethod(beckerSimple, 'beckerSimple', 'beckerSimple', features=['periodic', 'sporadic', 'implicit']),
 }
 
 

@@ -7,24 +7,7 @@ import math
 from cechains.chain import CEChain
 import timeit
 from tasks.task import Task
-
-
-#####
-# Job
-#####
-
-
-class Job:
-    """A job."""
-
-    def __init__(self, task=None, number=None):
-        """Create (number)-th job of a task (task).
-        Assumption: number starts at 0. (0=first job)"""
-        self.task = task
-        self.number = number
-
-    def __str__(self):
-        return f"({self.task}, {self.number})"
+from tasks.job import Job
 
 
 #####
@@ -34,12 +17,12 @@ class Job:
 
 def let_we(job: Job):
     """Write-event of job under LET."""
-    return job.task.phase + job.task.period * job.number + job.task.deadline
+    return job.task.phase + job.task.period * job.occurrence + job.task.deadline
 
 
 def let_re(job: Job):
     """Read-event of job under LET."""
-    return job.task.phase + job.task.period * job.number
+    return job.task.phase + job.task.period * job.occurrence
 
 
 def let_re_geq(time, task: Task):
@@ -80,24 +63,24 @@ class JobChain(list):
 class FwJobChain(JobChain):
     """Immediate forward job chain."""
 
-    def __init__(self, ce_chain: CEChain, number: int):
-        """Create (number)-th immediate forward job chain. (under LET)"""
-        self.number = number  # number of forward job chain
+    def __init__(self, ce_chain: CEChain, occurrence: int):
+        """Create (occurrence)-th immediate forward job chain. (under LET)"""
+        self.occurrence = occurrence  # occurrence of forward job chain
 
         if len(ce_chain) == 0:
             super().__init__()
             return
 
         # first job
-        job_lst = [Job(ce_chain[0], number)]
+        job_lst = [Job(ce_chain[0], occurrence)]
 
         # next jobs
         for tsk in ce_chain[1:]:
             # find next job
-            next_job_number = let_re_geq(let_we(job_lst[-1]), tsk)
+            next_job_occurrence = let_re_geq(let_we(job_lst[-1]), tsk)
 
             # add job to chain
-            job_lst.append(Job(tsk, next_job_number))
+            job_lst.append(Job(tsk, next_job_occurrence))
 
         # Make job chain
         super().__init__(*job_lst)
@@ -106,30 +89,30 @@ class FwJobChain(JobChain):
 class BwJobChain(JobChain):
     """Immediate backward job chain."""
 
-    def __init__(self, ce_chain: CEChain, number: int):
-        """Create (number)-th immediate backward job chain. (under LET)"""
-        self.number = number  # number of backward job chain
+    def __init__(self, ce_chain: CEChain, occurrence: int):
+        """Create (occurrence)-th immediate backward job chain. (under LET)"""
+        self.occurrence = occurrence  # occurrence of backward job chain
 
         if len(ce_chain) == 0:
             super().__init__()
             return
 
         # last job
-        job_lst = [Job(ce_chain[-1], number)]
+        job_lst = [Job(ce_chain[-1], occurrence)]
 
         # previous jobs jobs
         for tsk in ce_chain[0:-1][::-1]:  # backwards except the last
             # find previous job
-            previous_job_number = let_we_leq(let_re(job_lst[0]), tsk)
+            previous_job_occurrence = let_we_leq(let_re(job_lst[0]), tsk)
 
             # add job to chain
-            job_lst.insert(0, Job(tsk, previous_job_number))
+            job_lst.insert(0, Job(tsk, previous_job_occurrence))
 
         # Make job chain
         super().__init__(*job_lst)
 
         # check if complete
-        self.complete = job_lst[0].number >= 0
+        self.complete = job_lst[0].occurrence >= 0
 
 
 #####
@@ -140,11 +123,11 @@ def find_fi(ce_chain: CEChain) -> list[int]:
     """List of Fi values."""
     # one forward chain
     fc = FwJobChain(ce_chain, 0)
-    F = fc[-1].number
+    F = fc[-1].occurrence
     # one backward chain
     bc = BwJobChain(ce_chain, F)
 
-    Fi = [job.number for job in bc]
+    Fi = [job.occurrence for job in bc]
     return Fi
 
 
@@ -155,14 +138,14 @@ def find_fi(ce_chain: CEChain) -> list[int]:
 class PartitionedJobChain:
     """A partitioned job chain."""
 
-    def __init__(self, part, chain, number):
+    def __init__(self, part, chain, occurrence):
         """Create a partitioned job chain.
         - part = where is the partioning
         - chain = cause-effect chain
-        - number = which chain"""
+        - occurrence = which chain"""
         assert 0 <= part < len(chain), "part is out of possible interval"
-        self.bw = BwJobChain(chain[: part + 1], number)
-        self.fw = FwJobChain(chain[part:], number + 1)  # forward job chain part
+        self.bw = BwJobChain(chain[: part + 1], occurrence)
+        self.fw = FwJobChain(chain[part:], occurrence + 1)  # forward job chain part
         self.complete = self.bw.complete  # complete iff bw chain complete
         self.base_ce_chain = chain
 
@@ -193,8 +176,8 @@ def guenzel_23_equi_mda(chain: CEChain, Fi=None) -> float:
 
     # construct partitioned chains
     part_chains = []
-    for number in itertools.count(start=Fi[part]):
-        pc = PartitionedJobChain(part, chain, number)
+    for occurrence in itertools.count(start=Fi[part]):
+        pc = PartitionedJobChain(part, chain, occurrence)
         if let_re(pc.bw[0]) <= analysis_end:
             part_chains.append(pc)
         else:

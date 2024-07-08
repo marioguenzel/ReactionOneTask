@@ -60,7 +60,7 @@ def build_tree(chain: CEChain, current_position: int, current_job_idx: int):
 
 
 # ===== Analysis =====
-def mrda(chain: CEChain):
+def beckerSimple(chain: CEChain):
     hp = chain.hyperperiod()
     max_phase = chain.max_phase()
     ages = []

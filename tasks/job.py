@@ -11,3 +11,6 @@ class Job:
     
     def get_deadline(self):
         return self.get_release() + self.task.deadline
+    
+    def __str__(self):
+        return f"({self.task}, {self.occurrence})"
