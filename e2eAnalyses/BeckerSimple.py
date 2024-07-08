@@ -2,7 +2,9 @@
 https://doi.org/10.1016/j.sysarc.2017.09.004
 https://doi.org/10.1109/RTCSA.2016.41
 
-(own implementation for maximum data age only, under the assumption that WCRT is known)
+Implementation is copied from https://github.com/tu-dortmund-ls12-rt/end-to-end_inter
+- only minor adjustments
+
 """
 from cechains.chain import CEChain
 from tasks.task import Task

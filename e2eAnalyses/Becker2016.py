@@ -2,6 +2,8 @@
 Analysis from Becker et al. 2016:
 Synthesizing Job-Level Dependencies for Automotive Multi-rate Effect Chains.
 
+Implementation is based on a Java implementation provided by Matthias Becker
+
 - implicit
 - periodic
 """
@@ -176,14 +178,17 @@ def recursive_dpt(
     possible_successors = get_possible_successors(dpt, vertex, successor_task)
     max_data_age = 0
 
-    for successor in possible_successors:
-        successor.push_rmin(vertex.dpt_job.dmin)
-        v = append_job_to_graph(dpt, vertex, successor)
-        assert(v!=None)
-        data_age = recursive_dpt(dpt, v, chain, init_type)
-        if data_age != None:
-            max_data_age = max(data_age, max_data_age)
-        successor.reset_rmin()
+    # simple but effective way to speed up analysis; 
+    # original implimentation iterates over all possible successors
+    successor = possible_successors[-1]
+
+    successor.push_rmin(vertex.dpt_job.dmin)
+    v = append_job_to_graph(dpt, vertex, successor)
+    assert(v!=None)
+    data_age = recursive_dpt(dpt, v, chain, init_type)
+    if data_age != None:
+        max_data_age = max(data_age, max_data_age)
+    successor.reset_rmin()
 
     return max_data_age
 
