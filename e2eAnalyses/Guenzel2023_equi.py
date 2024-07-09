@@ -5,6 +5,7 @@ Assumptions:
 import itertools
 import math
 from cechains.chain import CEChain
+from cechains.jobchain import JobChain, PartitionedJobChain, abstr_to_jc, jc_to_abstr
 import timeit
 from tasks.task import Task
 from tasks.job import Job
@@ -41,78 +42,59 @@ def let_we_leq(time, task: Task):
 
 
 #####
-# Job chain definition
+# Job chain constructions
 #####
 
+def get_fw_jobchain(ce_chain: CEChain, occurrence: int):
+    """Create (occurrence)-th immediate forward job chain. (under implicit comm.)"""
 
-class JobChain(list):
-    """A chain of jobs."""
+    # first job
+    job_lst = [Job(ce_chain[0], occurrence)]
 
-    def __init__(self, *jobs):
-        """Create a job chain with jobs *jobs."""
-        super().__init__(jobs)
+    # next jobs
+    for tsk in ce_chain[1:]:
+        # find next job
+        next_job_occurrence = let_re_geq(let_we(job_lst[-1]), tsk)
 
-    def __str__(self, no_braces=False):
-        return "[ " + " -> ".join([str(j) for j in self]) + " ]"
-
-    def ell(self):
-        """length of a job chain"""
-        return let_we(self[-1]) - let_re(self[0])
-
-
-class FwJobChain(JobChain):
-    """Immediate forward job chain."""
-
-    def __init__(self, ce_chain: CEChain, occurrence: int):
-        """Create (occurrence)-th immediate forward job chain. (under LET)"""
-        self.occurrence = occurrence  # occurrence of forward job chain
-
-        if len(ce_chain) == 0:
-            super().__init__()
-            return
-
-        # first job
-        job_lst = [Job(ce_chain[0], occurrence)]
-
-        # next jobs
-        for tsk in ce_chain[1:]:
-            # find next job
-            next_job_occurrence = let_re_geq(let_we(job_lst[-1]), tsk)
-
-            # add job to chain
-            job_lst.append(Job(tsk, next_job_occurrence))
-
-        # Make job chain
-        super().__init__(*job_lst)
+        # add job to chain
+        job_lst.append(Job(tsk, next_job_occurrence))
+        
+    return JobChain(*job_lst)
 
 
-class BwJobChain(JobChain):
-    """Immediate backward job chain."""
+def get_bw_jobchain(ce_chain: CEChain, occurrence: int):
+    """Create (occurrence)-th immediate backward job chain. (under implicit comm.)"""
 
-    def __init__(self, ce_chain: CEChain, occurrence: int):
-        """Create (occurrence)-th immediate backward job chain. (under LET)"""
-        self.occurrence = occurrence  # occurrence of backward job chain
+    # last job
+    job_lst = [Job(ce_chain[-1], occurrence)]
 
-        if len(ce_chain) == 0:
-            super().__init__()
-            return
+    # previous jobs jobs
+    for tsk in ce_chain[0:-1][::-1]:  # backwards except the last
+        # find previous job
+        previous_job_occurrence = let_we_leq(let_re(job_lst[0]), tsk)
 
-        # last job
-        job_lst = [Job(ce_chain[-1], occurrence)]
+        # add job to chain
+        job_lst.insert(0, Job(tsk, previous_job_occurrence))
+    
+    return JobChain(*job_lst)
 
-        # previous jobs jobs
-        for tsk in ce_chain[0:-1][::-1]:  # backwards except the last
-            # find previous job
-            previous_job_occurrence = let_we_leq(let_re(job_lst[0]), tsk)
 
-            # add job to chain
-            job_lst.insert(0, Job(tsk, previous_job_occurrence))
+def get_part_jobchain(part, chain, occurrence):
+    """Create a partitioned job chain.
+    - part = where is the partioning
+    - chain = cause-effect chain
+    - occurrence = which chain
+    - ana = analyzer for read/writes under implicit comm."""
 
-        # Make job chain
-        super().__init__(*job_lst)
+    bw = get_bw_jobchain(CEChain(*chain[: part + 1], base_ts=chain.base_ts), occurrence)
+    fw = get_fw_jobchain(CEChain(*chain[part:], base_ts=chain.base_ts), occurrence + 1)
 
-        # check if complete
-        self.complete = job_lst[0].occurrence >= 0
+    return PartitionedJobChain(chain, fw, bw)
+
+
+def ell(pc : PartitionedJobChain):
+    """Length of the partitioned job chain, more precisely l() function from the paper."""
+    return let_we(pc.fw[-1]) - let_re(pc.bw[0])
 
 
 #####
@@ -122,40 +104,18 @@ class BwJobChain(JobChain):
 def find_fi(ce_chain: CEChain) -> list[int]:
     """List of Fi values."""
     # one forward chain
-    fc = FwJobChain(ce_chain, 0)
+    fc = get_fw_jobchain(ce_chain, 0)
     F = fc[-1].occurrence
     # one backward chain
-    bc = BwJobChain(ce_chain, F)
+    bc = get_bw_jobchain(ce_chain, F)
 
     Fi = [job.occurrence for job in bc]
     return Fi
 
 
 #####
-# Our analysis
+# guenzel_23_equi analysis
 #####
-
-class PartitionedJobChain:
-    """A partitioned job chain."""
-
-    def __init__(self, part, chain, occurrence):
-        """Create a partitioned job chain.
-        - part = where is the partioning
-        - chain = cause-effect chain
-        - occurrence = which chain"""
-        assert 0 <= part < len(chain), "part is out of possible interval"
-        self.bw = BwJobChain(chain[: part + 1], occurrence)
-        self.fw = FwJobChain(chain[part:], occurrence + 1)  # forward job chain part
-        self.complete = self.bw.complete  # complete iff bw chain complete
-        self.base_ce_chain = chain
-
-    def __str__(self):
-        entries = [self.bw.__str__(no_braces=True), self.fw.__str__(no_braces=True)]
-        return "[ " + " / ".join(entries) + " ]"
-
-    def ell(self):
-        """Length of the partitioned job chain, more precisely l() function from the paper."""
-        return let_we(self.fw[-1]) - let_re(self.bw[0])
 
 
 def guenzel_23_equi_mda(chain: CEChain, Fi=None) -> float:
@@ -177,26 +137,26 @@ def guenzel_23_equi_mda(chain: CEChain, Fi=None) -> float:
     # construct partitioned chains
     part_chains = []
     for occurrence in itertools.count(start=Fi[part]):
-        pc = PartitionedJobChain(part, chain, occurrence)
+        pc = get_part_jobchain(part, chain, occurrence)
         if let_re(pc.bw[0]) <= analysis_end:
             part_chains.append(pc)
         else:
             break
 
     assert all(pc.complete for pc in part_chains)
-    return max([pc.ell() for pc in part_chains])
+    return max([ell(pc) for pc in part_chains])
 
 
 def guenzel_23_equi_mrt(chain: CEChain, Fi=None) -> float:
     return guenzel_23_equi_mda(chain, Fi)
 
 
-def compute_mrrt(chain: CEChain, mrt: float = None) -> float:
+def guenzel_23_equie_mrrt(chain: CEChain, mrt: float = None) -> float:
     """Compute MRRT using the result from X # TODO add result
     Assumption: LET communication
     """
     if mrt is None:  # Compute MRT if not given
-        mrt = our_mrt(chain)
+        mrt = guenzel_23_equi_mrt(chain)
 
     # difference between MRT and MRRT under LET is one period of the first task
     mrrt = mrt - chain[0].period
@@ -204,12 +164,12 @@ def compute_mrrt(chain: CEChain, mrt: float = None) -> float:
     return mrrt
 
 
-def compute_mrda(chain: CEChain, mda: float = None) -> float:
+def guenzel_23_equi_mrda(chain: CEChain, mda: float = None) -> float:
     """Compute MRDA using the result from X # TODO add result
     Assumption: LET communication
     """
     if mda is None:  # Compute MRT if not given
-        mda = our_mda(chain)
+        mda = guenzel_23_equi_mda(chain)
 
     # difference between MRT and MRRT under LET is one period of the last task
     mrda = mda - chain[-1].period

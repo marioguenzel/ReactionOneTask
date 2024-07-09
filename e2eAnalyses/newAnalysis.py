@@ -11,8 +11,10 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 import math
 import itertools
 from tasks.task import Task
+from tasks.job import Job
 from tasks.taskset import TaskSet
 from cechains.chain import CEChain
+from cechains.jobchain import JobChain, PartitionedJobChain, abstr_to_jc, jc_to_abstr
 import utilities.event_simulator as es
 import utilities.analyzer_our as a_our
 from e2eAnalyses.Davare2007 import davare07
@@ -20,146 +22,64 @@ from e2eAnalyses.Davare2007 import davare07
 
 debug_flag = False  # flag to have breakpoint() when errors occur
 
-# Note:
-# lst_flat = (ce, ts, sched)
-# lst = ([ces], ts, sched)
+#####
+# Job chain constructions
+#####
+
+def get_fw_jobchain(ce_chain: CEChain, occurrence: int, ana):
+    """Create (occurrence)-th immediate forward job chain. (under implicit comm.)"""
+
+    abstr = []
+    abstr.append(occurrence)  # first entry
+
+    for task, next_task in zip(ce_chain[:-1], ce_chain[1:]):
+        abstr.append(ana.find_next_fw(
+            task, next_task, abstr[-1]))  # intermediate entries
+        
+    return abstr_to_jc(abstr, ce_chain)
+
+
+def get_bw_jobchain(ce_chain: CEChain, occurrence: int, ana):
+    """Create (occurrence)-th immediate backward job chain. (under implicit comm.)"""
+
+    abstr = []
+    abstr.append(occurrence)  # last entry
+
+    for task, prev_task in zip(ce_chain[::-1][:-1], ce_chain[::-1][1:]):
+        idx = ana.find_next_bw(
+            task, prev_task, abstr[-1])
+        abstr.append(idx)  # intermediate entries
+
+        if idx == -1:  # check if incomplete
+            break
+
+    # Turn around the chain
+    abstr = abstr[::-1]
+        
+    return abstr_to_jc(abstr, ce_chain)
+
+
+def get_part_jobchain(part, chain, occurrence, ana):
+    """Create a partitioned job chain.
+    - part = where is the partioning
+    - chain = cause-effect chain
+    - occurrence = which chain
+    - ana = analyzer for read/writes under implicit comm."""
+
+    bw = get_bw_jobchain(CEChain(*chain[: part + 1], base_ts=chain.base_ts), occurrence, ana)
+    fw = get_fw_jobchain(CEChain(*chain[part:], base_ts=chain.base_ts), occurrence + 1, ana)
+
+    return PartitionedJobChain(chain, fw, bw)
+
+
+def ell(pc : PartitionedJobChain, ana):
+    """Length of the partitioned job chain, more precisely l() function from the paper."""
+    return ana.wemax(pc.fw[-1].task, pc.fw[-1].occurrence) - ana.remin(pc.bw[0].task, pc.bw[0].occurrence)
 
 
 #####
-# Job Definition
+# Schedule construction
 #####
-
-
-class Job:
-    """A job."""
-
-    def __init__(self, task=None, number=None):
-        """Create (number)-th job of a task (task).
-        Assumption: number starts at 0. (0=first job)"""
-        self.task = task
-        self.number = number
-
-    def __str__(self):
-        return f"({self.task}, {self.number})"
-
-
-#####
-# Job chain definition
-#####
-
-
-class JobChain(list):
-    """A chain of jobs."""
-
-    def __init__(self, *jobs):
-        """Create a job chain with jobs *jobs."""
-        super().__init__(jobs)
-
-    def __str__(self, no_braces=False):
-        return "[ " + " -> ".join([str(j) for j in self]) + " ]"
-
-
-class FwJobChain(JobChain):
-    """Immediate forward job chain."""
-
-    def __init__(self, ce_chain: CEChain, number: int, ana):
-        """Create (number)-th immediate forward job chain. (under LET)"""
-        self.number = number  # number of forward job chain
-        self.ana = ana
-
-        if len(ce_chain) == 0:
-            super().__init__()
-            return
-
-        abstr = []
-        abstr.append(number)  # first entry
-
-        for task, next_task in zip(ce_chain[:-1], ce_chain[1:]):
-            abstr.append(ana.find_next_fw(
-                task, next_task, abstr[-1]))  # intermediate entries
-
-        self.abstr = abstr
-
-        job_lst = []
-        for i in range(len(abstr)):
-            job = Job(
-                ce_chain[i],
-                abstr[i],
-            )
-            job_lst.append(job)
-
-        # Make job chain
-        super().__init__(*job_lst)
-
-
-class BwJobChain(JobChain):
-    """Immediate backward job chain."""
-
-    def __init__(self, ce_chain: CEChain, number: int, ana):
-        """Create (number)-th immediate backward job chain. (under LET)"""
-        self.number = number  # number of backward job chain
-        self.ana = ana
-
-        if len(ce_chain) == 0:
-            super().__init__()
-            return
-
-
-        abstr = []
-        abstr.append(number)  # last entry
-
-        for task, prev_task in zip(ce_chain[::-1][:-1], ce_chain[::-1][1:]):
-            idx = ana.find_next_bw(
-                task, prev_task, abstr[-1])
-            abstr.append(idx)  # intermediate entries
-
-            if idx == -1:  # check if incomplete
-                break
-
-        # Turn around the chain
-        abstr = abstr[::-1]
-
-        self.abstr = abstr
-
-        job_lst = []
-        for i in range(len(abstr)):
-            job = Job(
-                ce_chain[i],
-                abstr[i],
-            )
-            job_lst.append(job)
-
-        # Make job chain
-        super().__init__(*job_lst)
-
-        # check if complete
-        self.complete = job_lst[0].number >= 0
-
-
-class PartitionedJobChain:
-    """A partitioned job chain."""
-
-    def __init__(self, part, chain, number, ana):
-        """Create a partitioned job chain.
-        - part = where is the partioning
-        - chain = cause-effect chain
-        - number = which chain"""
-        assert 0 <= part < len(chain), "part is out of possible interval"
-        self.bw = BwJobChain(chain[: part + 1], number, ana)
-        self.fw = FwJobChain(chain[part:], number + 1, ana)  # forward job chain part
-        self.complete = self.bw.complete  # complete iff bw chain complete
-        self.base_ce_chain = chain
-        self.ana = ana
-
-    def __str__(self):
-        entries = [self.bw.__str__(no_braces=True), self.fw.__str__(no_braces=True)]
-        return "[ " + " / ".join(entries) + " ]"
-
-    def ell(self):
-        """Length of the partitioned job chain, more precisely l() function from the paper."""
-        # return self.ana.len_abstr(self.fw.abstr, self.fw[-1].task, self.fw[0].task) + self.ana.len_abstr(self.bw.abstr, self.bw[-1].task, self.bw[0].task)
-        return self.ana.wemax(self.fw[-1].task, self.fw.abstr[-1]) - self.ana.remin(self.bw[0].task, self.bw.abstr[0])
-
 
 def schedule_task_set(ce_chains, task_set, print_status=False):
     """Return the schedule of some task_set.
@@ -228,15 +148,15 @@ def change_taskset_bcet(task_set, rat):
 def find_fi(ce_chain: CEChain, ana) -> list[int]:
     """List of Fi values."""
     # one forward chain
-    fc = FwJobChain(ce_chain, 0, ana)
-    F = fc[-1].number
+    fc = get_fw_jobchain(ce_chain, 0, ana)
+    F = fc[-1].occurrence
     # one backward chain
-    bc = BwJobChain(ce_chain, F, ana)
-    Fi = [job.number for job in bc]
+    bc = get_bw_jobchain(ce_chain, F, ana)
+    Fi = [job.occurrence for job in bc]
     return Fi
 
 #####
-# New analysis
+# New analysis, based on Guenzel2023_equi and Guenzel2023_inter
 #####
 
 def our_mrt_mRda_lst(chain, bcet, wcet):
@@ -282,15 +202,15 @@ def our_mrt_mRda_lst(chain, bcet, wcet):
 
     # construct partitioned chains
     part_chains = []
-    for number in itertools.count(start=Fi[part]):
-        pc = PartitionedJobChain(part, chain, number, ana)
-        if ana.remin(pc.bw[0].task, pc.bw[0].number) <= analysis_end:
+    for occurrence in itertools.count(start=Fi[part]):
+        pc = get_part_jobchain(part, chain, occurrence, ana)
+        if ana.remin(pc.bw[0].task, pc.bw[0].occurrence) <= analysis_end:
             part_chains.append(pc)
         else:
             break
 
     assert all(pc.complete for pc in part_chains)
-    return max([pc.ell() for pc in part_chains], default=0) #   TODO fixme
+    return max([ell(pc, ana) for pc in part_chains], default=0) #   TODO fixme
 
 
 def newAna(chain):
