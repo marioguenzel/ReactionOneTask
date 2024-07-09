@@ -369,6 +369,8 @@ def runVisualMode(window):
 
             # first create a taskset
             if generate_cecs:
+
+                print("Generating Tasksets")
                 
                 # selected automotive benchmark
                 if taskset_params['use_automotive_taskset_generation']:                        
@@ -395,11 +397,14 @@ def runVisualMode(window):
             cause_effect_chains = []
 
             if generate_cecs:
+
+                print("Generating Cause-Effect Chains")
+
                 if cec_params['generate_automotive_cecs']:
-                    cause_effect_chains = generate_automotive_cecs(tasksets, cec_params)
+                    cause_effect_chains = generate_automotive_cecs(tasksets, cec_params, number_of_threads)
 
                 if cec_params['generate_random_cecs']:
-                    cause_effect_chains = generate_random_cecs(tasksets, cec_params)
+                    cause_effect_chains = generate_random_cecs(tasksets, cec_params, number_of_threads)
 
                 if cec_params['generate_interconnected_cecs']:
                     cause_effect_chains = create_interconnected_cecs(cause_effect_chains, cec_params)
@@ -417,6 +422,8 @@ def runVisualMode(window):
             ####################
             ### Run Analyses ###
             ####################
+
+            print("Performing Analyses")
 
             performAnalyses(
                 cause_effect_chains, 

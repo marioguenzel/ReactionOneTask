@@ -19,6 +19,7 @@ import helpers
 import plotting.plot as plot
 import random as random
 from multiprocessing import Pool
+import itertools
 
 
 class AnalysisMethod:
@@ -206,28 +207,42 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
         task.communication_policy = 'LET'
 
 
-def generate_automotive_cecs(tasksets, cec_generation_params):
+def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads):
     cause_effect_chains = []
-    for taskset in tasksets:
-        cause_effect_chains += automotiveBench.gen_ce_chains(
-            taskset,
-            cec_generation_params['min_number_of_chains'], 
-            cec_generation_params['max_number_of_chains']
+    number_of_tasksets = len(tasksets)
+
+    with Pool(number_of_threads) as pool:
+        cause_effect_chains = pool.starmap(
+            automotiveBench.gen_ce_chains,
+            zip(
+                tasksets,
+                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+            )
         )
+
+    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
         
     return cause_effect_chains
 
 
-def generate_random_cecs(tasksets, cec_generation_params):
+def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
     cause_effect_chains = []
-    for taskset in tasksets:
-        cause_effect_chains += uniformBench.gen_cause_effect_chains(
-            taskset, 
-            cec_generation_params['min_number_tasks_in_chain'], 
-            cec_generation_params['max_number_tasks_in_chain'], 
-            cec_generation_params['min_number_of_chains'], 
-            cec_generation_params['max_number_of_chains']
+    number_of_tasksets = len(tasksets)
+
+    with Pool(number_of_threads) as pool:
+        cause_effect_chains = pool.starmap(
+            uniformBench.gen_cause_effect_chains,
+            zip(
+                tasksets,
+                [cec_generation_params['min_number_of_tasks_in_chain']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_tasks_in_chain']] * number_of_tasksets,
+                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+            )
         )
+
+    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
 
     return cause_effect_chains
 
@@ -275,13 +290,15 @@ def generate_cecs(taskset_generation_params,
     if cec_generation_params['generate_automotive_cecs']:
         cause_effect_chains = generate_automotive_cecs(
             tasksets, 
-            cec_generation_params
+            cec_generation_params,
+            number_of_threads
         )
 
     if cec_generation_params['generate_random_cecs']:
         cause_effect_chains = generate_random_cecs(
             tasksets, 
-            cec_generation_params
+            cec_generation_params,
+            number_of_threads
         )
 
     if cec_generation_params['generate_interconnected_cecs']:
