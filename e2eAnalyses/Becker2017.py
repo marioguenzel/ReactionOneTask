@@ -12,6 +12,7 @@ from tasks.task import Task
 from tasks.job import Job
 from cechains.chain import CEChain
 from enum import Enum
+from utilities.schedule_analyzer import Schedule_Analyzer, schedule_task_set
 
 Init_Type = Enum(
     'Init_Type',
@@ -38,7 +39,16 @@ class DPT_job(Job):
 
         self.next = None
 
+        if init_type == Init_Type.SCHED_TRACE:
+            # schedule task set, if not already done
+            if 1.0 not in chain.base_ts.schedules.keys():
+                schedule = schedule_task_set([chain], chain.base_ts, print_status=True)
+                chain.base_ts.schedules[1.0] = schedule
+            self.schedule = chain.base_ts.schedules[1.0]
+            self.ana = Schedule_Analyzer(self.schedule, chain.base_ts.hyperperiod())
+
         self.reset_intervals()
+
 
     
     def reset_intervals(self):
@@ -56,7 +66,10 @@ class DPT_job(Job):
             self.dmax = self.rmin + self.task.period + self.chain.base_ts.wcrts[self.task]
 
         elif self.init_type == Init_Type.SCHED_TRACE:
-            ...
+            self.rmin = self.ana.start(self.task, self.occurrence)
+            self.rmax = self.rmin
+            self.dmin = self.ana.finish(self.task, self.occurrence)
+            self.dmax = self.ana.finish(self.task, self.occurrence + 1)
 
         elif self.init_type == Init_Type.LET:
             self.rmin = self.get_release()
@@ -76,7 +89,8 @@ class DPT_job(Job):
             self.dmin = self.rmin + self.task.wcet
 
         elif self.init_type == Init_Type.SCHED_TRACE:
-            ...
+            self.rmin = self.ana.start(self.task, self.occurrence)
+            self.dmin = self.ana.finish(self.task, self.occurrence)
 
         elif self.init_type == Init_Type.LET:
             self.rmin = self.get_release()

@@ -9,62 +9,13 @@ Implementation is copied from https://github.com/tu-dortmund-ls12-rt/end-to-end_
 from cechains.chain import CEChain
 from tasks.task import Task
 from math import ceil
-from e2eAnalyses.Davare2007 import davare07
-from utilities.schedule_analyzer import schedule_analyzer
-import utilities.event_simulator as es
+from utilities.schedule_analyzer import Schedule_Analyzer, schedule_task_set
 from enum import Enum
 
 Init_Type = Enum(
     'Init_Type',
     'NO_INFORMATION RESPONSE_TIMES SCHED_TRACE LET'
 )
-
-#####
-# Schedule construction
-#####
-
-def schedule_task_set(ce_chains, task_set, print_status=False):
-    """Return the schedule of some task_set.
-    ce_chains is a list of ce_chains that will be computed later on.
-    We need this to compute latency_upper_bound to determine the additional simulation time at the end.
-    Note:
-    - In case of error, None is returned."""
-
-    # Preliminary: compute latency_upper_bound
-    latency_upper_bound = max([davare07(ce) for ce in ce_chains])
-
-    # Main part: Simulation part
-    simulator = es.eventSimulator(task_set)
-
-    # Determination of the variables used to compute the stop
-    # condition of the simulation
-    max_phase = max(task_set, key=lambda task: task.phase).phase
-    max_period = max(task_set, key=lambda task: task.period).period
-    hyper_period = task_set.hyperperiod()
-
-    sched_interval = (
-        2 * hyper_period
-        + max_phase  # interval from paper
-        + latency_upper_bound  # upper bound job chain length
-        + max_period
-    )  # for convenience
-
-    if print_status:
-        # Information for end user.
-        print("\tNumber of tasks: ", len(task_set))
-        print("\tHyperperiod: ", hyper_period)
-        number_of_jobs = 0
-        for task in task_set:
-            number_of_jobs += sched_interval / task.period
-        print("\tNumber of jobs to schedule: ", "%.2f" % number_of_jobs)
-
-    # Stop condition: Number of jobs of lowest priority task.
-    simulator.dispatcher(int(ceil(sched_interval / task_set[-1].period)))
-
-    # Simulation without early completion.
-    schedule = simulator.e2e_result()
-
-    return schedule
 
 
 class DPT:
@@ -78,7 +29,7 @@ class DPT:
                 schedule = schedule_task_set([chain], chain.base_ts, print_status=True)
                 chain.base_ts.schedules[1.0] = schedule
             self.schedule = chain.base_ts.schedules[1.0]
-            self.ana = schedule_analyzer(self.schedule, chain.base_ts.hyperperiod())
+            self.ana = Schedule_Analyzer(self.schedule, chain.base_ts.hyperperiod())
 
         self.occurrences = self.build_tree(0, occurrence)
 
@@ -123,7 +74,7 @@ class DPT:
         elif self.init_type == Init_Type.RESPONSE_TIMES:
             return self.Rmax(tsk, idx + 1) + tsk.wcet
         elif self.init_type == Init_Type.SCHED_TRACE:
-            return self.ana.finish(tsk, idx+1)
+            return self.ana.finish(tsk, idx + 1)
         elif self.init_type == Init_Type.LET:
             return self.Dmin(tsk, idx) + tsk.period
 

@@ -6,8 +6,11 @@ Utility file for guenzel_23_inter
 - periodic tasks 
 """
 
+from math import ceil
+from e2eAnalyses.Davare2007 import davare07
+import utilities.event_simulator as es
 
-class schedule_analyzer():
+class Schedule_Analyzer():
     def __init__(self, schedule, hyperperiod):
         self.schedule = schedule
         self.hyperperiod = hyperperiod
@@ -61,3 +64,51 @@ class schedule_analyzer():
         lst = self.schedule[task]  # list that has the write-even minimum
         # choose write-event from list
         return self._get_entry(nmb, lst, task)[1]
+
+
+#####
+# Schedule construction
+#####
+
+def schedule_task_set(ce_chains, task_set, print_status=False):
+    """Return the schedule of some task_set.
+    ce_chains is a list of ce_chains that will be computed later on.
+    We need this to compute latency_upper_bound to determine the additional simulation time at the end.
+    Note:
+    - In case of error, None is returned."""
+
+    # Preliminary: compute latency_upper_bound
+    latency_upper_bound = max([davare07(ce) for ce in ce_chains])
+
+    # Main part: Simulation part
+    simulator = es.eventSimulator(task_set)
+
+    # Determination of the variables used to compute the stop
+    # condition of the simulation
+    max_phase = max(task_set, key=lambda task: task.phase).phase
+    max_period = max(task_set, key=lambda task: task.period).period
+    hyper_period = task_set.hyperperiod()
+
+    sched_interval = (
+        2 * hyper_period
+        + max_phase  # interval from paper
+        + latency_upper_bound  # upper bound job chain length
+        + max_period
+    )  # for convenience
+
+    if print_status:
+        # Information for end user.
+        print("\tNumber of tasks: ", len(task_set))
+        print("\tHyperperiod: ", hyper_period)
+        number_of_jobs = 0
+        for task in task_set:
+            number_of_jobs += sched_interval / task.period
+        print("\tNumber of jobs to schedule: ", "%.2f" % number_of_jobs)
+
+    # Stop condition: Number of jobs of lowest priority task.
+    simulator.dispatcher(int(ceil(sched_interval / task_set[-1].period)))
+
+    # Simulation without early completion.
+    schedule = simulator.e2e_result()
+
+    return schedule
