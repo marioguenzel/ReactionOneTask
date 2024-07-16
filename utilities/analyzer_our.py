@@ -24,21 +24,17 @@ class re_we_analyzer():
     def _get_entry(self, nmb, lst, tsk):
         '''get nmb-th entry of the list lst with task tsk.'''
         if nmb < 0:  # Case: out of range
-            raise IndexError('nbm<0')
+            raise IndexError('nmb<0')
         # Case: index too high, has to be made smaller # TODO not sure if this is a good idea since the last entries could be wrong depending on the implementation of the scheduler ...
         elif nmb >= len(lst):
-            # check some hyperperiods earlier
+            # check one hyperperiod earlier
             # make new_nmb an integer value
-            new_nmb = nmb
-            counter = 0
-            while new_nmb >= len(lst):
-                div, rem = divmod(self.hyperperiod, tsk.period)
-                assert rem == 0
-                new_nmb = new_nmb - div
-                counter += 1
-            # add counter hyperperiods
+            div, rem = divmod(self.hyperperiod, tsk.period)
+            assert rem == 0
+            new_nmb = nmb - div
+            # add one hyperperiod
             # TODO this is not very efficient since we need the values several times.
-            return [self.hyperperiod * counter + entry for entry in lst[new_nmb]]
+            return [self.hyperperiod + entry for entry in self._get_entry(new_nmb, lst, tsk)]
         else:  # Case: entry can be used
             try:
                 return lst[nmb]
@@ -97,7 +93,7 @@ class re_we_analyzer():
         # curr_rel = curr_task_wc.phase + curr_index * \
         #     curr_task_wc.period  # release of current task
 
-        for idxprev, idx in zip(itertools.count(start=-1), itertools.count(start=0)):
+        for idx in itertools.count(start=0):
             # wemax and release of job idx of prev_task
             idx_wemax = self.wemax(prev_task_wc, idx)
             idx_rel = prev_task_wc.phase + idx * prev_task_wc.period
@@ -105,10 +101,10 @@ class re_we_analyzer():
             if not (
                 curr_remin >= idx_wemax  # first property
                 # second property
-                or (prev_task_wc.priority < curr_task_bc.priority and curr_remin >= idx_rel)
+                or (prev_task_wc.priority < curr_task_bc.priority and curr_remin >= idx_rel)       # TODO: had to remove this, because it caused to result in max_age of 0 sometimes
             ):
                 # if properties are NOT fulfilled, return the previous index
-                return idxprev
+                return idx-1
 
     def len_abstr(self, abstr, last_tsk_wc, first_tsk_bc):
         '''Length of an abstract representation.'''
@@ -141,8 +137,7 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
         return 0
 
     # Make analyzer
-    ana = re_we_analyzer(schedule_bcet, schedule_wcet,
-                         compute_hyper(task_set_wcet))
+    ana = re_we_analyzer(schedule_bcet, schedule_wcet, task_set_wcet.hyperperiod())
 
     # Chain of indeces that describes the cause-effect chain
     index_chain = [task_set_wcet.index(entry) for entry in chain]
@@ -151,8 +146,8 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
     all_abstr = []
 
     # useful values for break-condition
-    hyper = compute_hyper(task_set_wcet)
-    max_phase = max([task.phase for task in task_set_wcet])
+    hyper = task_set_wcet.hyperperiod()
+    max_phase = task_set_wcet.max_phase()
 
     for idx in itertools.count():
         # Compute idx-th abstract integer representation.
@@ -166,8 +161,6 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
 
         abstr.append(abstr[-1])  # last entry
 
-        #print(len(abstr))
-        #print(chain.length() + 2)
         assert len(abstr) == chain.length() + 2
 
         all_abstr.append(abstr[:])
@@ -209,7 +202,7 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
                          compute_hyper(task_set_wcet))
 
     # Chain of indeces that describes the cause-effect chain
-    index_chain = [task_set_wcet.index(entry) for entry in chain]
+    index_chain = [task_set_wcet.index(task) for task in chain]
 
     # Set of all abstract representations
     all_abstr = []
@@ -282,6 +275,15 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
                                       task_set_bcet[index_chain[0]]) for abstr in incomplete_abstr] + [0]
     )
     max_length_red = max(max_length_compl_red, max_length_incompl_red)
+
+    if max_length_red == 0:
+        print(abstr, len(complete_abstr), len(incomplete_abstr))
+        print(chain[0].period * abstr[0], '(', ana.remin(task_set_wcet[index_chain[0]], abstr[0]), ',', ana.wemax(task_set_bcet[index_chain[0]], abstr[0]), ')', chain[0].priority)
+        for i in range(len(abstr[1:-2])):
+            print(chain[i].period * abstr[i], '(', ana.remin(task_set_wcet[index_chain[i]], abstr[i+1]), ',', ana.wemax(task_set_bcet[index_chain[i]], abstr[i+1]), ')', chain[i].priority)
+        print(chain[-1].period * abstr[-1], '(', ana.remin(task_set_wcet[index_chain[-1]], abstr[-1]), ',', ana.wemax(task_set_bcet[index_chain[-1]], abstr[-1]), ')', chain[-1].priority)
+        print('max_length_compl:', max_length_compl)
+        print('max_length_compl_red', max_length_compl_red)
 
     chain.our_new_local_mda = max_length
     chain.our_new_local_mrda = max_length_red

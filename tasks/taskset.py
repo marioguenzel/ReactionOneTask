@@ -16,8 +16,8 @@ class TaskSet:
         """Input: Task-Objects"""
         self._lst = list(args)
         self.schedules = dict()     # needed for guenzel_23_inter
-        for task in self._lst:
-            task.priority = self._lst.index(task)
+        #for task in self._lst:
+        #    task.priority = self._lst.index(task)
 
     def __len__(self):
         return self._lst.__len__()

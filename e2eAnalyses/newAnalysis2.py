@@ -10,13 +10,10 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 
 import math
 import itertools
-from tasks.task import Task
-from tasks.job import Job
 from tasks.taskset import TaskSet
 from cechains.chain import CEChain
-from cechains.jobchain import JobChain, PartitionedJobChain, abstr_to_jc, jc_to_abstr
+from cechains.jobchain import PartitionedJobChain, abstr_to_jc
 import utilities.event_simulator as es
-import utilities.analyzer_our as a_our
 from e2eAnalyses.Davare2007 import davare07
 
 

@@ -8,8 +8,6 @@ Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed
 
 import math
 import itertools
-from tasks.task import Task
-from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 from e2eAnalyses.Duerr2019 import duerr_19_mrt
 

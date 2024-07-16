@@ -9,9 +9,7 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 
 
 import math
-from tasks.task import Task
 from tasks.taskset import TaskSet
-from cechains.chain import CEChain
 import utilities.event_simulator as es
 import utilities.analyzer_our as a_our
 from e2eAnalyses.Davare2007 import davare07
@@ -81,6 +79,8 @@ def change_taskset_bcet(task_set, rat):
     for task in new_task_set:
         task.wcet = rat * task.wcet
         task.bcet = rat * task.bcet
+    new_task_set.rate_monotonic_scheduling()
+    new_task_set.compute_wcrts()
     return new_task_set
 
 

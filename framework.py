@@ -1,8 +1,7 @@
 import benchmarks.benchmark_WATERS as automotiveBench
 import benchmarks.benchmark_Uniform as uniformBench
 from e2eAnalyses.Davare2007 import davare07
-from e2eAnalyses.Becker2016 import becker16
-from e2eAnalyses.Becker2017 import becker17
+from e2eAnalyses.Becker2017 import becker17_NO_INFORMATION, becker17_RESPONSE_TIMES, becker17_SCHED_TRACE, becker17_LET
 from e2eAnalyses.Kloda2018 import kloda18
 from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
 from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
@@ -14,7 +13,7 @@ from e2eAnalyses.Bi2022 import bi22
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.newAnalysis import newAna
 from e2eAnalyses.newAnalysis2 import newAna2
-from e2eAnalyses.BeckerSimple import beckerSimple
+from e2eAnalyses.BeckerFast import beckerFast_NO_INFORMATION, beckerFast_RESPONSE_TIMES, beckerFast_SCHED_TRACE, beckerFast_LET
 import helpers
 import plotting.plot as plot
 import random as random
@@ -43,10 +42,11 @@ class AnalysisMethod:
 
 analysesDict = {
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
-    'becker16' : AnalysisMethod(becker16, 'Becker 2016', 'B16', features=['periodic', 'implicit']),
-    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
-    'becker17_impl' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'implicit']),                                                                                  # TODO
-    'becker17_let' : AnalysisMethod(becker17, 'Becker 2017', 'B17', features=['periodic', 'let']),                                                                                  # TODO
+    'becker17_no_info' : AnalysisMethod(becker17_NO_INFORMATION, 'Becker 2017 (Base MRDA)', 'B17', features=['periodic', 'implicit']),
+    'becker17_rt' : AnalysisMethod(becker17_RESPONSE_TIMES, 'Becker 2017 (RT MRDA)', 'B17(RT)', features=['periodic', 'implicit']),
+    'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit']),
+    'becker17_let' : AnalysisMethod(becker17_LET, 'Becker 2017 (LET MRDA)', 'B17(LET)', features=['periodic', 'let']),
+    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),                                                                               # TODO
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
     'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
@@ -66,7 +66,10 @@ analysesDict = {
     'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
     'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
     'newAna2': AnalysisMethod(newAna2, 'newAna2', 'newAna2', features=['periodic', 'sporadic', 'implicit']),
-    'beckerSimple': AnalysisMethod(beckerSimple, 'beckerSimple', 'beckerSimple', features=['periodic', 'sporadic', 'implicit']),
+    'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'sporadic', 'implicit']),
+    'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'sporadic', 'implicit']),
+    'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'sporadic', 'implicit']),
+    'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'sporadic', 'let']),
 }
 
 

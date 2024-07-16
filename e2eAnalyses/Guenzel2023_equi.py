@@ -5,8 +5,7 @@ Assumptions:
 import itertools
 import math
 from cechains.chain import CEChain
-from cechains.jobchain import JobChain, PartitionedJobChain, abstr_to_jc, jc_to_abstr
-import timeit
+from cechains.jobchain import JobChain, PartitionedJobChain
 from tasks.task import Task
 from tasks.job import Job
 

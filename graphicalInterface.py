@@ -17,7 +17,7 @@ def inititalizeUI():
 
     layoutGeneral = [sg.Frame('General Settings', [
         [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
-        [sg.Radio('Load Cause-Effect Chains from File', "RadioGeneral", default=False, k='-Load_CEC_Radio-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-File_Input-', disabled=True), sg.FileBrowse(file_types=(("Taskset File", "*.pickle"),), k="-Browse-", disabled=True)],
+        [sg.Radio('Load Cause-Effect Chains from File', "RadioGeneral", default=False, k='-Load_CEC_Radio-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-File_Input-', disabled=True), sg.FileBrowse(file_types=(("CEC File", "*.pickle"),), k="-Browse-", disabled=True)],
         [sg.Text('Threads:'), sg.Input(s=5, k='-Threads_Input-', default_text='1')],
     ], expand_x=True)]
 
@@ -76,7 +76,7 @@ def inititalizeUI():
         ]
     ], expand_x=True)]
 
-    layoutPlot = [sg.Frame('Plot Configuration', [
+    layoutPlot = [sg.Frame('Output Configuration', [
         [sg.Checkbox('create normalized plots (relative latency reduction)', default=True, k='-CBP1-')],
         [sg.Checkbox('create absolute plots', default=False, k='-CBP2-')],
         [sg.Checkbox('export raw analyses results (CSV)', default=False, k='-CBP3-')]
