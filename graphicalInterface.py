@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 from framework import *
+import webbrowser
 
 
 def popUp(title, messages):
@@ -13,7 +14,19 @@ def inititalizeUI():
 
     # Definition of the user interface layout
 
-    layoutMenu = [sg.Menu([['Help', ['Edit Me']], ['About', ['Edit Me']]], k='-MENUBAR-')]
+    layoutMenu = [sg.Menu([
+        ['Links', [
+            'E2E-Framework', 
+            'Masterthesis', 
+            'End-to-End',
+            'End-to-End_Inter',
+            'End-to-End_Mixed',
+            'End-to-End_Equi'
+        ]], 
+        ['Help', 
+            ['About']
+        ]
+    ], k='-MENUBAR-')]
 
     layoutGeneral = [sg.Frame('General Settings', [
         [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
@@ -74,7 +87,7 @@ def inititalizeUI():
             )
         ]], expand_x=True)
         ]
-    ], expand_x=True)]
+    ], expand_x=True, size=(None, 220))]
 
     layoutPlot = [sg.Frame('Output Configuration', [
         [sg.Checkbox('create normalized plots (relative latency reduction)', default=True, k='-CBP1-')],
@@ -225,6 +238,32 @@ def runVisualMode(window):
 
         if event == sg.WINDOW_CLOSED or event == 'Cancel':
             break
+
+        if event == 'E2E-Framework':
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/E2EEvaluation')
+
+        if event == 'Masterthesis':
+            webbrowser.open_new('https://github.com/Robin-Edmaier/Masterarbeit')
+
+        if event == 'End-to-End':
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/end-to-end')
+
+        if event == 'End-to-End_Inter':
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/end-to-end_inter')
+
+        if event == 'End-to-End_Mixed':
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed')
+
+        if event == 'End-to-End_Equi':
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/mrt_mda')
+
+        if event == 'About':
+            popUp('About', [
+                'Author: Robin Edmaier', 
+                'Parts of this framework were copied from existing implementations.', 
+                '', 
+                'This framework is published as free software under TODO.'
+            ])
 
         if event == 'Run':
 

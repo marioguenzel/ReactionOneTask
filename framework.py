@@ -46,7 +46,7 @@ analysesDict = {
     'becker17_rt' : AnalysisMethod(becker17_RESPONSE_TIMES, 'Becker 2017 (RT MRDA)', 'B17(RT)', features=['periodic', 'implicit']),
     'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit']),
     'becker17_let' : AnalysisMethod(becker17_LET, 'Becker 2017 (LET MRDA)', 'B17(LET)', features=['periodic', 'let']),
-    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),                                                                               # TODO
+    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
     'duerr19_mrt' : AnalysisMethod(duerr_19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'duerr19_mrda' : AnalysisMethod(duerr_19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
@@ -61,15 +61,15 @@ analysesDict = {
     'guenzel_23_inter_mrda' : AnalysisMethod(guenzel_23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter']),
     'guenzel23_mixed_pess' : AnalysisMethod(guenzel_23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed' : AnalysisMethod(guenzel_23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed, improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel_23_equi_mda': AnalysisMethod(guenzel_23_equi_mda, 'Günzel 2023 (equi, MDA)', 'G23(EQUI-MDA)', features=['periodic', 'sporadic', 'let']),
-    'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi, MRT)', 'G23(EQUI-MRT)', features=['periodic', 'sporadic', 'let']),
-    'newAna': AnalysisMethod(newAna, 'newAna', 'newAna', features=['periodic', 'sporadic', 'implicit']),
-    'newAna2': AnalysisMethod(newAna2, 'newAna2', 'newAna2', features=['periodic', 'sporadic', 'implicit']),
-    'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'sporadic', 'implicit']),
-    'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'sporadic', 'implicit']),
-    'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'sporadic', 'implicit']),
-    'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'sporadic', 'let']),
+    'guenzel23_mixed_imp' : AnalysisMethod(guenzel_23_mix_improved, 'Günzel 2023 (mixed improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
+    'guenzel_23_equi_mda': AnalysisMethod(guenzel_23_equi_mda, 'Günzel 2023 (equi MDA)', 'G23(EQUI-MDA)', features=['periodic', 'let']),
+    'guenzel_23_equi_mrt': AnalysisMethod(guenzel_23_equi_mrt, 'Günzel 2023 (equi MRT)', 'G23(EQUI-MRT)', features=['periodic', 'let']),
+    'guenzel_23_equi_impl_sched': AnalysisMethod(newAna, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit']),
+    'guenzel_23_equi_impl_rt': AnalysisMethod(newAna2, 'Günzel 2023 (equi+rt MRT)', 'G23(EQUI-RT-MRT)', features=['periodic', 'implicit']),
+    'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'implicit']),
+    'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'implicit']),
+    'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'implicit']),
+    'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'let']),
 }
 
 
