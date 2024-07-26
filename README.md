@@ -22,13 +22,13 @@ List of papers with analyses methods relevant for the framework:
 |End-to-End Timing Analysis of Sporadic Cause-Effect Chains in Distributed Systems       |Dürr 2019     | Yes      | Yes      | Yes      | (Yes) | MRDA,MDA/MRT | Integrated |
 |Evaluation of the Age Latency of a Real-Time Communicating System using the LET paradigm|Kordon 2020   | Yes      | No       | No       | Yes   | MDA          | Requested  |
 |End-to-end latency characterization of task communication models for automotive systems |Martinez 2020 | Yes      | No       | Yes      | Yes   | MDA/MRT      | Unavailable|
-|Efficient Maximum Data Age Analysis for Cause-Effect Chains in Automotive Systems       |Bi 2022       | Yes      | No       | Yes      | No    | MDA          | Received   |
+|Efficient Maximum Data Age Analysis for Cause-Effect Chains in Automotive Systems       |Bi 2022       | Yes      | No       | Yes      | No    | MRDA         | Integrated |
 |Timing Analysis of Asynchronized Distributed Cause-Effect Chains                        |Günzel 2021   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
 |Timing Analysis of Cause-Effect Chains with Heterogeneous Communication Mechanisms      |Günzel 2023   | Yes      | Yes      | Yes      | Yes   | MRT          | Integrated |
 |Compositional Timing Analysis of Asynchronized Distributed Cause-effect Chains          |Günzel 2023   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
 |On the Equivalence of Maximum Reaction Time and Maximum Data Age for Cause-Effect Chains|Günzel 2023   | Yes      | (Yes)    | (Yes)    | Yes   | MDA/MRT      | Integrated |
 |                                                                                        |              |          |          |          |       |              |            |
-|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohari 2022   | Yes      | No       | Yes      | No    | MDA          | Requested  |
+|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohari 2022   | Yes      | No       | Yes      | No    | MDA          | Received   |
 |Characterizing the Effect of Deadline Misses on Time-Triggered Task Chains              |Pazzaglia 2022| Yes      | No       | No       | Yes   | ?            | Received   |
 |                                                                                        |              |          |          |          |       |              |            |
 |End-To-End Timing Analysis in ROS2                                                      |Teper 2022    | ?        | ?        | ?        | ?     | ?            | Missing    |
