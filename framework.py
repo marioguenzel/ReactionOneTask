@@ -1,6 +1,6 @@
 import benchmarks.benchmark_WATERS as automotiveBench
 import benchmarks.benchmark_Uniform as uniformBench
-from e2eAnalyses.Davare2007 import davare07
+from e2eAnalyses.Davare2007 import davare07, davare07_inter
 from e2eAnalyses.Becker2017 import becker17_NO_INFORMATION, becker17_RESPONSE_TIMES, becker17_SCHED_TRACE, becker17_LET
 from e2eAnalyses.Kloda2018 import kloda18
 from e2eAnalyses.Duerr2019 import duerr19, duerr_19_mrt, duerr_19_mrda
@@ -9,7 +9,7 @@ from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Guenzel2023_inter import guenzel_23_local_mrt, guenzel_23_local_mda, guenzel_23_local_mrda, guenzel_23_inter_mrt, guenzel_23_inter_mrda
 from e2eAnalyses.Guenzel2023_mixed import guenzel_23_mix_pessimistic, guenzel_23_mix, guenzel_23_mix_improved
 from e2eAnalyses.Guenzel2023_equi import guenzel_23_equi_mda, guenzel_23_equi_mrt
-from e2eAnalyses.Bi2022 import bi22
+from e2eAnalyses.Bi2022 import bi22, bi22_inter
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.newAnalysis import newAna
 from e2eAnalyses.newAnalysis2 import newAna2
@@ -42,6 +42,7 @@ class AnalysisMethod:
 
 analysesDict = {
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
+    'davare07_inter' : AnalysisMethod(davare07_inter, 'Davare 2007 (inter)', 'D07-I', features=['periodic', 'implicit', 'inter']),
     'becker17_no_info' : AnalysisMethod(becker17_NO_INFORMATION, 'Becker 2017 (Base MRDA)', 'B17', features=['periodic', 'implicit']),
     'becker17_rt' : AnalysisMethod(becker17_RESPONSE_TIMES, 'Becker 2017 (RT MRDA)', 'B17(RT)', features=['periodic', 'implicit']),
     'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit']),
@@ -53,7 +54,8 @@ analysesDict = {
     'martinez20_impl' : AnalysisMethod(martinez20_impl, 'Martinez 2020 (Impl)', 'M20(Impl)', features=['periodic', 'implicit']),                                                            # TODO
     'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                                                               # TODO
     'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                                                     # TODO
-    'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),                                                                                                     # TODO
+    'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),
+    'bi22_inter' : AnalysisMethod(bi22_inter, 'Bi 2022 (inter)', 'B22(I)', features=['periodic', 'implicit', 'inter']),
     'guenzel23_l_mrt' : AnalysisMethod(guenzel_23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit']),
     'guenzel23_l_mda' : AnalysisMethod(guenzel_23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit']),
     'guenzel23_l_mrda' : AnalysisMethod(guenzel_23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit']),
@@ -149,7 +151,6 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
 
 def create_interconnected_cecs(cause_effect_chains, cec_params):
     interconncected_chains = []
-    print(cause_effect_chains)
 
     while len(interconncected_chains) < cec_params['number_of_inter_cecs']:
         n = random.randint(cec_params['min_number_ecus'], cec_params['max_number_ecus'])
