@@ -13,7 +13,7 @@ if __name__ == "__main__":
         window.close()
 
     if len(args) > 0:
-        print("User specified following arguments (launching CLI-mode):")
-        print(args)
+        #print("User specified following arguments (launching CLI-mode):")
+        #print(args)
         runCLIMode(args)
 

@@ -311,11 +311,6 @@ def becker17_NO_INFORMATION(chain):
 
 def becker17_RESPONSE_TIMES(chain):
     time = analyze_data_age(chain, Init_Type.RESPONSE_TIMES)
-    if time == 0:
-        print("-- Chain Start --")
-        for task in chain:
-            print(task.period)
-        print("")
     return time
 
 def becker17_SCHED_TRACE(chain):

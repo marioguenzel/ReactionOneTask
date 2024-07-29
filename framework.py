@@ -110,6 +110,50 @@ default_cec_generation_params = {
 }
 
 
+def check_params(taskset_params, cec_params, warnings):
+    # first check for errors
+
+    # taskset params check
+    assert taskset_params['target_util'] >= 0.01
+    assert taskset_params['target_util'] <= 0.99
+    assert taskset_params['number_of_tasksets'] >= 0
+    assert taskset_params['sporadic_ratio'] >= 0.00
+    assert taskset_params['sporadic_ratio'] <= 1.00
+    assert taskset_params['let_ratio'] >= 0.00
+    assert taskset_params['let_ratio'] <= 1.00
+    assert taskset_params['min_number_of_tasks'] <= taskset_params['max_number_of_tasks']
+    assert taskset_params['min_period'] <= taskset_params['max_period']
+
+    # cec params check
+    assert cec_params['min_number_of_chains'] <= cec_params['max_number_of_chains']
+    assert cec_params['min_number_of_tasks_in_chain'] <= cec_params['max_number_of_tasks_in_chain']
+    assert cec_params['min_number_ecus'] <= cec_params['max_number_ecus']
+
+    # combination check
+    assert not (cec_params['generate_automotive_cecs'] and taskset_params['use_uniform_taskset_generation'] and not taskset_params['use_semi_harmonic_periods'])
+
+    # check for warnings
+    if warnings:
+        ...
+        # TODO
+
+
+def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
+    # check if all selected methods are applicable on cecs
+    methods = analysis_methods + normalization_methods
+
+    releases = set([cec.base_ts.check_feature('release_pattern') for cec in cecs])
+    communications = set([cec.base_ts.check_feature('communication_policy') for cec in cecs])
+    
+    release_pattern = next(iter(releases)) if len(releases) == 1 else 'mixed'
+    communication_policy = next(iter(communications)) if len(communications) == 1 else 'mixed'
+
+    for method in methods:
+        assert release_pattern in method.features, f'{method.name} does not support release pattern {release_pattern}'
+        assert communication_policy in method.features, f'{method.name} does not support communication policy {communication_policy}'
+
+
+
 def normalizeLatencies(toNormalize, baseline):
     return [(b-a)/b for a,b in zip(toNormalize, baseline)]
 

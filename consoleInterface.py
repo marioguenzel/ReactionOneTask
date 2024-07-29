@@ -1,7 +1,6 @@
 from framework import *
 import getopt
 
-
 def replace_value(dict, key, new_value):
     old_value = dict[key]
     if new_value == '':
@@ -22,7 +21,8 @@ def analyze_cecs(cecs_file_path,
                  number_of_threads,
                  normalized_plots,
                  absolute_plots,
-                 raw_analyses_results):
+                 raw_analyses_results,
+                 print_to_console):
     
     output_dir = helpers.make_output_directory()
 
@@ -32,9 +32,12 @@ def analyze_cecs(cecs_file_path,
 
     cause_effect_chains = helpers.load_data(cecs_file_path)
 
-    print(len(cause_effect_chains))
+    check_methods_and_cecs(
+        selected_analysis_methods,
+        selected_normalization_methods,
+        cause_effect_chains
+    )
 
-    
     ####################
     ### Run Analyses ###
     ####################
@@ -70,6 +73,10 @@ def analyze_cecs(cecs_file_path,
             output_dir
         )
 
+    if print_to_console:
+        for analysis_method in selected_analysis_methods:
+            print(analysis_method.latencies)
+
     return output_dir
 
 
@@ -78,6 +85,8 @@ def runCLIMode(args):
     # cli mode has two options:
     # 1. create cause-effect chains and store them in a file
     # 2. load cause-effect chains from a file and analyse them
+
+    debug_output = False
 
     ##################
     #### Read args ###
@@ -102,11 +111,11 @@ def runCLIMode(args):
             [param + '=' for param in list(taskset_generation_params.keys()) if not isinstance(taskset_generation_params[param], bool)] + 
             [param for param in list(taskset_generation_params.keys()) if isinstance(taskset_generation_params[param], bool)] +
             [param + '=' for param in list(cec_generation_params.keys()) if not isinstance(cec_generation_params[param], bool)] + 
-            [param for param in list(cec_generation_params.keys()) if isinstance(cec_generation_params[param], bool)]
+            [param for param in list(cec_generation_params.keys()) if isinstance(cec_generation_params[param], bool)] + 
+            ['debug']
         )
 
         for option, value in options:
-            print(option, value)
             option = option.replace('-', '')
             if option in taskset_generation_params.keys():
                 replace_value(taskset_generation_params, option, value)
@@ -116,21 +125,26 @@ def runCLIMode(args):
                 number_of_threads = int(value)
             if option == 'o':
                 output_dir = value
-
-        # check if given arguments are valid
-        # TODO
+            if option == 'debug':
+                debug_output = True
 
         if output_dir == '':
             output_dir = helpers.make_output_directory()
 
         # Debug Output
 
-        print('[Info] number_of_threads:', number_of_threads)
-        print('[Info] output_dir:', output_dir)
+        if debug_output:
+            print('[Info] number_of_threads:', number_of_threads)
+            print('[Info] output_dir:', output_dir)
+            print('[Info] taskset_generation_params:', taskset_generation_params)
+            print('[Info] cec_generation_params:',cec_generation_params)
 
-        print(taskset_generation_params)
-        print(cec_generation_params)
 
+        check_params(
+            taskset_generation_params,
+            cec_generation_params,
+            True
+        )
 
         generate_cecs(
             taskset_generation_params,
@@ -140,7 +154,7 @@ def runCLIMode(args):
             output_dir
         )
 
-    if args[0] == 'analyze-cecs':
+    elif args[0] == 'analyze-cecs':
 
         selected_analysis_methods = []
         selected_normalization_methods = []
@@ -151,9 +165,7 @@ def runCLIMode(args):
         raw_analyses_results = False
 
         i = 1
-        print(len(args))
         while i < len(args):
-            print(i)
 
             if args[i] == '--normalized-plots':
                 normalized_plots = True
@@ -167,6 +179,11 @@ def runCLIMode(args):
 
             if args[i] == '--csv-export':
                 raw_analyses_results = True
+                i+=1
+                continue
+
+            if args[i] == '--debug':
+                debug_output = True
                 i+=1
                 continue
 
@@ -208,13 +225,14 @@ def runCLIMode(args):
                 print("[ERROR] Terminating")
                 return
 
-        print('[Info] Selected analysis methods:', selected_analysis_methods)
-        print('[Info] Selected normalization methods:', selected_normalization_methods)
-        print('[Info] Selected file:', cecs_file_path)
-        print('[Info] Number of threads:', number_of_threads)
-
-        # check if given arguments are valid
-        # TODO
+        if debug_output:
+            print('[Info] Selected analysis methods:', selected_analysis_methods)
+            print('[Info] Selected normalization methods:', selected_normalization_methods)
+            print('[Info] Selected file:', cecs_file_path)
+            print('[Info] Number of threads:', number_of_threads)
+            print('[Info] Normalized plots:', normalized_plots)
+            print('[Info] Absolute plots:', absolute_plots)
+            print('[Info] CSV exports:', raw_analyses_results)
 
         output_dir = analyze_cecs(
             cecs_file_path,
@@ -223,11 +241,54 @@ def runCLIMode(args):
             number_of_threads,
             normalized_plots,
             absolute_plots,
-            raw_analyses_results
+            raw_analyses_results,
+            False
         )
 
         print('[Info] Run finished without any errors')
         print('[Info] Results are saved in:', output_dir)
+
+    elif len(args) == 2:
+        # simplest mode
+        # first argument is the analysis method
+        # second argument is the file to analyze
+        selected_analysis_methods = [analysesDict[args[0]]]
+        cecs_file_path = args[1]
+        number_of_threads = 1
+
+        output_dir = analyze_cecs(
+            cecs_file_path,
+            selected_analysis_methods,
+            [],
+            number_of_threads,
+            False,
+            False,
+            False,
+            True
+        )
+
+    elif len(args) == 3:
+        # first argument is the analysis method
+        # second argument is the file to analyze
+        # third argument is the number of threads
+        selected_analysis_methods = [analysesDict[args[0]]]
+        cecs_file_path = args[1]
+        number_of_threads = int(args[2])
+
+        output_dir = analyze_cecs(
+            cecs_file_path,
+            selected_analysis_methods,
+            [],
+            number_of_threads,
+            False,
+            False,
+            False,
+            True
+        )
+
+    else:
+        print('[ERROR] Could not parse input parameters')
+        
 
 
 
