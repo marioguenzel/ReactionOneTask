@@ -40,12 +40,11 @@ def runCLIMode(args):
 
         options, arguments = getopt.getopt(
             args[1:],
-            "t:o:",
+            "t:o:d",
             [param + '=' for param in list(taskset_generation_params.keys()) if not isinstance(taskset_generation_params[param], bool)] + 
             [param for param in list(taskset_generation_params.keys()) if isinstance(taskset_generation_params[param], bool)] +
             [param + '=' for param in list(cec_generation_params.keys()) if not isinstance(cec_generation_params[param], bool)] + 
-            [param for param in list(cec_generation_params.keys()) if isinstance(cec_generation_params[param], bool)] + 
-            ['debug']
+            [param for param in list(cec_generation_params.keys()) if isinstance(cec_generation_params[param], bool)]
         )
 
         for option, value in options:
@@ -58,12 +57,14 @@ def runCLIMode(args):
                 general_params['number_of_threads'] = int(value)
             if option == 'o':
                 output_params['output_dir'] = value
-            if option == 'debug':
+            if option == 'd':
                 general_params['debug_output'] = True
 
     elif args[0] == 'analyze-cecs':
 
         general_params['load_cecs_from_file'] = True
+
+        # TODO: replace this part with a getopt implementation like above
 
         i = 1
         while i < len(args):
@@ -83,7 +84,7 @@ def runCLIMode(args):
                 i+=1
                 continue
 
-            if args[i] == '--debug':
+            if args[i] == '-d':
                 general_params['debug_output'] = True
                 i+=1
                 continue
