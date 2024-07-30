@@ -271,21 +271,23 @@ def runVisualMode(window):
             ### Gather all inputs from GUI ###
             ##################################
 
+            general_params = dict(default_general_params)
             taskset_params = dict(default_taskset_generation_params)
             cec_params = dict(default_cec_generation_params)
+            output_params = dict(default_output_params)
 
             print(values)
 
             # General
-            generate_cecs = values['-Generate_CEC_Radio-']
-            store_generated_cecs = values['-Store_CECs_Box-']
-            load_cecs_from_file = values['-Load_CEC_Radio-']
+            general_params['generate_cecs'] = values['-Generate_CEC_Radio-']
+            general_params['store_generated_cecs'] = values['-Store_CECs_Box-']
+            general_params['load_cecs_from_file'] = values['-Load_CEC_Radio-']
             try:
-                number_of_threads = int(values['-Threads_Input-'])
+                general_params['number_of_threads'] = int(values['-Threads_Input-'])
             except ValueError:
                 popUp('ValueError', [f"Invalid number of threads '{values['-Threads_Input-']}'!"])
                 continue
-            cecs_file_path = values['-File_Input-']
+            general_params['cecs_file_path'] = values['-File_Input-']
 
             # Taskset
             taskset_params['use_automotive_taskset_generation'] = values['-Automotive_Taskset_Radio-']
@@ -386,9 +388,9 @@ def runVisualMode(window):
                     selected_normalization_methods.append(analysesDict[method])
             
             # Plots
-            normalized_plots = values['-CBP1-']
-            absolute_plots = values['-CBP2-']
-            raw_analyses_results = values['-CBP3-']
+            output_params['normalized_plots'] = values['-CBP1-']
+            output_params['absolute_plots'] = values['-CBP2-']
+            output_params['raw_analyses_results'] = values['-CBP3-']
 
             print(selected_analysis_methods)
             print(selected_normalization_methods)
@@ -400,60 +402,23 @@ def runVisualMode(window):
 
             #TODO
 
-            ######################
-            ### Create Taskset ###
-            ######################
-
-            output_dir = helpers.make_output_directory()
-
-            # first create a taskset
-            if generate_cecs:
-
-                print("Generating Tasksets")
-                
-                # selected automotive benchmark
-                if taskset_params['use_automotive_taskset_generation']:                        
-                    tasksets = generate_automotive_tasksets(taskset_params, number_of_threads)
-
-                # selected uniform benchmark
-                if taskset_params['use_uniform_taskset_generation']:
-                    tasksets = generate_uniform_tasksets(taskset_params, number_of_threads)
-
-                for taskset in tasksets:
-                    adjust_taskset_release_pattern(taskset, taskset_params['sporadic_ratio'])
-                    adjust_taskset_communication_policy(taskset, taskset_params['let_ratio'])
-                    taskset.rate_monotonic_scheduling()
-                    taskset.compute_wcrts()
-
-                # remove tasksets with tasks that miss their deadline
-                tasksets = remove_invalid_tasksets(tasksets)
-
-
             #########################################
             ### Generate/Load Cause Effect Chains ###
             #########################################
 
-            cause_effect_chains = []
-
-            if generate_cecs:
-
-                print("Generating Cause-Effect Chains")
-
-                if cec_params['generate_automotive_cecs']:
-                    cause_effect_chains = generate_automotive_cecs(tasksets, cec_params, number_of_threads)
-
-                if cec_params['generate_random_cecs']:
-                    cause_effect_chains = generate_random_cecs(tasksets, cec_params, number_of_threads)
-
-                if cec_params['generate_interconnected_cecs']:
-                    cause_effect_chains = create_interconnected_cecs(cause_effect_chains, cec_params)
-
-                if store_generated_cecs:
-                    helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
+            # first create a taskset
+            if general_params['generate_cecs']:
+                cause_effect_chains = generate_cecs(
+                    taskset_params,
+                    cec_params,
+                    general_params['number_of_threads'],
+                    general_params['store_generated_cecs'],
+                    output_params['output_dir']
+                )
 
             # user selected load CECs from file
-            if load_cecs_from_file:
-                cause_effect_chains = helpers.load_data(cecs_file_path)
+            if general_params['load_cecs_from_file']:
+                cause_effect_chains = helpers.load_data(general_params['cecs_file_path'])
 
             print(len(cause_effect_chains))
 
@@ -467,33 +432,19 @@ def runVisualMode(window):
             performAnalyses(
                 cause_effect_chains, 
                 selected_analysis_methods + selected_normalization_methods, 
-                number_of_threads
+                general_params['number_of_threads']
             )
 
 
-            #############################
-            ### Generate output plots ###
-            #############################
+            #######################
+            ### Generate output ###
+            #######################
 
-            if normalized_plots:
-                create_normalized_plots(
-                    selected_analysis_methods, 
-                    selected_normalization_methods, 
-                    output_dir
-                )
-
-            if absolute_plots:
-                create_absolute_plots(
-                    selected_analysis_methods, 
-                    output_dir
-                )
-
-            if raw_analyses_results:
-                save_raw_analysis_results(
-                    selected_analysis_methods,
-                    selected_normalization_methods,
-                    output_dir
-                )
+            generate_output(
+                output_params,
+                selected_analysis_methods,
+                selected_normalization_methods
+            )
 
             #######################
             ### Feedback pop-up ###
@@ -502,5 +453,5 @@ def runVisualMode(window):
             popUp('Info', 
                 ['Run finished without any errors.', 
                'Results are saved in:', 
-                output_dir]
+                output_params['output_dir']]
             )

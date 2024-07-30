@@ -44,3 +44,39 @@ def plot(data, filename, xticks=None, title='', yticks=None, ylimits=None, yscal
     fig.savefig(filename)
     plt.close(fig)
     print(f'plot {filename} created')
+
+
+def create_normalized_plots(selected_analysis_methods, 
+                            selected_normalization_methods, 
+                            output_dir):
+    for baseline in selected_normalization_methods:
+        for method in selected_analysis_methods:
+            if method.latencies != []:
+                plot(method.normalize(baseline), 
+                            output_dir + method.name_short + "_normalized_to_" + baseline.name_short + ".pdf", 
+                            title=method.name_short + " (normalized to " + baseline.name_short + ")",
+                            ylimits=(0, 1.0)
+                )
+
+        # only do comparison if there is something to compare
+        if len(selected_analysis_methods) >= 2:
+            plot([method.normalize(baseline) for method in selected_analysis_methods], 
+                        output_dir + "normalized_to_" + baseline.name_short + ".pdf", 
+                        xticks=[method.name_short for method in selected_analysis_methods], 
+                        title="Relative Comparison (normalized to " + baseline.name_short + ")",
+                        ylimits=(0, 1.0))
+
+
+def create_absolute_plots(selected_analysis_methods, 
+                          output_dir):
+    for method in selected_analysis_methods:
+        if method.latencies != []:
+            plot(method.latencies, output_dir + method.name_short + ".pdf")
+
+    # only do comparison if there is something to compare
+    if len(selected_analysis_methods) >= 2:
+        plot([method.latencies for method in selected_analysis_methods], 
+                    output_dir + "absolute.pdf", 
+                    xticks=[method.name_short for method in selected_analysis_methods], 
+                    title="Absolute Comparison"
+        )

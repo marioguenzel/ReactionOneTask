@@ -76,9 +76,19 @@ analysesDict = {
 }
 
 
+# default parameters for general settings
+default_general_params = {
+    'generate_cecs' : False,
+    'store_generated_cecs' : False,
+    'load_cecs_from_file' : False,
+    'cecs_file_path' : '',
+    'number_of_threads' : 1,
+    'debug_output' : False
+}
+
 # default parameters for taskset generation
 default_taskset_generation_params = {
-    'use_automotive_taskset_generation': True,
+    'use_automotive_taskset_generation': False,
     'use_uniform_taskset_generation': False,
 
     'target_util': 0.5,
@@ -86,7 +96,7 @@ default_taskset_generation_params = {
     'sporadic_ratio': 0.0,
     'let_ratio': 0.0,
 
-    'use_semi_harmonic_periods': True,
+    'use_semi_harmonic_periods': False,
     'min_number_of_tasks': 40,
     'max_number_of_tasks': 60,
     'min_period': 1,
@@ -95,7 +105,7 @@ default_taskset_generation_params = {
 
 # default parameters for cec generation
 default_cec_generation_params = {
-    'generate_automotive_cecs': True,
+    'generate_automotive_cecs': False,
     'generate_random_cecs': False,
 
     'min_number_of_chains': 30,
@@ -108,6 +118,15 @@ default_cec_generation_params = {
     'min_number_ecus': 2,
     'max_number_ecus': 5,
     'number_of_inter_cecs': 1000
+}
+
+# default parameters for output generation
+default_output_params = {
+    'normalized_plots' : False,
+    'absolute_plots' : False,
+    'raw_analyses_results' : False,
+    'output_dir' : '',
+    'print_to_console' : False
 }
 
 
@@ -210,31 +229,6 @@ def create_interconnected_cecs(cause_effect_chains, cec_params):
     return interconncected_chains
 
 
-def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
-    tasksets = []
-    with Pool(number_of_threads) as pool:
-        tasksets = pool.map(
-            automotiveBench.gen_taskset, 
-            [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets']
-        )
-    return tasksets
-
-
-def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
-    tasksets = []
-    with Pool(number_of_threads) as pool:
-        tasksets = pool.starmap(uniformBench.gen_taskset, [(
-            taskset_generation_params['target_util'], 
-            taskset_generation_params['min_number_of_tasks'], 
-            taskset_generation_params['max_number_of_tasks'],
-            taskset_generation_params['min_period'],
-            taskset_generation_params['max_period'],
-            taskset_generation_params['use_semi_harmonic_periods'],
-            False
-        )] * taskset_generation_params['number_of_tasksets'])
-    return tasksets
-
-
 def remove_invalid_tasksets(tasksets):
     valid_tasksets = tasksets.copy()
     for taskset in tasksets:
@@ -256,46 +250,6 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
         task.communication_policy = 'LET'
 
 
-def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads):
-    cause_effect_chains = []
-    number_of_tasksets = len(tasksets)
-
-    with Pool(number_of_threads) as pool:
-        cause_effect_chains = pool.starmap(
-            automotiveBench.gen_ce_chains,
-            zip(
-                tasksets,
-                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
-                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
-            )
-        )
-
-    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
-        
-    return cause_effect_chains
-
-
-def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
-    cause_effect_chains = []
-    number_of_tasksets = len(tasksets)
-
-    with Pool(number_of_threads) as pool:
-        cause_effect_chains = pool.starmap(
-            uniformBench.gen_cause_effect_chains,
-            zip(
-                tasksets,
-                [cec_generation_params['min_number_of_tasks_in_chain']] * number_of_tasksets,
-                [cec_generation_params['max_number_of_tasks_in_chain']] * number_of_tasksets,
-                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
-                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
-            )
-        )
-
-    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
-
-    return cause_effect_chains
-
-
 def generate_cecs(taskset_generation_params,
                   cec_generation_params,
                   number_of_threads,
@@ -308,14 +262,14 @@ def generate_cecs(taskset_generation_params,
 
     # selected automotive benchmark
     if taskset_generation_params['use_automotive_taskset_generation']:
-        tasksets = generate_automotive_tasksets(
+        tasksets = automotiveBench.generate_automotive_tasksets(
             taskset_generation_params, 
             number_of_threads
         )
 
     # selected uniform benchmark
     if taskset_generation_params['use_uniform_taskset_generation']:
-        tasksets = generate_uniform_tasksets(
+        tasksets = uniformBench.generate_uniform_tasksets(
             taskset_generation_params,
             number_of_threads
         )
@@ -337,14 +291,14 @@ def generate_cecs(taskset_generation_params,
     cause_effect_chains = []
 
     if cec_generation_params['generate_automotive_cecs']:
-        cause_effect_chains = generate_automotive_cecs(
+        cause_effect_chains = automotiveBench.generate_automotive_cecs(
             tasksets, 
             cec_generation_params,
             number_of_threads
         )
 
     if cec_generation_params['generate_random_cecs']:
-        cause_effect_chains = generate_random_cecs(
+        cause_effect_chains = uniformBench.generate_random_cecs(
             tasksets, 
             cec_generation_params,
             number_of_threads
@@ -357,45 +311,11 @@ def generate_cecs(taskset_generation_params,
         )
 
     if store_generated_cecs:
+        if output_dir == '':
+            output_dir = helpers.make_output_directory()
         helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
 
     return cause_effect_chains
-
-
-def create_normalized_plots(selected_analysis_methods, 
-                            selected_normalization_methods, 
-                            output_dir):
-    for baseline in selected_normalization_methods:
-        for method in selected_analysis_methods:
-            if method.latencies != []:
-                plot.plot(method.normalize(baseline), 
-                            output_dir + method.name_short + "_normalized_to_" + baseline.name_short + ".pdf", 
-                            title=method.name_short + " (normalized to " + baseline.name_short + ")",
-                            ylimits=(0, 1.0)
-                )
-
-        # only do comparison if there is something to compare
-        if len(selected_analysis_methods) >= 2:
-            plot.plot([method.normalize(baseline) for method in selected_analysis_methods], 
-                        output_dir + "normalized_to_" + baseline.name_short + ".pdf", 
-                        xticks=[method.name_short for method in selected_analysis_methods], 
-                        title="Relative Comparison (normalized to " + baseline.name_short + ")",
-                        ylimits=(0, 1.0))
-
-
-def create_absolute_plots(selected_analysis_methods, 
-                          output_dir):
-    for method in selected_analysis_methods:
-        if method.latencies != []:
-            plot.plot(method.latencies, output_dir + method.name_short + ".pdf")
-
-    # only do comparison if there is something to compare
-    if len(selected_analysis_methods) >= 2:
-        plot.plot([method.latencies for method in selected_analysis_methods], 
-                    output_dir + "absolute.pdf", 
-                    xticks=[method.name_short for method in selected_analysis_methods], 
-                    title="Absolute Comparison"
-        )
 
 
 def save_raw_analysis_results(selected_analysis_methods,
@@ -415,3 +335,75 @@ def save_raw_analysis_results(selected_analysis_methods,
     )
 
 
+def generate_output(output_params, selected_analysis_methods, selected_normalization_methods):
+
+    if output_params['normalized_plots']:
+        if output_params['output_dir'] == '':
+            output_params['output_dir'] = helpers.make_output_directory()
+        plot.create_normalized_plots(
+            selected_analysis_methods, 
+            selected_normalization_methods, 
+            output_params['output_dir']
+        )
+
+    if output_params['absolute_plots']:
+        if output_params['output_dir'] == '':
+            output_params['output_dir'] = helpers.make_output_directory()
+        plot.create_absolute_plots(
+            selected_analysis_methods, 
+            output_params['output_dir']
+        )
+
+    if output_params['raw_analyses_results']:
+        if output_params['output_dir'] == '':
+            output_params['output_dir'] = helpers.make_output_directory()
+        save_raw_analysis_results(
+            selected_analysis_methods,
+            selected_normalization_methods,
+            output_params['output_dir']
+        )
+
+    if output_params['print_to_console']:
+        for analysis_method in selected_analysis_methods:
+            print(analysis_method.latencies)
+
+
+def analyze_cecs_from_file(general_params,
+                           selected_analysis_methods,
+                           selected_normalization_methods,
+                           output_params):
+
+    #############################
+    ### Load Chains from file ###
+    #############################
+
+    cause_effect_chains = helpers.load_data(general_params['cecs_file_path'])
+
+    check_methods_and_cecs(
+        selected_analysis_methods,
+        selected_normalization_methods,
+        cause_effect_chains
+    )
+
+    ####################
+    ### Run Analyses ###
+    ####################
+
+    performAnalyses(
+        cause_effect_chains, 
+        selected_analysis_methods + selected_normalization_methods, 
+        general_params['number_of_threads']
+    )
+
+
+    #############################
+    ### Generate output plots ###
+    #############################
+
+    generate_output(
+        output_params,
+        selected_analysis_methods,
+        selected_normalization_methods,
+    )
+
+    return output_params['output_dir']

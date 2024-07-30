@@ -12,6 +12,8 @@ import random
 from tasks.task import Task
 from tasks.taskset import TaskSet
 from cechains.chain import CEChain
+from multiprocessing import Pool
+import itertools
 
 
 def gen_taskset(
@@ -181,3 +183,43 @@ def generate_periods_loguniform_discrete(num_tasks, min_period,
         rounded_periods.append(rp)
     # Return the set of periods.
     return rounded_periods
+
+
+###
+# Parallelized functions
+###
+
+def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
+    tasksets = []
+    with Pool(number_of_threads) as pool:
+        tasksets = pool.starmap(gen_taskset, [(
+            taskset_generation_params['target_util'], 
+            taskset_generation_params['min_number_of_tasks'], 
+            taskset_generation_params['max_number_of_tasks'],
+            taskset_generation_params['min_period'],
+            taskset_generation_params['max_period'],
+            taskset_generation_params['use_semi_harmonic_periods'],
+            False
+        )] * taskset_generation_params['number_of_tasksets'])
+    return tasksets
+
+
+def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
+    cause_effect_chains = []
+    number_of_tasksets = len(tasksets)
+
+    with Pool(number_of_threads) as pool:
+        cause_effect_chains = pool.starmap(
+            gen_cause_effect_chains,
+            zip(
+                tasksets,
+                [cec_generation_params['min_number_of_tasks_in_chain']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_tasks_in_chain']] * number_of_tasksets,
+                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+            )
+        )
+
+    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
+
+    return cause_effect_chains

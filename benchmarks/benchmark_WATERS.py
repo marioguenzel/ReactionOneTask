@@ -5,9 +5,11 @@ From the paper: 'Real world automotive benchmark for free' (WATERS 2015).
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/generator_WATERS.py
 and https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/benchmark_WATERS.py
 """
+from multiprocessing import Pool
 from scipy import stats
 import numpy as np
 import random
+import itertools
 from scipy.stats import exponweib
 from collections import Counter
 from tasks.task import Task
@@ -342,12 +344,34 @@ def gen_ce_chains(task_set, number_chains_min, number_chains_max):  # TODO updat
     return ce_chains
 
 
-if __name__ == '__main__':
-    """Debug."""
-    ts_set = [gen_taskset(0.5) for _ in range(5)]
-    ce_set = [gen_ce_chains(ts) for ts in ts_set]
-    from tasks.taskset import transform
+###
+# Parallelized functions
+###
 
-    [transform(x) for x in ts_set]
+def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
+    tasksets = []
+    with Pool(number_of_threads) as pool:
+        tasksets = pool.map(
+            gen_taskset, 
+            [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets']
+        )
+    return tasksets
 
-    breakpoint()
+
+def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads):
+    cause_effect_chains = []
+    number_of_tasksets = len(tasksets)
+
+    with Pool(number_of_threads) as pool:
+        cause_effect_chains = pool.starmap(
+            gen_ce_chains,
+            zip(
+                tasksets,
+                [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+            )
+        )
+
+    cause_effect_chains = list(itertools.chain.from_iterable(cause_effect_chains))
+        
+    return cause_effect_chains
