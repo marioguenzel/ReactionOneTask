@@ -395,55 +395,18 @@ def runVisualMode(window):
             print(selected_analysis_methods)
             print(selected_normalization_methods)
 
-        
-            ##########################################
-            ### Check whether all inputs are valid ###
-            ##########################################
 
-            #TODO
+            ################################
+            ### Run Evaluation Framework ###
+            ################################
 
-            #########################################
-            ### Generate/Load Cause Effect Chains ###
-            #########################################
-
-            # first create a taskset
-            if general_params['generate_cecs']:
-                cause_effect_chains = generate_cecs(
-                    taskset_params,
-                    cec_params,
-                    general_params['number_of_threads'],
-                    general_params['store_generated_cecs'],
-                    output_params['output_dir']
-                )
-
-            # user selected load CECs from file
-            if general_params['load_cecs_from_file']:
-                cause_effect_chains = helpers.load_data(general_params['cecs_file_path'])
-
-            print(len(cause_effect_chains))
-
-            
-            ####################
-            ### Run Analyses ###
-            ####################
-
-            print("Performing Analyses")
-
-            performAnalyses(
-                cause_effect_chains, 
-                selected_analysis_methods + selected_normalization_methods, 
-                general_params['number_of_threads']
-            )
-
-
-            #######################
-            ### Generate output ###
-            #######################
-
-            generate_output(
-                output_params,
+            run_evaluation(
+                general_params,
+                taskset_params,
+                cec_params,
                 selected_analysis_methods,
-                selected_normalization_methods
+                selected_normalization_methods,
+                output_params
             )
 
             #######################

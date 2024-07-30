@@ -40,6 +40,10 @@ class AnalysisMethod:
             return [(b-a)/b for a,b in zip(self.latencies, baseline.latencies)]
 
 
+########################################################
+### Dictionary with all implemented analysis methods ###
+########################################################
+
 analysesDict = {
     # intern_name : AnalysisMethod(analysis_method, long_name (used in GUI), short_name (used in plots), feature list)
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
@@ -75,6 +79,10 @@ analysesDict = {
     'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'let']),
 }
 
+
+############################################################
+### Configuration parameters of the evaluation framework ###
+############################################################
 
 # default parameters for general settings
 default_general_params = {
@@ -129,9 +137,12 @@ default_output_params = {
     'print_to_console' : False
 }
 
+######################
+### Input checking ###
+######################
 
-def check_params(taskset_params, cec_params, warnings):
-    # first check for errors
+def check_params(taskset_params, cec_params, warnings=True):
+    # first check for errors, then for warnings
 
     # taskset params check
     assert taskset_params['target_util'] >= 0.01
@@ -173,10 +184,9 @@ def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
         assert communication_policy in method.features, f'{method.name} does not support communication policy {communication_policy}'
 
 
-
-def normalizeLatencies(toNormalize, baseline):
-    return [(b-a)/b for a,b in zip(toNormalize, baseline)]
-
+####################
+### Run Analyses ###
+####################
 
 def performAnalyses(cause_effect_chains, methods, number_of_threads):
     latencies_all = []
@@ -213,6 +223,10 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
     return latencies_all
 
 
+###########################
+### Interconnected cecs ###
+###########################
+
 def create_interconnected_cecs(cause_effect_chains, cec_params):
     interconncected_chains = []
 
@@ -228,6 +242,10 @@ def create_interconnected_cecs(cause_effect_chains, cec_params):
 
     return interconncected_chains
 
+
+###########################
+### Taskset adjustments ###
+###########################
 
 def remove_invalid_tasksets(tasksets):
     valid_tasksets = tasksets.copy()
@@ -250,28 +268,36 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
         task.communication_policy = 'LET'
 
 
-def generate_cecs(taskset_generation_params,
+#####################################
+### Cause-Effect Chain generation ###
+#####################################
+
+def generate_cecs(general_params,
+                  taskset_generation_params,
                   cec_generation_params,
-                  number_of_threads,
-                  store_generated_cecs,
-                  output_dir):
+                  output_params):
     
-    ######################
+    ### Parameter Check ###
+    
+    check_params(
+        taskset_generation_params,
+        cec_generation_params
+    )
+
     ### Create Taskset ###
-    ######################
 
     # selected automotive benchmark
     if taskset_generation_params['use_automotive_taskset_generation']:
         tasksets = automotiveBench.generate_automotive_tasksets(
             taskset_generation_params, 
-            number_of_threads
+            general_params['number_of_threads']
         )
 
     # selected uniform benchmark
     if taskset_generation_params['use_uniform_taskset_generation']:
         tasksets = uniformBench.generate_uniform_tasksets(
             taskset_generation_params,
-            number_of_threads
+            general_params['number_of_threads']
         )
 
     for taskset in tasksets:
@@ -284,9 +310,7 @@ def generate_cecs(taskset_generation_params,
     tasksets = remove_invalid_tasksets(tasksets)
 
 
-    #########################################
-    ### Generate/Load Cause Effect Chains ###
-    #########################################
+    ### Generate Cause Effect Chains ###
 
     cause_effect_chains = []
 
@@ -294,14 +318,14 @@ def generate_cecs(taskset_generation_params,
         cause_effect_chains = automotiveBench.generate_automotive_cecs(
             tasksets, 
             cec_generation_params,
-            number_of_threads
+            general_params['number_of_threads']
         )
 
     if cec_generation_params['generate_random_cecs']:
         cause_effect_chains = uniformBench.generate_random_cecs(
             tasksets, 
             cec_generation_params,
-            number_of_threads
+            general_params['number_of_threads']
         )
 
     if cec_generation_params['generate_interconnected_cecs']:
@@ -310,13 +334,17 @@ def generate_cecs(taskset_generation_params,
             cec_generation_params
         )
 
-    if store_generated_cecs:
-        if output_dir == '':
-            output_dir = helpers.make_output_directory()
-        helpers.write_data(output_dir + "cause_effect_chains.pickle", cause_effect_chains)
+    if general_params['store_generated_cecs']:
+        if output_params['output_dir'] == '':
+            output_params['output_dir'] = helpers.make_output_directory()
+        helpers.write_data(output_params['output_dir'] + "cause_effect_chains.pickle", cause_effect_chains)
 
     return cause_effect_chains
 
+
+#########################
+### Output generation ###
+#########################
 
 def save_raw_analysis_results(selected_analysis_methods,
                               selected_normalization_methods,
@@ -368,16 +396,31 @@ def generate_output(output_params, selected_analysis_methods, selected_normaliza
             print(analysis_method.latencies)
 
 
-def analyze_cecs_from_file(general_params,
-                           selected_analysis_methods,
-                           selected_normalization_methods,
-                           output_params):
+##########################
+### Evaluation methods ###
+##########################
 
-    #############################
-    ### Load Chains from file ###
-    #############################
+def run_evaluation(general_params,
+                   taskset_generation_params,
+                   cec_generation_params,
+                   selected_analysis_methods,
+                   selected_normalization_methods,
+                   output_params):
 
-    cause_effect_chains = helpers.load_data(general_params['cecs_file_path'])
+    ### Create/Load Chains from file ###
+
+    if general_params['load_cecs_from_file']:
+        cause_effect_chains = helpers.load_data(general_params['cecs_file_path'])
+    elif general_params['generate_cecs']:
+        cause_effect_chains = generate_cecs(
+            general_params,
+            taskset_generation_params,
+            cec_generation_params,
+            output_params
+        )
+    else:
+        return ''
+
 
     check_methods_and_cecs(
         selected_analysis_methods,
@@ -385,9 +428,7 @@ def analyze_cecs_from_file(general_params,
         cause_effect_chains
     )
 
-    ####################
     ### Run Analyses ###
-    ####################
 
     performAnalyses(
         cause_effect_chains, 
@@ -396,9 +437,7 @@ def analyze_cecs_from_file(general_params,
     )
 
 
-    #############################
-    ### Generate output plots ###
-    #############################
+    ### Generate output ###
 
     generate_output(
         output_params,

@@ -21,7 +21,13 @@ def runCLIMode(args):
     # 1. create cause-effect chains and store them in a file
     # 2. load cause-effect chains from a file and analyse them
 
-    debug_output = False
+    # get default parameters
+    general_params = dict(default_general_params)
+    taskset_generation_params = dict(default_taskset_generation_params)
+    cec_generation_params = dict(default_cec_generation_params)
+    selected_analysis_methods = []
+    selected_normalization_methods = []
+    output_params = dict(default_output_params)
 
     ##################
     #### Read args ###
@@ -29,12 +35,8 @@ def runCLIMode(args):
 
     if args[0] == 'generate-cecs':
 
-        number_of_threads = 1
-        output_dir = ''
-
-        # get default parameters
-        taskset_generation_params = dict(default_taskset_generation_params)
-        cec_generation_params = dict(default_cec_generation_params)
+        general_params['generate_cecs'] = True
+        general_params['store_generated_cecs'] = True
 
         options, arguments = getopt.getopt(
             args[1:],
@@ -53,44 +55,14 @@ def runCLIMode(args):
             if option in cec_generation_params.keys():
                 replace_value(cec_generation_params, option, value)
             if option == 't':
-                number_of_threads = int(value)
+                general_params['number_of_threads'] = int(value)
             if option == 'o':
-                output_dir = value
+                output_params['output_dir'] = value
             if option == 'debug':
-                debug_output = True
-
-        if output_dir == '':
-            output_dir = helpers.make_output_directory()
-
-        # Debug Output
-
-        if debug_output:
-            print('[Info] number_of_threads:', number_of_threads)
-            print('[Info] output_dir:', output_dir)
-            print('[Info] taskset_generation_params:', taskset_generation_params)
-            print('[Info] cec_generation_params:',cec_generation_params)
-
-
-        check_params(
-            taskset_generation_params,
-            cec_generation_params,
-            True
-        )
-
-        generate_cecs(
-            taskset_generation_params,
-            cec_generation_params,
-            number_of_threads,
-            True,
-            output_dir
-        )
+                general_params['debug_output'] = True
 
     elif args[0] == 'analyze-cecs':
 
-        selected_analysis_methods = []
-        selected_normalization_methods = []
-        general_params = dict(default_general_params)
-        output_params = dict(default_output_params)
         general_params['load_cecs_from_file'] = True
 
         i = 1
@@ -154,45 +126,49 @@ def runCLIMode(args):
                 print("[ERROR] Terminating")
                 return
 
-        if debug_output:
-            print('[Info] Selected analysis methods:', selected_analysis_methods)
-            print('[Info] Selected normalization methods:', selected_normalization_methods)
-            print('[Info] general params:', general_params)
-            print('[Info] output params:', output_params)
-
-        output_dir = analyze_cecs_from_file(
-            general_params,
-            selected_analysis_methods,
-            selected_normalization_methods,
-            output_params
-        )
-
-        print('[Info] Run finished without any errors')
-        print('[Info] Results are saved in:', output_dir)
-
     elif len(args) == 2 or len(args) == 3:
         # simplest mode
         # first argument is the analysis method
         # second argument is the file to analyze
         # (optional) third argument is the number of threads
 
-        general_params = dict(default_general_params)
-        output_params = dict(default_output_params)
+        general_params['load_cecs_from_file'] = True
+        general_params['cecs_file_path'] = args[1]
         general_params['number_of_threads'] = int(args[2]) if len(args) == 3 else 1
         output_params['print_to_console'] = True
-
-        selected_analysis_methods = [analysesDict[args[0]]]
-        general_params['cecs_file_path'] = args[1]
-
-        analyze_cecs_from_file(
-            general_params,
-            selected_analysis_methods,
-            [],
-            output_params
-        )
+        selected_analysis_methods.append(analysesDict[args[0]])
 
     else:
         print('[ERROR] Could not parse input parameters')
+        return
+    
+
+    ################################
+    ### Run Evaluation Framework ###
+    ################################
+
+    # Debug Output
+    if general_params['debug_output']:
+        print('[Info] general params:', general_params)
+        print('[Info] taskset_generation_params:', taskset_generation_params)
+        print('[Info] cec_generation_params:', cec_generation_params)
+        print('[Info] selected analysis methods:', selected_analysis_methods)
+        print('[Info] selected normalization methods:', selected_normalization_methods)
+        print('[Info] output params:', output_params)
+
+    run_evaluation(
+        general_params,
+        taskset_generation_params,
+        cec_generation_params,
+        selected_analysis_methods,
+        selected_normalization_methods,
+        output_params
+    )
+
+    # Debug Output
+    if general_params['debug_output']:
+        print('[Info] Run finished without any errors')
+        print('[Info] Results are saved in:', output_params['output_dir'])
         
 
 

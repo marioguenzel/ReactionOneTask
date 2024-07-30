@@ -161,7 +161,7 @@ def guenzel23_inter_mrt(*local_chains):
     inter_chain = list(local_chains)
     latency = 0
     for local_chain in inter_chain:
-        latency+=guenzel_23_local_mrt(local_chain)
+        latency+=guenzel23_local_mrt(local_chain)
     return latency
 
 
@@ -169,5 +169,5 @@ def guenzel23_inter_mrda(*local_chains):
     inter_chain = list(local_chains)
     latency = 0
     for local_chain in inter_chain:
-        latency+=guenzel_23_local_mrda(local_chain)
+        latency+=guenzel23_local_mrda(local_chain)
     return latency
