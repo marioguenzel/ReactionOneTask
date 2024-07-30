@@ -9,7 +9,7 @@ Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed
 import math
 import itertools
 from cechains.chain import CEChain
-from e2eAnalyses.Duerr2019 import duerr_19_mrt
+from e2eAnalyses.Duerr2019 import duerr19_mrt
 
 # Sporadic + LET
 
@@ -108,7 +108,7 @@ def LET_per(chain):
 # Mixed
 #####
 
-def guenzel_23_mix_pessimistic(chain):
+def guenzel23_mix_pessimistic(chain):
     """Pessimistic Analysis for mixed chains."""
     result = 0
     for task in chain:
@@ -122,9 +122,9 @@ def guenzel_23_mix_pessimistic(chain):
     return result
 
 
-def guenzel_23_mix(
+def guenzel23_mix(
         chain,
-        impl_spor=duerr_19_mrt,
+        impl_spor=duerr19_mrt,
         impl_per=impl_per,
         let_spor=LET_spor,
         let_per=LET_per
@@ -166,7 +166,7 @@ def _cut_chain(chain, communication=True, release=True):
     return new_chains
 
 
-def guenzel_23_mix_improved(chain):
+def guenzel23_mix_improved(chain):
     """Our analysis. Cut only when release constraint changes."""
     cutted_chains = _cut_chain(chain, communication=False, release=True)
 

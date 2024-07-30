@@ -117,7 +117,7 @@ def find_fi(ce_chain: CEChain) -> list[int]:
 #####
 
 
-def guenzel_23_equi_mda(chain: CEChain, Fi=None) -> float:
+def guenzel23_equi_mda(chain: CEChain, Fi=None) -> float:
     """Compute MRT or MDA as in our paper using result X # TODO add definition/equation
     - optimized p for periodic synchrnous let tasks
     """
@@ -146,11 +146,11 @@ def guenzel_23_equi_mda(chain: CEChain, Fi=None) -> float:
     return max([ell(pc) for pc in part_chains])
 
 
-def guenzel_23_equi_mrt(chain: CEChain, Fi=None) -> float:
+def guenzel23_equi_mrt(chain: CEChain, Fi=None) -> float:
     return guenzel_23_equi_mda(chain, Fi)
 
 
-def guenzel_23_equie_mrrt(chain: CEChain, mrt: float = None) -> float:
+def guenzel23_equie_mrrt(chain: CEChain, mrt: float = None) -> float:
     """Compute MRRT using the result from X # TODO add result
     Assumption: LET communication
     """
@@ -163,7 +163,7 @@ def guenzel_23_equie_mrrt(chain: CEChain, mrt: float = None) -> float:
     return mrrt
 
 
-def guenzel_23_equi_mrda(chain: CEChain, mda: float = None) -> float:
+def guenzel23_equi_mrda(chain: CEChain, mda: float = None) -> float:
     """Compute MRDA using the result from X # TODO add result
     Assumption: LET communication
     """

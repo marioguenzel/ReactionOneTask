@@ -138,26 +138,26 @@ def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
 
 
 # single ecu
-def guenzel_23_local_mrt(chain):
+def guenzel23_local_mrt(chain):
     lst_ce_ts = [[chain], chain.base_ts]
     latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mrt']
 
 
-def guenzel_23_local_mda(chain):
+def guenzel23_local_mda(chain):
     lst_ce_ts = [[chain], chain.base_ts]
     latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mda']
 
 
-def guenzel_23_local_mrda(chain):
+def guenzel23_local_mrda(chain):
     lst_ce_ts = [[chain], chain.base_ts]
     latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mrda']
 
 
 # inter ecu analyses
-def guenzel_23_inter_mrt(*local_chains):
+def guenzel23_inter_mrt(*local_chains):
     inter_chain = list(local_chains)
     latency = 0
     for local_chain in inter_chain:
@@ -165,7 +165,7 @@ def guenzel_23_inter_mrt(*local_chains):
     return latency
 
 
-def guenzel_23_inter_mrda(*local_chains):
+def guenzel23_inter_mrda(*local_chains):
     inter_chain = list(local_chains)
     latency = 0
     for local_chain in inter_chain:

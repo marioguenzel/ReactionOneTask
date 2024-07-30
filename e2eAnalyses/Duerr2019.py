@@ -21,7 +21,7 @@ def duerr19(chain):
     return latency
 
 
-def duerr_19_mrt(*local_chains):
+def duerr19_mrt(*local_chains):
     """Maximum reaction time analysis from Duerr (Theorem 5.4)"""
     inter_chain = list(local_chains)
     wcrts = get_all_wcrts(inter_chain)
@@ -41,7 +41,7 @@ def duerr_19_mrt(*local_chains):
     return latency
 
 
-def duerr_19_mrda(*local_chains):
+def duerr19_mrda(*local_chains):
     """Maximum data age analysis from Duerr (Theorem 5.10)"""
     inter_chain = list(local_chains)
     wcrts = get_all_wcrts(inter_chain)
