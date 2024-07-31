@@ -34,3 +34,50 @@ List of papers with analyses methods relevant for the framework:
 |End-To-End Timing Analysis in ROS2                                                      |Teper 2022    | ?        | ?        | ?        | ?     | ?            | Missing    |
 |Latency analysis of self-suspending task chains                                         |Kloda 2022    | Yes      | No       | Yes      | No    | MRT          | Missing    |
 |Reaction Time Analysis of Event-Triggered Processing Chains with Data Refreshing        |Tang 2023     | Yes      | No       | Yes      | No    | ?            | Missing    |
+
+## File structure
+
+    .
+    ├── benchmarks				        # Folder with all available benchmarks
+    │	├── benchmark_Uniform.py		# Uniform taskset/cec generation
+    │	└── benchmark_WATERS.py		    # Automotive (WATERS) benchmark
+    ├── cechains				
+    │	├── chain.py			        # Definiton of a cause-effect chain
+    │	└── jobchain.py			        # Definiton of a job-chain
+    ├── e2eAnalyses				        # All analysis methods of the framework
+    │	├── Becker2017.py
+    │	├── BeckerFast.py
+    │	├── Bi2022.py
+    │	├── Davare2007.py
+    │	├── Duerr2019.py
+    │	├── Guenzel2023_equi.py
+    │	├── Guenzel2023_inter.py
+    │	├── Guenzel2023_mixed.py
+    │	├── Hamann2017.py
+    │	├── Kloda2018.py
+    │	├── Kordon2020.py
+    │	├── Martinez2020.py
+    │	├── newAnalysis.py
+    │	└── newAnalysis2.py
+    ├── plotting
+    │	└── plot.py				        # Methods for creating the box plots
+    ├── pySimpleGUI
+    │	└── PySimpleGUI-4.60.5.tar.gz   # Last free software version of PSG
+    ├── tasks
+    │	├── job.py				        # Definition of a job
+    │	├── task.py				        # Definition of a task
+    │	└── taskset.py			        # Definition of a taskset
+    ├── utilities				        # Extra code, only necessary for some analyses
+    │	├── analyzer_our.py
+    │	├── analyszer.py
+    │	├── augmented_job_chain.py
+    │	├── event_simulator.py
+    │	└── schedule_analyzer.py
+    ├── .gitignore
+    ├── consoleInterface.py			    # Parses the given console arguments
+    ├── e2eMain.py				        # Main file to start the framework
+    ├── framework.py				    # Logic of the framework
+    ├── graphicalInterface.py			# Starts the GUI and collects input values
+    ├── helpers.py				        # Helpers for file access
+    ├── LICENSE
+    └── README.md
