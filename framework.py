@@ -132,7 +132,7 @@ default_cec_generation_params = {
 default_output_params = {
     'normalized_plots' : False,
     'absolute_plots' : False,
-    'raw_analyses_results' : False,
+    'raw_analysis_results' : False,
     'output_dir' : '',
     'print_to_console' : False
 }
@@ -382,7 +382,7 @@ def generate_output(output_params, selected_analysis_methods, selected_normaliza
             output_params['output_dir']
         )
 
-    if output_params['raw_analyses_results']:
+    if output_params['raw_analysis_results']:
         if output_params['output_dir'] == '':
             output_params['output_dir'] = helpers.make_output_directory()
         save_raw_analysis_results(

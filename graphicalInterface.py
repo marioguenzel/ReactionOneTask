@@ -390,7 +390,7 @@ def runVisualMode(window):
             # Plots
             output_params['normalized_plots'] = values['-CBP1-']
             output_params['absolute_plots'] = values['-CBP2-']
-            output_params['raw_analyses_results'] = values['-CBP3-']
+            output_params['raw_analysis_results'] = values['-CBP3-']
 
             print(selected_analysis_methods)
             print(selected_normalization_methods)
