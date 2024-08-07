@@ -14,7 +14,7 @@ from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 from cechains.jobchain import PartitionedJobChain, abstr_to_jc
 import utilities.event_simulator as es
-import utilities.analyzer_our as a_our
+import utilities.analyzer_guenzel23 as analyzer
 from e2eAnalyses.Davare2007 import davare07
 
 
@@ -157,7 +157,7 @@ def find_fi(ce_chain: CEChain, ana) -> list[int]:
 # New analysis, based on Guenzel2023_equi and Guenzel2023_inter
 #####
 
-def our_mrt_mRda_lst(chain, bcet, wcet):
+def mrt_mRda_lst(chain, bcet, wcet):
 
     # make schedules and store in dictionary
     schedules_todo = [bcet]
@@ -178,14 +178,14 @@ def our_mrt_mRda_lst(chain, bcet, wcet):
                     [chain], ts_et, print_status=True
                 )  # schedule with certain execution time
             else:
-                sched_et = a_our.execution_zero_schedule(ts_et)
+                sched_et = analyzer.execution_zero_schedule(ts_et)
             chain.base_ts.schedules[et] = sched_et
         else:
             sched_et = chain.base_ts.schedules[et]
         schedules[et] = sched_et
         ts_lst[et] = ts_et
 
-    ana = a_our.re_we_analyzer(schedules[bcet], schedules[wcet], chain.base_ts.hyperperiod())
+    ana = analyzer.re_we_analyzer(schedules[bcet], schedules[wcet], chain.base_ts.hyperperiod())
     
     # Construct F_i
     Fi = find_fi(chain, ana)
@@ -211,8 +211,8 @@ def our_mrt_mRda_lst(chain, bcet, wcet):
     return max([ell(pc, ana) for pc in part_chains], default=0) #   TODO fixme
 
 
-def newAna(chain):
-    latency = our_mrt_mRda_lst(chain, 1.0, 1.0)
+def guenzel23_equi_impl_sched(chain):
+    latency = mrt_mRda_lst(chain, 1.0, 1.0)
     return latency
 
 

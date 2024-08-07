@@ -65,7 +65,7 @@ class Analyzer:
     # Cause-Effect Chains' (2021).
     ###
 
-    def max_age_our(self, schedule, task_set, chain, max_phase, hyper_period,
+    def max_age(self, schedule, task_set, chain, max_phase, hyper_period,
                     reduced=False):
         """Our maximum data age time analysis.
 
@@ -154,15 +154,15 @@ class Analyzer:
 
         # Results.
         if reduced:
-            chain.our_red_age = max_length
+            chain.red_age = max_length
         else:
-            chain.our_age = max_length
+            chain.age = max_length
         return max_length
 
     def imm_bw_jc(self, current_job, c_len, schedule, chain, key=0):
         """Compute immediate forward job chain recursively.
 
-        Used as help function for max_age_our(). Returns None if the job chain
+        Used as help function for max_age(). Returns None if the job chain
         is incomplete.
         """
         # Initial case.
@@ -198,7 +198,7 @@ class Analyzer:
         else:
             return []
 
-    def reaction_our(self, schedule, task_set, chain, max_phase, hyper_period):
+    def reaction(self, schedule, task_set, chain, max_phase, hyper_period):
         """Our maximum reaction time analysis.
 
         We construct all immediate forward augmented job chains and then
@@ -264,13 +264,13 @@ class Analyzer:
         max_length = max_cand.length()
 
         # Results.
-        chain.our_react = max_length
+        chain.react = max_length
         return max_length
 
     def imm_fw_jc(self, current_job, c_len, schedule, chain, key=0):
         """Compute immediate forward job chain recursively
 
-        Used as help function for reaction_our().
+        Used as help function for reaction().
         """
         # Initial case.
         if key == 0:
@@ -298,57 +298,57 @@ class Analyzer:
         else:
             return []
 
-    def reaction_inter_our(self, chain_set):
+    def reaction_inter(self, chain_set):
         """Our maximum reaction time analysis for interconnected cause-effect
         chains.
 
         Input: chain_set is a list of cause-effect chains with entry at
         interconnected.
         Note: The chains have to be analyzed by our single ECU maximum reaction
-        time analysis beforehand. ( reaction_our() )
+        time analysis beforehand. ( reaction() )
         """
         for chain in chain_set:
-            inter_our_react = 0  # total reaction time
+            inter_react = 0  # total reaction time
             for i in range(0, len(chain.interconnected)):
                 # Case: i is a communication task.
                 if isinstance(chain.interconnected[i], Task):
-                    inter_our_react += (chain.interconnected[i].period
+                    inter_react += (chain.interconnected[i].period
                                         + chain.interconnected[i].rt)
                 # Case: i is a cause-effect chain.
                 else:
-                    inter_our_react += chain.interconnected[i].our_react
+                    inter_react += chain.interconnected[i].react
             # Store result.
-            chain.inter_our_react = inter_our_react
+            chain.inter_react = inter_react
 
-    def max_age_inter_our(self, chain_set, reduced=False):
+    def max_age_inter(self, chain_set, reduced=False):
         """Our reduced maximum data age analysis for interconnected
         cause-effect chains.
 
         Input: chain_set is a list of cause-effect chains with entry at
         interconnected.
         Note: The chains have to be analyzed by our single ECU maximum data age
-        analysis beforehand. ( max_age_our() and max_age_our(reduced=True) )
+        analysis beforehand. ( max_age() and max_age(reduced=True) )
         """
         for chain in chain_set:
             m = len(chain.interconnected)  # chain length
-            inter_our_red_age = 0  # total data age
+            inter_red_age = 0  # total data age
             for i in range(0, m-1):
                 # Case: i is a communication task.
                 if isinstance(chain.interconnected[i], Task):
-                    inter_our_red_age += (chain.interconnected[i].period
+                    inter_red_age += (chain.interconnected[i].period
                                           + chain.interconnected[i].rt)
                 # Case: i is a cause-effect chain.
                 else:
-                    inter_our_red_age += chain.interconnected[i].our_age
+                    inter_red_age += chain.interconnected[i].age
 
             # Handle the last cause-effect chain in the list.
             if reduced:
-                inter_our_red_age += chain.interconnected[m-1].our_red_age
+                inter_red_age += chain.interconnected[m-1].red_age
             else:
-                inter_our_red_age += chain.interconnected[m-1].our_age
+                inter_red_age += chain.interconnected[m-1].age
 
             # Store result.
-            chain.inter_our_red_age = inter_our_red_age
+            chain.inter_red_age = inter_red_age
 
     ###
     # Davare analysis from 'Period Optimization for Hard Real-time Distributed

@@ -11,7 +11,7 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 import math
 from tasks.taskset import TaskSet
 import utilities.event_simulator as es
-import utilities.analyzer_our as a_our
+import utilities.analyzer_guenzel23 as analyzer
 from e2eAnalyses.Davare2007 import davare07
 
 
@@ -84,7 +84,7 @@ def change_taskset_bcet(task_set, rat):
     return new_task_set
 
 
-def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
+def mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
     """lst_ce_ts[0] = list of ce-chains, lst_ce_ts[1] = task set, bcet_lst = [0.0, 0.3, 0.7, 1.0]"""
     ce_lst = lst_ce_ts[0]
     ts = lst_ce_ts[1]
@@ -109,7 +109,7 @@ def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
                     ce_lst, ts_et, print_status=True
                 )  # schedule with certain execution time
             else:
-                sched_et = a_our.execution_zero_schedule(ts_et)
+                sched_et = analyzer.execution_zero_schedule(ts_et)
             ts.schedules[et] = sched_et
         else:
             sched_et = ts.schedules[et]
@@ -124,10 +124,10 @@ def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
         for bcet in bcet_lst:
             results_ce[bcet] = dict()
             # breakpoint()
-            ce_mrt = a_our.max_reac_local(
+            ce_mrt = analyzer.max_reac_local(
                 ce, ts_lst[wcet], schedules[wcet], ts_lst[bcet], schedules[bcet]
             )
-            ce_mda, ce_mrda = a_our.max_age_local(
+            ce_mda, ce_mrda = analyzer.max_age_local(
                 ce, ts_lst[wcet], schedules[wcet], ts_lst[bcet], schedules[bcet]
             )
             results_ce[bcet]["mrt"] = ce_mrt
@@ -140,19 +140,19 @@ def our_mrt_mRda_lst(lst_ce_ts, bcet_lst, wcet=1.0):
 # single ecu
 def guenzel23_local_mrt(chain):
     lst_ce_ts = [[chain], chain.base_ts]
-    latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
+    latencies = mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mrt']
 
 
 def guenzel23_local_mda(chain):
     lst_ce_ts = [[chain], chain.base_ts]
-    latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
+    latencies = mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mda']
 
 
 def guenzel23_local_mrda(chain):
     lst_ce_ts = [[chain], chain.base_ts]
-    latencies = our_mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
+    latencies = mrt_mRda_lst(lst_ce_ts, [1.0], 1.0)
     return latencies[0][1.0]['mrda']
 
 

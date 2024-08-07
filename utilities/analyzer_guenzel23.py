@@ -285,8 +285,8 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
         print('max_length_compl:', max_length_compl)
         print('max_length_compl_red', max_length_compl_red)
 
-    chain.our_new_local_mda = max_length
-    chain.our_new_local_mrda = max_length_red
+    chain.new_local_mda = max_length
+    chain.new_local_mrda = max_length_red
     return (max_length, max_length_red)
 
 

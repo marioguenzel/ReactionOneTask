@@ -13,8 +13,6 @@ import itertools
 from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 from cechains.jobchain import PartitionedJobChain, abstr_to_jc
-import utilities.event_simulator as es
-from e2eAnalyses.Davare2007 import davare07
 
 
 debug_flag = False  # flag to have breakpoint() when errors occur
@@ -124,7 +122,7 @@ def find_fi(ce_chain: CEChain) -> list[int]:
 # New analysis, based on Guenzel2023_equi and Guenzel2023_inter
 #####
 
-def our_mrt_mRda_lst(chain, bcet, wcet):
+def mrt_mRda_lst(chain, bcet, wcet):
     
     # Construct F_i
     Fi = find_fi(chain)
@@ -150,8 +148,8 @@ def our_mrt_mRda_lst(chain, bcet, wcet):
     return max([ell(pc) for pc in part_chains], default=0) #   TODO fixme
 
 
-def newAna2(chain):
-    latency = our_mrt_mRda_lst(chain, 1.0, 1.0)
+def guenzel23_equi_impl_rt(chain):
+    latency = mrt_mRda_lst(chain, 1.0, 1.0)
     return latency
 
 

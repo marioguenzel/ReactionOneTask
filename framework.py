@@ -11,8 +11,8 @@ from e2eAnalyses.Guenzel2023_mixed import guenzel23_mix_pessimistic, guenzel23_m
 from e2eAnalyses.Guenzel2023_equi import guenzel23_equi_mda, guenzel23_equi_mrt
 from e2eAnalyses.Bi2022 import bi22, bi22_inter
 from e2eAnalyses.Kordon2020 import kordon20
-from e2eAnalyses.newAnalysis import newAna
-from e2eAnalyses.newAnalysis2 import newAna2
+from e2eAnalyses.Guenzel2023_equi_extension1 import guenzel23_equi_impl_sched
+from e2eAnalyses.Guenzel2023_equi_extension2 import guenzel23_equi_impl_rt
 from e2eAnalyses.BeckerFast import beckerFast_NO_INFORMATION, beckerFast_RESPONSE_TIMES, beckerFast_SCHED_TRACE, beckerFast_LET
 import helpers
 import plotting.plot as plot
@@ -71,8 +71,8 @@ analysesDict = {
     'guenzel23_mixed_imp' : AnalysisMethod(guenzel23_mix_improved, 'Günzel 2023 (mixed improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_equi_mda': AnalysisMethod(guenzel23_equi_mda, 'Günzel 2023 (equi MDA)', 'G23(EQUI-MDA)', features=['periodic', 'let']),
     'guenzel23_equi_mrt': AnalysisMethod(guenzel23_equi_mrt, 'Günzel 2023 (equi MRT)', 'G23(EQUI-MRT)', features=['periodic', 'let']),
-    'guenzel23_equi_impl_sched': AnalysisMethod(newAna, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit']),
-    'guenzel23_equi_impl_rt': AnalysisMethod(newAna2, 'Günzel 2023 (equi+rt MRT)', 'G23(EQUI-RT-MRT)', features=['periodic', 'implicit']),
+    'guenzel23_equi_impl_sched': AnalysisMethod(guenzel23_equi_impl_sched, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit']),
+    'guenzel23_equi_impl_rt': AnalysisMethod(guenzel23_equi_impl_rt, 'Günzel 2023 (equi+rt MRT)', 'G23(EQUI-RT-MRT)', features=['periodic', 'implicit']),
     'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'implicit']),
     'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'implicit']),
     'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'implicit']),

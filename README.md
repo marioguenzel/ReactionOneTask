@@ -51,14 +51,14 @@ List of papers with analyses methods relevant for the framework:
     │	├── Davare2007.py
     │	├── Duerr2019.py
     │	├── Guenzel2023_equi.py
+    │	├── Guenzel2023_equi_extension1.py
+    │	├── Guenzel2023_equi_extension2.py
     │	├── Guenzel2023_inter.py
     │	├── Guenzel2023_mixed.py
     │	├── Hamann2017.py
     │	├── Kloda2018.py
     │	├── Kordon2020.py
-    │	├── Martinez2020.py
-    │	├── newAnalysis.py
-    │	└── newAnalysis2.py
+    │	└── Martinez2020.py
     ├── plotting
     │	└── plot.py				        # Methods for creating the box plots
     ├── pySimpleGUI
@@ -68,7 +68,7 @@ List of papers with analyses methods relevant for the framework:
     │	├── task.py				        # Definition of a task
     │	└── taskset.py			        # Definition of a taskset
     ├── utilities				        # Extra code, only necessary for some analyses
-    │	├── analyzer_our.py
+    │	├── analyzer_guenzel23.py
     │	├── analyszer.py
     │	├── augmented_job_chain.py
     │	├── event_simulator.py
