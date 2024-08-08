@@ -7,15 +7,10 @@ Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_inter
 and https://github.com/tu-dortmund-ls12-rt/end-to-end
 """
 
-
-import math
 import itertools
-from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 from cechains.jobchain import PartitionedJobChain, abstr_to_jc
-import utilities.event_simulator as es
 import utilities.analyzer_guenzel23 as analyzer
-from e2eAnalyses.Davare2007 import davare07
 
 
 debug_flag = False  # flag to have breakpoint() when errors occur
@@ -74,71 +69,6 @@ def ell(pc : PartitionedJobChain, ana):
     """Length of the partitioned job chain, more precisely l() function from the paper."""
     return ana.wemax(pc.fw[-1].task, pc.fw[-1].occurrence) - ana.remin(pc.bw[0].task, pc.bw[0].occurrence)
 
-
-#####
-# Schedule construction
-#####
-
-def schedule_task_set(ce_chains, task_set, print_status=False):
-    """Return the schedule of some task_set.
-    ce_chains is a list of ce_chains that will be computed later on.
-    We need this to compute latency_upper_bound to determine the additional simulation time at the end.
-    Note:
-    - In case of error, None is returned."""
-
-    try:
-        # Preliminary: compute latency_upper_bound
-        latency_upper_bound = max([davare07(ce) for ce in ce_chains])
-
-        # Main part: Simulation part
-        simulator = es.eventSimulator(task_set)
-
-        # Determination of the variables used to compute the stop
-        # condition of the simulation
-        max_phase = max(task_set, key=lambda task: task.phase).phase
-        max_period = max(task_set, key=lambda task: task.period).period
-        hyper_period = task_set.hyperperiod()
-
-        sched_interval = (
-            2 * hyper_period
-            + max_phase  # interval from paper
-            + latency_upper_bound  # upper bound job chain length
-            + max_period
-        )  # for convenience
-
-        if print_status:
-            # Information for end user.
-            print("\tNumber of tasks: ", len(task_set))
-            print("\tHyperperiod: ", hyper_period)
-            number_of_jobs = 0
-            for task in task_set:
-                number_of_jobs += sched_interval / task.period
-            print("\tNumber of jobs to schedule: ", "%.2f" % number_of_jobs)
-
-        # Stop condition: Number of jobs of lowest priority task.
-        simulator.dispatcher(int(math.ceil(sched_interval / task_set[-1].period)))
-
-        # Simulation without early completion.
-        schedule = simulator.e2e_result()
-
-    except Exception as e:
-        print(e)
-        if debug_flag:
-            breakpoint()
-        schedule = None
-
-    return schedule
-
-
-def change_taskset_bcet(task_set, rat):
-    """Copy task set and change the wcet/bcet of each task by a given ratio."""
-    new_task_set = TaskSet(*[task.copy() for task in task_set])
-    for task in new_task_set:
-        task.wcet = rat * task.wcet
-        task.bcet = rat * task.bcet
-    return new_task_set
-
-
 #####
 # Find Fi
 #####
@@ -157,35 +87,12 @@ def find_fi(ce_chain: CEChain, ana) -> list[int]:
 # New analysis, based on Guenzel2023_equi and Guenzel2023_inter
 #####
 
-def mrt_mRda_lst(chain, bcet, wcet):
+def mrt_mRda_lst(chain):
 
-    # make schedules and store in dictionary
-    schedules_todo = [bcet]
-    if wcet not in schedules_todo:
-        schedules_todo.append(wcet)
+    assert len(chain.base_ts.schedules.keys()) > 0
+    schedules = chain.base_ts.schedules
 
-    schedules = dict()  # schedules
-    ts_lst = dict()  # task sets
-
-    for et in schedules_todo:
-        if et == 1.0:
-            ts_et = chain.base_ts  # otherwise tasks in the chain can not be allocated
-        else:
-            ts_et = change_taskset_bcet(chain.base_ts, et)  # task set with certain execution time
-        if et not in chain.base_ts.schedules.keys():
-            if et != 0:  # the dispatcher can only handle execution != 0
-                sched_et = schedule_task_set(
-                    [chain], ts_et, print_status=True
-                )  # schedule with certain execution time
-            else:
-                sched_et = analyzer.execution_zero_schedule(ts_et)
-            chain.base_ts.schedules[et] = sched_et
-        else:
-            sched_et = chain.base_ts.schedules[et]
-        schedules[et] = sched_et
-        ts_lst[et] = ts_et
-
-    ana = analyzer.re_we_analyzer(schedules[bcet], schedules[wcet], chain.base_ts.hyperperiod())
+    ana = analyzer.re_we_analyzer(schedules['bcet'], schedules['wcet'], chain.base_ts.hyperperiod())
     
     # Construct F_i
     Fi = find_fi(chain, ana)
@@ -208,11 +115,11 @@ def mrt_mRda_lst(chain, bcet, wcet):
             break
 
     assert all(pc.complete for pc in part_chains)
-    return max([ell(pc, ana) for pc in part_chains], default=0) #   TODO fixme
+    return max([ell(pc, ana) for pc in part_chains])
 
 
 def guenzel23_equi_impl_sched(chain):
-    latency = mrt_mRda_lst(chain, 1.0, 1.0)
+    latency = mrt_mRda_lst(chain)
     return latency
 
 

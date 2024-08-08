@@ -16,13 +16,14 @@ class eventSimulator:
     constrained deadline and synchronous releases for the single ECU case.
     """
 
-    def __init__(self, tasks):
+    def __init__(self, tasks, bcet=False):
         """Initialize the event simulator.
 
         We assume that the tasks are sorted by their priority (highest priority
         first).
         """
         self.tasks = tasks  # list of tasks
+        self.bcet = bcet
         self.h = -1  # index of the active task with the highest workload
         self.n = len(tasks)  # number of tasks
         self.systemTick = float(0)  # current time
@@ -50,7 +51,7 @@ class eventSimulator:
     class eventClass(object):
         """One Event."""
 
-        def __init__(self, case, delta, idx):
+        def __init__(self, case, delta, idx, bcet):
             """Initialize the event.
 
             case = 0 is a release and case = 1 is a deadline.
@@ -60,6 +61,7 @@ class eventSimulator:
             self.eventType = case
             self.delta = delta
             self.idx = idx
+            self.bcet = bcet
 
         def case(self):
             """Return the case of that event."""
@@ -103,18 +105,21 @@ class eventSimulator:
         """Behavior at job release of task with index idx."""
         # Set deadline event.
         self.eventList.append(self.eventClass(
-            1, self.tasks[idx].deadline, idx))
+            1, self.tasks[idx].deadline, idx, self.bcet))
 
         # Set next release event.
         self.eventList.append(self.eventClass(
-            0, self.tasks[idx].period, idx))
+            0, self.tasks[idx].period, idx, self.bcet))
 
         # Sort the eventList.
         self.eventList = sorted(self.eventList,
                                 key=operator.attrgetter('delta'))
 
         # Add the workload to corresponding entry in statusTable.
-        self.statusTable[idx][0] += float(self.tasks[idx].wcet)
+        if self.bcet:
+            self.statusTable[idx][0] += float(self.tasks[idx].bcet)
+        else:
+            self.statusTable[idx][0] += float(self.tasks[idx].wcet)
 
         # Initialiue the flag to indicate the first execution.
         self.statusTable[idx][4] = 1
@@ -191,7 +196,7 @@ class eventSimulator:
                 if self.statusTable[self.h][4] == 1:
                     # Case: First time execution of task hidx
                     # Put start of the job to raw_result.
-                    self.raw_result[self.tasks[self.h]].append(self.systemTick)
+                    self.raw_result[self.tasks[self.h].id].append(self.systemTick)
                     # Set flag to 0.
                     self.statusTable[self.h][4] = 0
 
@@ -202,7 +207,7 @@ class eventSimulator:
                 self.statusTable[self.h][0] = 0
 
                 # Put finish of the job to raw_result.
-                self.raw_result[self.tasks[self.h]].append(self.systemTick)
+                self.raw_result[self.tasks[self.h].id].append(self.systemTick)
 
             elif delta < self.statusTable[self.h][0]:
                 # Case: Task with index h finishes not during remaining time.
@@ -210,7 +215,7 @@ class eventSimulator:
                 if self.statusTable[self.h][4] == 1:
                     # Case: First time execution of task hidx
                     # Put start of the job to raw_result.
-                    self.raw_result[self.tasks[self.h]].append(self.systemTick)
+                    self.raw_result[self.tasks[self.h].id].append(self.systemTick)
                     # Set flag to 0.
                     self.statusTable[self.h][4] = 0
 
@@ -229,7 +234,7 @@ class eventSimulator:
         """Provide necessary information for the end to end analysis.
 
         The result of the scheduler is pre-handled to represent in [start, end]
-        format (result[task] is a list of tuples describing the start and end
+        format (result[task.id] is a list of tuples describing the start and end
         of each job).
         Note: The scheduler returns an empty list for a task if it has
         execution time = 0.
@@ -237,20 +242,20 @@ class eventSimulator:
         # Initialize result dictionary.
         result = dict()
         for task in self.tasks:
-            result[task] = []
+            result[task.id] = []
 
         # Fill entries of the dictionary.
         for task in self.tasks:
             # Traverse the raw_result.
             job_start = -1
             job_end = -1
-            for x in self.raw_result[task]:
+            for x in self.raw_result[task.id]:
                 if (job_start < 0):  # fill start
                     job_start = x
                 else:  # fill finish
                     job_end = x
                 if job_start > -1 and job_end > -1:  # put job to result
-                    result[task].append((job_start, job_end))
+                    result[task.id].append((job_start, job_end))
                     job_start = -1
                     job_end = -1
 
@@ -289,7 +294,7 @@ class eventSimulator:
         """Specify the initial state of the simulator."""
         # Make one entry for each task in the result dictionary.
         for task in self.tasks:
-            self.raw_result[task] = []
+            self.raw_result[task.id] = []
 
         for idx in range(len(self.tasks)):
             # Fill the status Table.
@@ -297,7 +302,7 @@ class eventSimulator:
             self.statusTable[idx][3] = self.statusTable[idx][1]
             # Put release events to the eventList.
             self.eventList.append(self.eventClass(
-                0, self.tasks[idx].phase, idx))
+                0, self.tasks[idx].phase, idx, self.bcet))
 
         # Sort eventList by remaining time.
         # In case phase not 0 anymore, we need this one.

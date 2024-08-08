@@ -3,6 +3,7 @@ Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e
 """
 
 import math
+import uuid
 from tasks.task import Task
 
 
@@ -16,6 +17,7 @@ class TaskSet:
         """Input: Task-Objects"""
         self._lst = list(args)
         self.schedules = dict()     # needed for guenzel_23_inter
+        self.id = uuid.uuid4()      # necessary for multiprocessing
         #for task in self._lst:
         #    task.priority = self._lst.index(task)
 

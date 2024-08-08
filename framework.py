@@ -18,7 +18,7 @@ import helpers
 import plotting.plot as plot
 import random as random
 from multiprocessing import Pool
-import itertools
+from utilities.scheduler import compute_all_schedules
 
 
 class AnalysisMethod:
@@ -50,7 +50,7 @@ analysesDict = {
     'davare07_inter' : AnalysisMethod(davare07_inter, 'Davare 2007 (inter)', 'D07-I', features=['periodic', 'implicit', 'inter']),
     'becker17_no_info' : AnalysisMethod(becker17_NO_INFORMATION, 'Becker 2017 (Base MRDA)', 'B17', features=['periodic', 'implicit']),
     'becker17_rt' : AnalysisMethod(becker17_RESPONSE_TIMES, 'Becker 2017 (RT MRDA)', 'B17(RT)', features=['periodic', 'implicit']),
-    'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit']),
+    'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit', 'schedule']),
     'becker17_let' : AnalysisMethod(becker17_LET, 'Becker 2017 (LET MRDA)', 'B17(LET)', features=['periodic', 'let']),
     'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
@@ -61,21 +61,21 @@ analysesDict = {
     'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                                                     # TODO
     'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),
     'bi22_inter' : AnalysisMethod(bi22_inter, 'Bi 2022 (inter)', 'B22(I)', features=['periodic', 'implicit', 'inter']),
-    'guenzel23_l_mrt' : AnalysisMethod(guenzel23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit']),
-    'guenzel23_l_mda' : AnalysisMethod(guenzel23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit']),
-    'guenzel23_l_mrda' : AnalysisMethod(guenzel23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit']),
-    'guenzel23_inter_mrt' : AnalysisMethod(guenzel23_inter_mrt, 'Günzel 2023 (inter MRT)', 'G23(I-MRT)', features=['periodic', 'implicit', 'inter']),
-    'guenzel23_inter_mrda' : AnalysisMethod(guenzel23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter']),
+    'guenzel23_l_mrt' : AnalysisMethod(guenzel23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'schedule']),
+    'guenzel23_l_mda' : AnalysisMethod(guenzel23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'schedule']),
+    'guenzel23_l_mrda' : AnalysisMethod(guenzel23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'schedule']),
+    'guenzel23_inter_mrt' : AnalysisMethod(guenzel23_inter_mrt, 'Günzel 2023 (inter MRT)', 'G23(I-MRT)', features=['periodic', 'implicit', 'inter', 'schedule']),
+    'guenzel23_inter_mrda' : AnalysisMethod(guenzel23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter', 'schedule']),
     'guenzel23_mixed_pess' : AnalysisMethod(guenzel23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed' : AnalysisMethod(guenzel23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_mixed_imp' : AnalysisMethod(guenzel23_mix_improved, 'Günzel 2023 (mixed improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
     'guenzel23_equi_mda': AnalysisMethod(guenzel23_equi_mda, 'Günzel 2023 (equi MDA)', 'G23(EQUI-MDA)', features=['periodic', 'let']),
     'guenzel23_equi_mrt': AnalysisMethod(guenzel23_equi_mrt, 'Günzel 2023 (equi MRT)', 'G23(EQUI-MRT)', features=['periodic', 'let']),
-    'guenzel23_equi_impl_sched': AnalysisMethod(guenzel23_equi_impl_sched, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit']),
+    'guenzel23_equi_impl_sched': AnalysisMethod(guenzel23_equi_impl_sched, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_equi_impl_rt': AnalysisMethod(guenzel23_equi_impl_rt, 'Günzel 2023 (equi+rt MRT)', 'G23(EQUI-RT-MRT)', features=['periodic', 'implicit']),
     'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'implicit']),
     'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'implicit']),
-    'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'implicit']),
+    'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'implicit', 'schedule']),
     'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'let']),
 }
 
@@ -103,6 +103,7 @@ default_taskset_generation_params = {
     'number_of_tasksets': 1,
     'sporadic_ratio': 0.0,
     'let_ratio': 0.0,
+    'bcet_ratio': 1.0,
 
     'use_semi_harmonic_periods': False,
     'min_number_of_tasks': 40,
@@ -136,6 +137,19 @@ default_output_params = {
     'output_dir' : '',
     'print_to_console' : False
 }
+
+### Helper
+
+def flattened_cec_tuple_list(cecs):
+    if isinstance(cecs[0], tuple):
+        flattened_list = []
+        for cec_tuple in cecs:
+            for cec in list(cec_tuple):
+                flattened_list.append(cec)
+        return flattened_list
+    else:
+        return cecs
+
 
 ######################
 ### Input checking ###
@@ -172,6 +186,13 @@ def check_params(taskset_params, cec_params, warnings=True):
 def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
     # check if all selected methods are applicable on cecs
     methods = analysis_methods + normalization_methods
+
+    if isinstance(cecs[0], tuple):
+        flattened_list = []
+        for cec_tuple in cecs:
+            for cec in list(cec_tuple):
+                flattened_list.append(cec)
+        cecs = flattened_list
 
     releases = set([cec.base_ts.check_feature('release_pattern') for cec in cecs])
     communications = set([cec.base_ts.check_feature('communication_policy') for cec in cecs])
@@ -268,6 +289,10 @@ def adjust_taskset_communication_policy(taskset, let_ratio):
         task.communication_policy = 'LET'
 
 
+def adjust_taskset_bcets(taskset, bcet_ratio):
+    for task in taskset:
+        task.bcet = task.wcet * bcet_ratio
+
 #####################################
 ### Cause-Effect Chain generation ###
 #####################################
@@ -303,6 +328,7 @@ def generate_cecs(general_params,
     for taskset in tasksets:
         adjust_taskset_release_pattern(taskset, taskset_generation_params['sporadic_ratio'])
         adjust_taskset_communication_policy(taskset, taskset_generation_params['let_ratio'])
+        adjust_taskset_bcets(taskset, taskset_generation_params['bcet_ratio'])
         taskset.rate_monotonic_scheduling()
         taskset.compute_wcrts()
 
@@ -429,6 +455,14 @@ def run_evaluation(general_params,
     )
 
     ### Run Analyses ###
+
+    # check if at least one analysis method needs the schedule
+    schedule_needed = sum([method.features.count('schedule') for method in selected_analysis_methods + selected_normalization_methods]) > 0
+    if schedule_needed:
+        compute_all_schedules(
+            flattened_cec_tuple_list(cause_effect_chains), 
+            general_params['number_of_threads']
+        )
 
     performAnalyses(
         cause_effect_chains, 

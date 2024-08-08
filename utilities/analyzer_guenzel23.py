@@ -43,25 +43,25 @@ class re_we_analyzer():
 
     def remin(self, task, nmb):
         '''returns the upper bound on read-event of the nbm-th job of a task.'''
-        lst = self.bc[task]  # list that has the read-even minimum
+        lst = self.bc[task.id]  # list that has the read-event minimum
         # choose read-event from list
         return self._get_entry(nmb, lst, task)[0]
 
     def remax(self, task, nmb):
         '''returns the upper bound on read-event of the nbm-th job of a task.'''
-        lst = self.wc[task]  # list that has the read-even maximum
+        lst = self.wc[task.id]  # list that has the read-event maximum
         # choose read-event from list
         return self._get_entry(nmb, lst, task)[0]
 
     def wemin(self, task, nmb):
         '''returns the upper bound on read-event of the nbm-th job of a task.'''
-        lst = self.bc[task]  # list that has the write-even minimum
+        lst = self.bc[task.id]  # list that has the write-event minimum
         # choose write-event from list
         return self._get_entry(nmb, lst, task)[1]
 
     def wemax(self, task, nmb):
         '''returns the upper bound on read-event of the nbm-th job of a task.'''
-        lst = self.wc[task]  # list that has the write-even maximum
+        lst = self.wc[task.id]  # list that has the write-event maximum
         # choose write-event from list
         return self._get_entry(nmb, lst, task)[1]
 
@@ -123,7 +123,7 @@ class re_we_analyzer():
         return self.wemax(last_tsk_wc, abstr[-2]) - self.remin(first_tsk_bc, 0)
 
 
-def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_bcet):
+def max_reac_local(chain, task_set, schedule_wcet, schedule_bcet):
     '''Main method for maximum reaction time.
 
     We construct all abstract represenations and compute the maximal length among them.
@@ -137,17 +137,17 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
         return 0
 
     # Make analyzer
-    ana = re_we_analyzer(schedule_bcet, schedule_wcet, task_set_wcet.hyperperiod())
+    ana = re_we_analyzer(schedule_bcet, schedule_wcet, task_set.hyperperiod())
 
     # Chain of indeces that describes the cause-effect chain
-    index_chain = [task_set_wcet.index(entry) for entry in chain]
+    index_chain = [task_set.index(entry) for entry in chain]
 
     # Set of all abstract representations
     all_abstr = []
 
     # useful values for break-condition
-    hyper = task_set_wcet.hyperperiod()
-    max_phase = task_set_wcet.max_phase()
+    hyper = task_set.hyperperiod()
+    max_phase = task_set.max_phase()
 
     for idx in itertools.count():
         # Compute idx-th abstract integer representation.
@@ -157,7 +157,7 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
 
         for idtsk, nxt_idtsk in zip(index_chain[:-1], index_chain[1:]):
             abstr.append(ana.find_next_fw(
-                task_set_wcet[idtsk], task_set_bcet[nxt_idtsk], abstr[-1]))  # intermediate entries
+                task_set[idtsk], task_set[nxt_idtsk], abstr[-1]))  # intermediate entries
 
         abstr.append(abstr[-1])  # last entry
 
@@ -177,12 +177,12 @@ def max_reac_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_
         # breakpoint()
 
     # maximal length
-    max_length = max([ana.len_abstr(abstr, task_set_wcet[index_chain[-1]],
-                     task_set_bcet[index_chain[0]]) for abstr in all_abstr] + [0])
+    max_length = max([ana.len_abstr(abstr, task_set[index_chain[-1]],
+                     task_set[index_chain[0]]) for abstr in all_abstr] + [0])
     return max_length
 
 
-def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_bcet):
+def max_age_local(chain, task_set, schedule_wcet, schedule_bcet):
     '''Main method for maximum data age.
     Returns a list of two values. First is the maximum data age bound, second is
     the maximum REDUCED data age bound.
@@ -197,21 +197,20 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
     if chain.length() == 0:  # corner case
         return (0, 0)
 
+    # useful values for break-condition
+    hyper = task_set.hyperperiod()
+    max_phase = max([task.phase for task in task_set])
+
     # Make analyzer
-    ana = re_we_analyzer(schedule_bcet, schedule_wcet,
-                         compute_hyper(task_set_wcet))
+    ana = re_we_analyzer(schedule_bcet, schedule_wcet, hyper)
 
     # Chain of indeces that describes the cause-effect chain
-    index_chain = [task_set_wcet.index(task) for task in chain]
+    index_chain = [task_set.index(task) for task in chain]
 
     # Set of all abstract representations
     all_abstr = []
     complete_abstr = []
     incomplete_abstr = []
-
-    # useful values for break-condition
-    hyper = compute_hyper(task_set_wcet)
-    max_phase = max([task.phase for task in task_set_wcet])
 
     for idx in itertools.count(start=1):
         # Compute idx-th abstract integer representation.
@@ -224,7 +223,7 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
 
         for idtsk, prev_idtsk in zip(index_chain[::-1][:-1], index_chain[::-1][1:]):
             indx = ana.find_next_bw(
-                task_set_bcet[idtsk], task_set_wcet[prev_idtsk], abstr[-1])
+                task_set[idtsk], task_set[prev_idtsk], abstr[-1])
             abstr.append(indx)  # intermediate entries
 
             if indx == -1:  # check if incomplete
@@ -256,32 +255,33 @@ def max_age_local(chain, task_set_wcet, schedule_wcet, task_set_bcet, schedule_b
 
     # maximal length
     max_length_compl = max(
-        [ana.len_abstr(abstr, task_set_wcet[index_chain[-1]],
-                       task_set_bcet[index_chain[0]]) for abstr in complete_abstr] + [0]
+        [ana.len_abstr(abstr, task_set[index_chain[-1]],
+                       task_set[index_chain[0]]) for abstr in complete_abstr] + [0]
     )
     max_length_incompl = max(
-        [ana.incomplete_bound(abstr, task_set_wcet[index_chain[-1]],
-                              task_set_bcet[index_chain[0]]) for abstr in incomplete_abstr] + [0]
+        [ana.incomplete_bound(abstr, task_set[index_chain[-1]],
+                              task_set[index_chain[0]]) for abstr in incomplete_abstr] + [0]
     )
     max_length = max(max_length_compl, max_length_incompl)
 
     # maximal reduced length
     max_length_compl_red = max(
-        [ana.len_abstr_reduced(abstr, task_set_wcet[index_chain[-1]],
-                               task_set_bcet[index_chain[0]]) for abstr in complete_abstr] + [0]
+        [ana.len_abstr_reduced(abstr, task_set[index_chain[-1]],
+                               task_set[index_chain[0]]) for abstr in complete_abstr] + [0]
     )
     max_length_incompl_red = max(
-        [ana.incomplete_bound_reduced(abstr, task_set_wcet[index_chain[-1]],
-                                      task_set_bcet[index_chain[0]]) for abstr in incomplete_abstr] + [0]
+        [ana.incomplete_bound_reduced(abstr, task_set[index_chain[-1]],
+                                      task_set[index_chain[0]]) for abstr in incomplete_abstr] + [0]
     )
     max_length_red = max(max_length_compl_red, max_length_incompl_red)
 
+    # debug output
     if max_length_red == 0:
         print(abstr, len(complete_abstr), len(incomplete_abstr))
-        print(chain[0].period * abstr[0], '(', ana.remin(task_set_wcet[index_chain[0]], abstr[0]), ',', ana.wemax(task_set_bcet[index_chain[0]], abstr[0]), ')', chain[0].priority)
+        print(chain[0].period * abstr[0], '(', ana.remin(task_set[index_chain[0]], abstr[0]), ',', ana.wemax(task_set[index_chain[0]], abstr[0]), ')', chain[0].priority)
         for i in range(len(abstr[1:-2])):
-            print(chain[i].period * abstr[i], '(', ana.remin(task_set_wcet[index_chain[i]], abstr[i+1]), ',', ana.wemax(task_set_bcet[index_chain[i]], abstr[i+1]), ')', chain[i].priority)
-        print(chain[-1].period * abstr[-1], '(', ana.remin(task_set_wcet[index_chain[-1]], abstr[-1]), ',', ana.wemax(task_set_bcet[index_chain[-1]], abstr[-1]), ')', chain[-1].priority)
+            print(chain[i].period * abstr[i], '(', ana.remin(task_set[index_chain[i]], abstr[i+1]), ',', ana.wemax(task_set[index_chain[i]], abstr[i+1]), ')', chain[i].priority)
+        print(chain[-1].period * abstr[-1], '(', ana.remin(task_set[index_chain[-1]], abstr[-1]), ',', ana.wemax(task_set[index_chain[-1]], abstr[-1]), ')', chain[-1].priority)
         print('max_length_compl:', max_length_compl)
         print('max_length_compl_red', max_length_compl_red)
 
@@ -298,13 +298,13 @@ def execution_zero_schedule(task_set):
     # Initialize result dictionary.
     result = dict()
     for task in task_set:
-        result[task] = []
+        result[task.id] = []
 
     for task in task_set:
         curr_time = task.phase
         while curr_time <= max_phase + 2 * hyperperiod:
             # start and finish directly at release
-            result[task].append((curr_time, curr_time))
+            result[task.id].append((curr_time, curr_time))
             curr_time += task.period
 
     return result

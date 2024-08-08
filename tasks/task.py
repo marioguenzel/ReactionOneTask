@@ -4,6 +4,8 @@
 Basis from https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed/blob/master/e2e/tasks/task.py
 """
 
+import uuid
+
 ####################
 # Task.
 ####################
@@ -43,6 +45,7 @@ class Task:
         if communication_policy not in self.features['communication_policy']:
             raise ValueError(f'{communication_policy} is not a possible argument.')
 
+        self.id = uuid.uuid4()  # necessary for multiprocessing
         self.release_pattern = release_pattern
         self.deadline_type = deadline_type
         self.execution_behaviour = execution_behaviour

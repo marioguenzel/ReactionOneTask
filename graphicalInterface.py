@@ -392,10 +392,6 @@ def runVisualMode(window):
             output_params['absolute_plots'] = values['-CBP2-']
             output_params['raw_analysis_results'] = values['-CBP3-']
 
-            print(selected_analysis_methods)
-            print(selected_normalization_methods)
-
-
             ################################
             ### Run Evaluation Framework ###
             ################################

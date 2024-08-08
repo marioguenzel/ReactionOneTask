@@ -9,7 +9,7 @@ Implementation is copied from https://github.com/tu-dortmund-ls12-rt/end-to-end_
 from cechains.chain import CEChain
 from tasks.task import Task
 from math import ceil
-from utilities.schedule_analyzer import Schedule_Analyzer, schedule_task_set
+from utilities.scheduler import Schedule_Analyzer, schedule_task_set
 from enum import Enum
 
 Init_Type = Enum(
@@ -25,10 +25,7 @@ class DPT:
         self.init_type = init_type
 
         if init_type == Init_Type.SCHED_TRACE:
-            if 1.0 not in chain.base_ts.schedules.keys():
-                schedule = schedule_task_set([chain], chain.base_ts, print_status=True)
-                chain.base_ts.schedules[1.0] = schedule
-            self.schedule = chain.base_ts.schedules[1.0]
+            self.schedule = chain.base_ts.schedules['wcet']
             self.ana = Schedule_Analyzer(self.schedule, chain.base_ts.hyperperiod())
 
         self.occurrences = self.build_tree(0, occurrence)
