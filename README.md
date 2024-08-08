@@ -72,7 +72,7 @@ List of papers with analyses methods relevant for the framework:
     │	├── analyszer.py
     │	├── augmented_job_chain.py
     │	├── event_simulator.py
-    │	└── schedule_analyzer.py
+    │	└── scheduler.py
     ├── .gitignore
     ├── consoleInterface.py			    # Parses the given console arguments
     ├── e2eMain.py				        # Main file to start the framework
