@@ -42,8 +42,9 @@ def inititalizeUI():
             [sg.Text('Min Period:', pad=((35,0),(0,0))), sg.Input(s=10, k='-PMIN_Input-', disabled=True, default_text='1'), sg.Text('Max Period:'), sg.Input(s=10, k='-PMAX_Input-', disabled=True, default_text='2000')],
         [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(3,1))],
         [sg.Text('Number of Tasksets:'), sg.Input(s=10, k='-Number_Tasksets_Input-', default_text='1')],
-        [sg.Text('Ratio of sporadic Tasks in Taskset:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-Sporadic_Ratio_Spin-', s=(3,1))],
-        [sg.Text('Ratio of Tasks using LET communication:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-LET_Ratio_Spin-', s=(3,1))],
+        [sg.Text('Percentage of sporadic Tasks in Taskset:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-Sporadic_Ratio_Spin-', s=(3,1))],
+        [sg.Text('Percentage of Tasks using LET communication:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-LET_Ratio_Spin-', s=(3,1))],
+        [sg.Text('BCET percentage (BCET relative to WCET):'), sg.Spin(values=[i for i in range(0, 101)], initial_value=100, key='-BCET_Ratio_Spin-', s=(3,1))]
     ], expand_x=True)]
 
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
@@ -139,6 +140,7 @@ def updateUI(window, event, values):
         window['-Number_Chains_Max_Input-'].update(disabled=False)
         window['-Sporadic_Ratio_Spin-'].update(disabled=False)
         window['-LET_Ratio_Spin-'].update(disabled=False)
+        window['-BCET_Ratio_Spin-'].update(disabled=False)
         window['-Inter_CECs_Box-'].update(disabled=False)
         if values['-Inter_CECs_Box-']:
             window['-Min_ECUs_Input-'].update(disabled=False)
@@ -170,6 +172,7 @@ def updateUI(window, event, values):
         window['-Number_Chains_Max_Input-'].update(disabled=True)
         window['-Sporadic_Ratio_Spin-'].update(disabled=True)
         window['-LET_Ratio_Spin-'].update(disabled=True)
+        window['-BCET_Ratio_Spin-'].update(disabled=True)
         window['-Inter_CECs_Box-'].update(disabled=True)
         window['-Min_ECUs_Input-'].update(disabled=True)
         window['-Max_ECUs_Input-'].update(disabled=True)
@@ -328,12 +331,17 @@ def runVisualMode(window):
             try:
                 taskset_params['sporadic_ratio'] = int(values['-Sporadic_Ratio_Spin-'])/100
             except ValueError:
-                popUp('ValueError', [f"Invalid sporadic tasks ratio '{values['-Sporadic_Ratio_Spin-']}'!"])
+                popUp('ValueError', [f"Invalid sporadic tasks percentage '{values['-Sporadic_Ratio_Spin-']}'!"])
                 continue
             try:
                 taskset_params['let_ratio'] = int(values['-LET_Ratio_Spin-'])/100
             except ValueError:
-                popUp('ValueError', [f"Invalid ratio for LET communication '{values['-LET_Ratio_Spin-']}'!"])
+                popUp('ValueError', [f"Invalid percentage for LET communication '{values['-LET_Ratio_Spin-']}'!"])
+                continue
+            try:
+                taskset_params['bcet_ratio'] = int(values['-BCET_Ratio_Spin-'])/100
+            except ValueError:
+                popUp('ValueError', [f"Invalid BCET percentage '{values['-BCET_Ratio_Spin-']}'!"])
                 continue
 
             # Cause-effect chains
