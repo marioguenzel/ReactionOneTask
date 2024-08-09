@@ -19,6 +19,7 @@ import plotting.plot as plot
 import random as random
 from multiprocessing import Pool
 from utilities.scheduler import compute_all_schedules
+import time as time
 
 
 class AnalysisMethod:
@@ -230,12 +231,20 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
             latencies_all.append(method.latencies)
             continue
 
+        t = time.time()
+
         if isinstance(cause_effect_chains[0], tuple):
             with Pool(number_of_threads) as pool:
                 latencies_single = pool.starmap(method.analysis, cause_effect_chains)
         else:
             with Pool(number_of_threads) as pool:
                 latencies_single = pool.map(method.analysis, cause_effect_chains)
+
+        
+        elapsed = time.time() - t
+
+        # debug output
+        print(f'{method.name}: {elapsed}')
         
         latencies_all.append(latencies_single)
         method.latencies = latencies_single

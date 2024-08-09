@@ -87,7 +87,7 @@ def find_fi(ce_chain: CEChain, ana) -> list[int]:
 # New analysis, based on Guenzel2023_equi and Guenzel2023_inter
 #####
 
-def mrt_mRda_lst(chain):
+def guenzel23_equi_impl_sched(chain):
 
     assert len(chain.base_ts.schedules.keys()) > 0
     schedules = chain.base_ts.schedules
@@ -116,11 +116,6 @@ def mrt_mRda_lst(chain):
 
     assert all(pc.complete for pc in part_chains)
     return max([ell(pc, ana) for pc in part_chains])
-
-
-def guenzel23_equi_impl_sched(chain):
-    latency = mrt_mRda_lst(chain)
-    return latency
 
 
 

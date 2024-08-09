@@ -10,8 +10,8 @@ and https://github.com/tu-dortmund-ls12-rt/end-to-end
 import utilities.analyzer_guenzel23 as analyzer
 
 
-def mrt_mRda_lst(chain):
-    
+# single ecu
+def guenzel23_local_mrt(chain):
     assert len(chain.base_ts.schedules.keys()) > 0
     schedules = chain.base_ts.schedules
 
@@ -22,6 +22,13 @@ def mrt_mRda_lst(chain):
         schedules['bcet']
     )
 
+    return mrt
+
+
+def guenzel23_local_mda(chain):
+    assert len(chain.base_ts.schedules.keys()) > 0
+    schedules = chain.base_ts.schedules
+
     mda, mrda = analyzer.max_age_local(
         chain, 
         chain.base_ts,
@@ -29,30 +36,21 @@ def mrt_mRda_lst(chain):
         schedules['bcet']
     )
 
-    # do analysis for certain schedules
-    result = dict()  # results
-
-    result['mrt'] = mrt
-    result['mda'] = mda
-    result['mrda'] = mrda
-
-    return result
-
-
-# single ecu
-def guenzel23_local_mrt(chain):
-    latencies = mrt_mRda_lst(chain)
-    return latencies['mrt']
-
-
-def guenzel23_local_mda(chain):
-    latencies = mrt_mRda_lst(chain)
-    return latencies['mda']
+    return mda
 
 
 def guenzel23_local_mrda(chain):
-    latencies = mrt_mRda_lst(chain)
-    return latencies['mrda']
+    assert len(chain.base_ts.schedules.keys()) > 0
+    schedules = chain.base_ts.schedules
+
+    mda, mrda = analyzer.max_age_local(
+        chain, 
+        chain.base_ts,
+        schedules['wcet'], 
+        schedules['bcet']
+    )
+
+    return mrda
 
 
 # inter ecu analyses
