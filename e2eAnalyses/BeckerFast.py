@@ -9,7 +9,7 @@ Implementation is copied from https://github.com/tu-dortmund-ls12-rt/end-to-end_
 from cechains.chain import CEChain
 from tasks.task import Task
 from math import ceil
-from utilities.scheduler import Schedule_Analyzer, schedule_task_set
+from utilities.scheduler import Schedule_Analyzer
 from enum import Enum
 
 Init_Type = Enum(

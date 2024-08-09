@@ -8,7 +8,7 @@ from e2eAnalyses.Martinez2020 import martinez20_impl, martinez20_let
 from e2eAnalyses.Hamann2017 import hamann17
 from e2eAnalyses.Guenzel2023_inter import guenzel23_local_mrt, guenzel23_local_mda, guenzel23_local_mrda, guenzel23_inter_mrt, guenzel23_inter_mrda
 from e2eAnalyses.Guenzel2023_mixed import guenzel23_mix_pessimistic, guenzel23_mix, guenzel23_mix_improved
-from e2eAnalyses.Guenzel2023_equi import guenzel23_equi_mda, guenzel23_equi_mrt
+from e2eAnalyses.Guenzel2023_equi import guenzel23_equi_mda, guenzel23_equi_mrt, guenzel23_equi_mrda, guenzel23_equi_mrrt
 from e2eAnalyses.Bi2022 import bi22, bi22_inter
 from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.Guenzel2023_equi_extension1 import guenzel23_equi_impl_sched
@@ -51,14 +51,14 @@ analysesDict = {
     'becker17_no_info' : AnalysisMethod(becker17_NO_INFORMATION, 'Becker 2017 (Base MRDA)', 'B17', features=['periodic', 'implicit']),
     'becker17_rt' : AnalysisMethod(becker17_RESPONSE_TIMES, 'Becker 2017 (RT MRDA)', 'B17(RT)', features=['periodic', 'implicit']),
     'becker17_st' : AnalysisMethod(becker17_SCHED_TRACE, 'Becker 2017 (ST MRDA)', 'B17(ST)', features=['periodic', 'implicit', 'schedule']),
-    'becker17_let' : AnalysisMethod(becker17_LET, 'Becker 2017 (LET MRDA)', 'B17(LET)', features=['periodic', 'let']),
-    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'let']),
+    'becker17_let' : AnalysisMethod(becker17_LET, 'Becker 2017 (LET MRDA)', 'B17(LET)', features=['periodic', 'LET']),
+    'hamann17' : AnalysisMethod(hamann17, 'Hamann 2017 (baseline)', 'H17', features=['periodic', 'sporadic', 'LET']),
     'kloda18' : AnalysisMethod(kloda18, 'Kloda 2018', 'K18', features=['periodic', 'implicit']),
     'duerr19_mrt' : AnalysisMethod(duerr19_mrt, 'Dürr 2019 (MRT)', 'D19(MRT)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'duerr19_mrda' : AnalysisMethod(duerr19_mrda, 'Dürr 2019 (MRDA)', 'D19(MRDA)', features=['periodic', 'sporadic', 'implicit', 'inter']),
     'martinez20_impl' : AnalysisMethod(martinez20_impl, 'Martinez 2020 (Impl)', 'M20(Impl)', features=['periodic', 'implicit']),                                                            # TODO
-    'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'let']),                                                                                               # TODO
-    'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'let']),                                                                     # TODO
+    'kordon20' : AnalysisMethod(kordon20, 'Kordon 2020', 'K20',features=['periodic', 'LET']),                                                                                               # TODO
+    'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'LET']),                                                                     # TODO
     'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),
     'bi22_inter' : AnalysisMethod(bi22_inter, 'Bi 2022 (inter)', 'B22(I)', features=['periodic', 'implicit', 'inter']),
     'guenzel23_l_mrt' : AnalysisMethod(guenzel23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'schedule']),
@@ -66,17 +66,19 @@ analysesDict = {
     'guenzel23_l_mrda' : AnalysisMethod(guenzel23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_inter_mrt' : AnalysisMethod(guenzel23_inter_mrt, 'Günzel 2023 (inter MRT)', 'G23(I-MRT)', features=['periodic', 'implicit', 'inter', 'schedule']),
     'guenzel23_inter_mrda' : AnalysisMethod(guenzel23_inter_mrda, 'Günzel 2023 (inter MRDA)', 'G23(I-MRDA)', features=['periodic', 'implicit', 'inter', 'schedule']),
-    'guenzel23_mixed_pess' : AnalysisMethod(guenzel23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel23_mixed' : AnalysisMethod(guenzel23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel23_mixed_imp' : AnalysisMethod(guenzel23_mix_improved, 'Günzel 2023 (mixed improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'let', 'mixed']),
-    'guenzel23_equi_mda': AnalysisMethod(guenzel23_equi_mda, 'Günzel 2023 (equi MDA)', 'G23(EQUI-MDA)', features=['periodic', 'let']),
-    'guenzel23_equi_mrt': AnalysisMethod(guenzel23_equi_mrt, 'Günzel 2023 (equi MRT)', 'G23(EQUI-MRT)', features=['periodic', 'let']),
+    'guenzel23_mixed_pess' : AnalysisMethod(guenzel23_mix_pessimistic, 'Günzel 2023 (mixed, pessimistic)', 'G23(MIX-P)', features=['periodic', 'sporadic', 'implicit', 'LET', 'mixed']),
+    'guenzel23_mixed' : AnalysisMethod(guenzel23_mix, 'Günzel 2023 (mixed)', 'G23(MIX)', features=['periodic', 'sporadic', 'implicit', 'LET', 'mixed']),
+    'guenzel23_mixed_imp' : AnalysisMethod(guenzel23_mix_improved, 'Günzel 2023 (mixed improved)', 'G23(MIX-I)', features=['periodic', 'sporadic', 'implicit', 'LET', 'mixed']),
+    'guenzel23_equi_mda': AnalysisMethod(guenzel23_equi_mda, 'Günzel 2023 (equi MDA)', 'G23(EQUI-MDA)', features=['periodic', 'LET']),
+    'guenzel23_equi_mrt': AnalysisMethod(guenzel23_equi_mrt, 'Günzel 2023 (equi MRT)', 'G23(EQUI-MRT)', features=['periodic', 'LET']),
+    'guenzel23_equi_mrda': AnalysisMethod(guenzel23_equi_mrda, 'Günzel 2023 (equi MRDA)', 'G23(EQUI-MRDA)', features=['periodic', 'LET']),
+    'guenzel23_equi_mrrt': AnalysisMethod(guenzel23_equi_mrrt, 'Günzel 2023 (equi MRRT)', 'G23(EQUI-MRRT)', features=['periodic', 'LET']),
     'guenzel23_equi_impl_sched': AnalysisMethod(guenzel23_equi_impl_sched, 'Günzel 2023 (equi+sched MRT)', 'G23(EQUI-SCHED-MRT)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_equi_impl_rt': AnalysisMethod(guenzel23_equi_impl_rt, 'Günzel 2023 (equi+rt MRT)', 'G23(EQUI-RT-MRT)', features=['periodic', 'implicit']),
     'beckerFast_no_info': AnalysisMethod(beckerFast_NO_INFORMATION, 'Becker Fast (Base MRDA)', 'BF', features=['periodic', 'implicit']),
     'beckerFast_rt': AnalysisMethod(beckerFast_RESPONSE_TIMES, 'Becker Fast (RT MRDA)', 'BF-RT', features=['periodic', 'implicit']),
     'beckerFast_st': AnalysisMethod(beckerFast_SCHED_TRACE, 'Becker Fast (ST MRDA)', 'BF-ST', features=['periodic', 'implicit', 'schedule']),
-    'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'let']),
+    'beckerFast_let': AnalysisMethod(beckerFast_LET, 'Becker Fast (LET MRDA)', 'BF-LET', features=['periodic', 'LET']),
 }
 
 

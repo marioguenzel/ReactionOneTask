@@ -65,7 +65,7 @@ def inititalizeUI():
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ), 
             sg.Tab('LET Com',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'let' in method.features and 'mixed' not in method.features], 
+                [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'LET' in method.features and 'mixed' not in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ),
             sg.Tab('Mixed Com',[[sg.Column(
@@ -79,7 +79,7 @@ def inititalizeUI():
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ),  
             sg.Tab('LET Com',[[sg.Column(
-                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'let' in method.features and 'mixed' not in method.features], 
+                [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'LET' in method.features and 'mixed' not in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             ),
             sg.Tab('Mixed Com',[[sg.Column(

@@ -147,15 +147,15 @@ def guenzel23_equi_mda(chain: CEChain, Fi=None) -> float:
 
 
 def guenzel23_equi_mrt(chain: CEChain, Fi=None) -> float:
-    return guenzel_23_equi_mda(chain, Fi)
+    return guenzel23_equi_mda(chain, Fi)
 
 
-def guenzel23_equie_mrrt(chain: CEChain, mrt: float = None) -> float:
+def guenzel23_equi_mrrt(chain: CEChain, mrt: float = None) -> float:
     """Compute MRRT using the result from X # TODO add result
     Assumption: LET communication
     """
     if mrt is None:  # Compute MRT if not given
-        mrt = guenzel_23_equi_mrt(chain)
+        mrt = guenzel23_equi_mrt(chain)
 
     # difference between MRT and MRRT under LET is one period of the first task
     mrrt = mrt - chain[0].period
@@ -168,7 +168,7 @@ def guenzel23_equi_mrda(chain: CEChain, mda: float = None) -> float:
     Assumption: LET communication
     """
     if mda is None:  # Compute MRT if not given
-        mda = guenzel_23_equi_mda(chain)
+        mda = guenzel23_equi_mda(chain)
 
     # difference between MRT and MRRT under LET is one period of the last task
     mrda = mda - chain[-1].period

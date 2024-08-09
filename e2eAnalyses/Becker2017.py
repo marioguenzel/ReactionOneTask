@@ -12,7 +12,7 @@ from tasks.task import Task
 from tasks.job import Job
 from cechains.chain import CEChain
 from enum import Enum
-from utilities.scheduler import Schedule_Analyzer, schedule_task_set
+from utilities.scheduler import Schedule_Analyzer
 
 Init_Type = Enum(
     'Init_Type',
