@@ -21,7 +21,10 @@ def inititalizeUI():
             'End-to-End',
             'End-to-End_Inter',
             'End-to-End_Mixed',
-            'End-to-End_Equi'
+            'End-to-End_Equi',
+            'np-data-age-analysis',
+            'ChainMiss',
+            'PySimpleGUI'
         ]], 
         ['Help', 
             ['About']
@@ -259,6 +262,15 @@ def runVisualMode(window):
 
         if event == 'End-to-End_Equi':
             webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/mrt_mda')
+
+        if event == 'np-data-age-analysis':
+            webbrowser.open_new('https://github.com/porya-gohary/np-data-age-analysis')
+
+        if event == 'ChainMiss':
+            webbrowser.open_new('https://github.com/PaoloPazzaglia/ChainMiss')
+
+        if event == 'PySimpleGUI':
+            webbrowser.open_new('https://www.pysimplegui.com/')
 
         if event == 'About':
             popUp('About', [
