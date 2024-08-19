@@ -55,7 +55,7 @@ def inititalizeUI():
     ], expand_x=True)]
 
     layoutAnalysis = [sg.Frame('Analysis Configuration', [
-        [sg.TabGroup([[
+        [sg.Frame('Analysis Methods', [[sg.TabGroup([[
             sg.Tab('Implicit Com',[[sg.Column(
                 [[sg.Checkbox(method.name, default=False, k=method_key)] 
                     for method_key, method 
@@ -72,8 +72,8 @@ def inititalizeUI():
                 [[sg.Checkbox(method.name, default=False, k=method_key)] for method_key, method in analysesDict.items() if 'mixed' in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             )
-        ]], expand_x=True),
-        sg.TabGroup([[
+        ]], expand_x=True)]], expand_x=True),
+        sg.Frame('Normalization Methods', [[sg.TabGroup([[
             sg.Tab('Implicit Com',[[sg.Column(
                 [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'implicit' in method.features and 'mixed' not in method.features],  
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
@@ -86,7 +86,7 @@ def inititalizeUI():
                 [[sg.Checkbox(method.name, default=False, k='n_'+method_key)] for method_key, method in analysesDict.items() if 'mixed' in method.features], 
                 expand_x=True, expand_y=True, scrollable=True, vertical_scroll_only=True)]]
             )
-        ]], expand_x=True)
+        ]], expand_x=True)]], expand_x=True)
         ]
     ], expand_x=True, size=(None, 220))]
 
