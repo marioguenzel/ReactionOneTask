@@ -58,6 +58,7 @@ class Task:
         self.wcet = wcet
         self.deadline = deadline
         self.priority = priority
+        self.jitter = 0         # TODO
 
 
     def print(self):

@@ -14,11 +14,13 @@ from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.Guenzel2023_equi_extension1 import guenzel23_equi_impl_sched
 from e2eAnalyses.Guenzel2023_equi_extension2 import guenzel23_equi_impl_rt
 from e2eAnalyses.BeckerFast import beckerFast_NO_INFORMATION, beckerFast_RESPONSE_TIMES, beckerFast_SCHED_TRACE, beckerFast_LET
+from e2eAnalyses.Gohary2022 import gohary22
 import helpers
 import plotting.plot as plot
 import random as random
 from multiprocessing import Pool
 from utilities.scheduler import compute_all_schedules
+from utilities.yaml_export import export_to_yaml
 import time as time
 
 
@@ -62,6 +64,7 @@ analysesDict = {
     'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'LET']),                                                                     # TODO
     'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),
     'bi22_inter' : AnalysisMethod(bi22_inter, 'Bi 2022 (inter)', 'B22(I)', features=['periodic', 'implicit', 'inter']),
+    'gohary22' : AnalysisMethod(gohary22, 'Gohary 2022', 'G22', features=['periodic', 'implicit']),
     'guenzel23_local_mrt' : AnalysisMethod(guenzel23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_local_mda' : AnalysisMethod(guenzel23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_local_mrda' : AnalysisMethod(guenzel23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'schedule']),
@@ -93,6 +96,7 @@ default_general_params = {
     'store_generated_cecs' : False,
     'load_cecs_from_file' : False,
     'cecs_file_path' : '',
+    'yaml_file_path' : '',
     'number_of_threads' : 1,
     'debug_output' : False
 }
@@ -233,12 +237,20 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
 
         t = time.time()
 
-        if isinstance(cause_effect_chains[0], tuple):
-            with Pool(number_of_threads) as pool:
-                latencies_single = pool.starmap(method.analysis, cause_effect_chains)
+        # special cases for some analyses
+        if method.name == 'Gohary 2022':
+            latencies_single = method.analysis(cause_effect_chains)
+
+        # default case for most analyses
         else:
-            with Pool(number_of_threads) as pool:
-                latencies_single = pool.map(method.analysis, cause_effect_chains)
+            if isinstance(cause_effect_chains[0], tuple):
+                # parallelization for interconnected cause-effect chains
+                with Pool(number_of_threads) as pool:
+                    latencies_single = pool.starmap(method.analysis, cause_effect_chains)
+            else:
+                # parallelization for local cause-effect chains
+                with Pool(number_of_threads) as pool:
+                    latencies_single = pool.map(method.analysis, cause_effect_chains)
 
         
         elapsed = time.time() - t
@@ -304,6 +316,21 @@ def adjust_taskset_bcets(taskset, bcet_ratio):
     for task in taskset:
         task.bcet = task.wcet * bcet_ratio
 
+
+# reduces the ids of tasks and tasksets
+# allows for an easier export if necessary
+def minimize_ids(tasksets):
+    id = 0
+    for taskset in tasksets:
+        taskset.id = id
+        id = id + 1
+
+    id = 0
+    for taskset in tasksets:
+        for task in taskset:
+            task.id = id
+            id = id+1
+
 #####################################
 ### Cause-Effect Chain generation ###
 #####################################
@@ -342,6 +369,7 @@ def generate_cecs(general_params,
         adjust_taskset_bcets(taskset, taskset_generation_params['bcet_ratio'])
         taskset.rate_monotonic_scheduling()
         taskset.compute_wcrts()
+    minimize_ids(tasksets)
 
     # remove tasksets with tasks that miss their deadline
     tasksets = remove_invalid_tasksets(tasksets)
@@ -375,6 +403,7 @@ def generate_cecs(general_params,
         if output_params['output_dir'] == '':
             output_params['output_dir'] = helpers.make_output_directory()
         helpers.write_data(output_params['output_dir'] + "cause_effect_chains.pickle", cause_effect_chains)
+        export_to_yaml(output_params['output_dir'], cause_effect_chains)
 
     return cause_effect_chains
 
@@ -476,7 +505,7 @@ def run_evaluation(general_params,
         )
 
     performAnalyses(
-        cause_effect_chains, 
+        cause_effect_chains,
         selected_analysis_methods + selected_normalization_methods, 
         general_params['number_of_threads']
     )

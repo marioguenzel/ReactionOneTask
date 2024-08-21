@@ -163,4 +163,8 @@ cython_debug/
 # Ignore output folder of the e2e evaluation framework
 output/
 
+# Ignore external repositories
+external/
+
 debug.py
+results_DA.csv

@@ -28,7 +28,7 @@ List of papers with analyses methods relevant for the framework:
 |Compositional Timing Analysis of Asynchronized Distributed Cause-effect Chains          |Günzel 2023   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
 |On the Equivalence of Maximum Reaction Time and Maximum Data Age for Cause-Effect Chains|Günzel 2023   | Yes      | (Yes)    | (Yes)    | Yes   | MDA/MRT      | Integrated |
 |                                                                                        |              |          |          |          |       |              |            |
-|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohari 2022   | Yes      | No       | Yes      | No    | MDA          | Received   |
+|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohary 2022   | Yes      | No       | Yes      | No    | MDA          | Received   |
 |Characterizing the Effect of Deadline Misses on Time-Triggered Task Chains              |Pazzaglia 2022| Yes      | No       | No       | Yes   | ?            | Received   |
 |                                                                                        |              |          |          |          |       |              |            |
 |End-To-End Timing Analysis in ROS2                                                      |Teper 2022    | ?        | ?        | ?        | ?     | ?            | Missing    |
