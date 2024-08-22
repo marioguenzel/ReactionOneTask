@@ -23,24 +23,6 @@ class CEChain(TaskSet):
         for task in self._lst:
             ids.append(int(task.id))
         return ids
-    
-    def copy(self):
-        new_tasks = []
-        new_tasks_dict = dict()
-        for task in self.base_ts:
-            new_task = task.copy()
-            new_task.id = task.id
-            new_tasks.append(new_task)
-            new_tasks_dict[new_task.id] = new_task
-        
-        new_base_ts = TaskSet(*new_tasks)
-        new_base_ts.id = self.base_ts.id
-        cec_list = []
-        for task in self._lst:
-            cec_list.append(new_tasks_dict[task.id])
-        new_cec = CEChain(*cec_list, base_ts=new_base_ts)
-
-        return new_cec
 
 
 if __name__ == '__main__':

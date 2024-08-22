@@ -24,6 +24,9 @@ from utilities.yaml_export import export_to_yaml
 import time as time
 
 
+# debug output
+print_elapsed_time = False
+
 class AnalysisMethod:
 
     def __init__(self, analysis_function, name, name_short, features):
@@ -256,7 +259,8 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
         elapsed = time.time() - t
 
         # debug output
-        print(f'{method.name}: {elapsed}')
+        if print_elapsed_time:
+            print(f'{method.name}: {elapsed}')
         
         latencies_all.append(latencies_single)
         method.latencies = latencies_single
@@ -317,20 +321,6 @@ def adjust_taskset_bcets(taskset, bcet_ratio):
         task.bcet = task.wcet * bcet_ratio
 
 
-# reduces the ids of tasks and tasksets
-# allows for an easier export if necessary
-def minimize_ids(tasksets):
-    id = 0
-    for taskset in tasksets:
-        taskset.id = id
-        id = id + 1
-
-    id = 0
-    for taskset in tasksets:
-        for task in taskset:
-            task.id = id
-            id = id+1
-
 #####################################
 ### Cause-Effect Chain generation ###
 #####################################
@@ -369,7 +359,6 @@ def generate_cecs(general_params,
         adjust_taskset_bcets(taskset, taskset_generation_params['bcet_ratio'])
         taskset.rate_monotonic_scheduling()
         taskset.compute_wcrts()
-    minimize_ids(tasksets)
 
     # remove tasksets with tasks that miss their deadline
     tasksets = remove_invalid_tasksets(tasksets)
