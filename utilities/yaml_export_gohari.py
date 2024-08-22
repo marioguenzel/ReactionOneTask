@@ -3,7 +3,7 @@ import yaml
 
 class TaskExport:
     def __init__(self, task : Task, taskset, task_id):
-        # values have to be multiplied by 1000000, because gohary's analysis expects integer values
+        # values have to be multiplied by 1000000, because gohari's analysis expects integer values
         # also, task_ids have to begin at 0 and cannot be an arbitrary id
         # same for PEs ids
         self.TaskID = task_id
@@ -37,7 +37,7 @@ class Export:
                 task_dict[export_task_id] = taskExport
                 export_task_id = export_task_id + 1
 
-        # compute successors, needed for gohary 2022
+        # compute successors, needed for gohari 2022
         self.taskchains = []
         for chain in cause_effect_chains:
             id_list = self.translate_ids(chain.id_list(), id_map)

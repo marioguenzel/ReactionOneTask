@@ -14,7 +14,7 @@ from e2eAnalyses.Kordon2020 import kordon20
 from e2eAnalyses.Guenzel2023_equi_extension1 import guenzel23_equi_impl_sched
 from e2eAnalyses.Guenzel2023_equi_extension2 import guenzel23_equi_impl_rt
 from e2eAnalyses.BeckerFast import beckerFast_NO_INFORMATION, beckerFast_RESPONSE_TIMES, beckerFast_SCHED_TRACE, beckerFast_LET
-from e2eAnalyses.Gohary2022 import gohary22
+from e2eAnalyses.Gohari2022 import gohari22
 import helpers
 import plotting.plot as plot
 import random as random
@@ -67,7 +67,7 @@ analysesDict = {
     'martinez20_let' : AnalysisMethod(martinez20_let, 'Martinez 2020 (LET)', 'M20(LET)', features=['periodic', 'LET']),                                                                     # TODO
     'bi22' : AnalysisMethod(bi22, 'Bi 2022', 'B22', features=['periodic', 'implicit']),
     'bi22_inter' : AnalysisMethod(bi22_inter, 'Bi 2022 (inter)', 'B22(I)', features=['periodic', 'implicit', 'inter']),
-    'gohary22' : AnalysisMethod(gohary22, 'Gohary 2022', 'G22', features=['periodic', 'implicit']),
+    'gohari22' : AnalysisMethod(gohari22, 'Gohari 2022', 'G22', features=['periodic', 'implicit']),
     'guenzel23_local_mrt' : AnalysisMethod(guenzel23_local_mrt, 'Günzel 2023 (local MRT)', 'G23(L-MRT)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_local_mda' : AnalysisMethod(guenzel23_local_mda, 'Günzel 2023 (local MDA)', 'G23(L-MDA)', features=['periodic', 'implicit', 'schedule']),
     'guenzel23_local_mrda' : AnalysisMethod(guenzel23_local_mrda, 'Günzel 2023 (local MRDA)', 'G23(L-MRDA)', features=['periodic', 'implicit', 'schedule']),
@@ -241,7 +241,7 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
         t = time.time()
 
         # special cases for some analyses
-        if method.name == 'Gohary 2022':
+        if method.name == 'Gohari 2022':
             latencies_single = method.analysis(cause_effect_chains)
 
         # default case for most analyses

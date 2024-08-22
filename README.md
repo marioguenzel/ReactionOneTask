@@ -14,7 +14,7 @@ Then clone this repository and enter it:
 
 Create a virtual environment to safely install python packages without dependency issues and activate it:
 
-- ```python3.11 -m venv e2eEval```
+- ```python3.X -m venv e2eEval```
 - ```. e2eEval/bin/activate```
 
 Install the python packages necessary to launch the evaluation framework. All of the necessary packages are specified in the requirements.txt, which can be automatically loaded and installed using the following command:
@@ -23,7 +23,7 @@ Install the python packages necessary to launch the evaluation framework. All of
 
 Otherwise the required python packages can also be installed manually using the following commands:
 
-- ```pip install scipy numpy matplotlib```
+- ```pip install scipy numpy matplotlib PyYAML```
 - ```pip install pySimpleGUI/PySimpleGUI-4.60.5.tar.gz```
 - ```pip install git+https://github.com/JasonGross/tikzplotlib.git```
 
@@ -55,7 +55,7 @@ List of papers with analyses methods relevant for the framework:
 |Evaluation of the Age Latency of a Real-Time Communicating System using the LET paradigm|Kordon 2020   | Yes      | No       | No       | Yes   | MDA          | Requested  |
 |End-to-end latency characterization of task communication models for automotive systems |Martinez 2020 | Yes      | No       | Yes      | Yes   | MDA/MRT      | Missing    |
 |Efficient Maximum Data Age Analysis for Cause-Effect Chains in Automotive Systems       |Bi 2022       | Yes      | No       | Yes      | No    | MRDA         | Integrated |
-|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohary 2022   | Yes      | No       | Yes      | No    | MRDA         | Integrated |
+|Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty                   |Gohari 2022   | Yes      | No       | Yes      | No    | MRDA         | Integrated |
 |Timing Analysis of Asynchronized Distributed Cause-Effect Chains                        |Günzel 2021   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
 |Timing Analysis of Cause-Effect Chains with Heterogeneous Communication Mechanisms      |Günzel 2023   | Yes      | Yes      | Yes      | Yes   | MRT          | Integrated |
 |Compositional Timing Analysis of Asynchronized Distributed Cause-effect Chains          |Günzel 2023   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
@@ -82,7 +82,7 @@ List of papers with analyses methods relevant for the framework:
     │	├── Bi2022.py
     │	├── Davare2007.py
     │	├── Duerr2019.py
-    │	├── Gohary2022.py
+    │	├── Gohari2022.py
     │	├── Guenzel2023_equi.py
     │	├── Guenzel2023_equi_extension1.py
     │	├── Guenzel2023_equi_extension2.py
@@ -106,10 +106,10 @@ List of papers with analyses methods relevant for the framework:
     │	├── analyzer_guenzel23.py
     │	├── analyzer.py
     │	├── augmented_job_chain.py
-    │	├── csv_import_gohary.py
+    │	├── csv_import_gohari.py
     │	├── event_simulator.py
     │	├── scheduler.py
-    │	├── yaml_export_gohary.py
+    │	├── yaml_export_gohari.py
     │	└── yaml_export.py
     ├── .gitignore
     ├── consoleInterface.py			    # Parses the given console arguments

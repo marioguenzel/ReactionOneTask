@@ -1,17 +1,17 @@
 import subprocess
-from utilities.yaml_export_gohary import export_to_yaml
-from utilities.csv_import_gohary import get_latencies_from_csv
+from utilities.yaml_export_gohari import export_to_yaml
+from utilities.csv_import_gohari import get_latencies_from_csv
 
 # enables debug/error output of system calls
 debug_messages = False
 error_messages = False
 
-def gohary22(cause_effect_chains):
+def gohari22(cause_effect_chains):
     latencies = []
 
-    # downloads the implementation from gohary
+    # downloads the implementation from gohari
     result = subprocess.run(
-        ["git", "clone", "git@github.com:porya-gohary/np-data-age-analysis.git", "external/gohary/"],
+        ["git", "clone", "git@github.com:porya-gohary/np-data-age-analysis.git", "external/gohari/"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -23,7 +23,7 @@ def gohary22(cause_effect_chains):
 
     # switches to the commit that is known to work with the evaluation framework
     result = subprocess.run(
-        ["git", "-C", "external/gohary/", "checkout 6516f9e"],
+        ["git", "-C", "external/gohari/", "checkout 6516f9e"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -33,9 +33,9 @@ def gohary22(cause_effect_chains):
     if error_messages:
         print("Error:", result.stderr)
 
-    # downloads submodules of gohary's analysis
+    # downloads submodules of gohari's analysis
     result = subprocess.run(
-        ["git", "-C", "external/gohary/", "submodule", "update", "--init", "--recursive"],
+        ["git", "-C", "external/gohari/", "submodule", "update", "--init", "--recursive"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -47,7 +47,7 @@ def gohary22(cause_effect_chains):
 
     # cmake to generate makefile
     result = subprocess.run(
-        ["cmake", "-Bexternal/gohary/build", "-Sexternal/gohary"],
+        ["cmake", "-Bexternal/gohari/build", "-Sexternal/gohari"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -59,7 +59,7 @@ def gohary22(cause_effect_chains):
 
     # build the project
     result = subprocess.run(
-        ["make", "-C", "external/gohary/build", "-j"],
+        ["make", "-C", "external/gohari/build", "-j"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -78,14 +78,14 @@ def gohary22(cause_effect_chains):
         else:
             taskset_cecs[cause_effect_chain.base_ts] = [cause_effect_chain]
 
-    # run gohary once per taskset
+    # run gohari once per taskset
     for taskset in taskset_cecs:
-        # export values to goharys input yaml format
-        yaml_path = export_to_yaml('external/gohary/', taskset_cecs[taskset])
+        # export values to goharis input yaml format
+        yaml_path = export_to_yaml('external/gohari/', taskset_cecs[taskset])
 
-        # run gohary with yaml file
+        # run gohari with yaml file
         subprocess.run(
-            ["./external/gohary/build/run_analysis", yaml_path, "-w"],
+            ["./external/gohari/build/run_analysis", yaml_path, "-w"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
