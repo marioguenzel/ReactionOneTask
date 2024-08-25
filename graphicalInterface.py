@@ -275,9 +275,9 @@ def runVisualMode(window):
         if event == 'About':
             popUp('About', [
                 'Author: Robin Edmaier', 
-                'Parts of this framework were copied from existing implementations.', 
+                'Parts of this framework are based on existing implementations.', 
                 '', 
-                'This framework is published as free software under TODO.'
+                'This framework is published as free software under the MIT license.'
             ])
 
         if event == 'Run':

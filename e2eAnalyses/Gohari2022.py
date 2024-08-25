@@ -95,12 +95,14 @@ def gohari22(cause_effect_chains):
         if error_messages:
             print("Error:", result.stderr)
 
-        # parse the return values
-        latencies_single = (get_latencies_from_csv('results_DA.csv'))
+        try:
+            # parse the return values
+            latencies_single = (get_latencies_from_csv('results_DA.csv'))
 
-        # analysis method does not always return plausible values, default fallback to 0
-        if len(latencies_single) < len(taskset_cecs[taskset]):
-            latencies_single = [0] * len(taskset_cecs[taskset])
+        except FileNotFoundError:
+            # analysis method does not always return values, because task set could be not 
+            # schedulable under non-preemptive scheduling
+            latencies_single = [-1] * len(taskset_cecs[taskset])
 
         latencies.extend(latencies_single)
 
