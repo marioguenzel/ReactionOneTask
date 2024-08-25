@@ -168,3 +168,5 @@ external/
 
 debug.py
 results_DA.csv
+cli_cause_effect_chains.pickle
+cli_cause_effect_chains.yaml

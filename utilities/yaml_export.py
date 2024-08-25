@@ -47,7 +47,7 @@ def export_to_yaml(output_path, cause_effect_chains):
 
     yaml.add_representer(TaskExport, task_export_representer)
 
-    with open(f'{output_path}chains.yaml', 'w') as yaml_file:
+    with open(f'{output_path}cause_effect_chains.yaml', 'w') as yaml_file:
         obj = Export(cause_effect_chains)
         yaml.dump(obj.__dict__, yaml_file, default_flow_style=None, width=1000)
 

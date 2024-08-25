@@ -108,7 +108,7 @@ def inititalizeUI():
         [layoutChain],
         [layoutAnalysis],
         [layoutPlot],
-        [sg.Button('Run'), sg.Button('Cancel')]
+        [sg.Button('Run Evaluation'), sg.Button('Print CLI Commands')]
     ]
 
     font = ("Arial", 11)
@@ -280,7 +280,7 @@ def runVisualMode(window):
                 'This framework is published as free software under the MIT license.'
             ])
 
-        if event == 'Run':
+        if event == 'Run Evaluation' or event == 'Print CLI Commands':
 
             ##################################
             ### Gather all inputs from GUI ###
@@ -291,7 +291,7 @@ def runVisualMode(window):
             cec_params = dict(default_cec_generation_params)
             output_params = dict(default_output_params)
 
-            print(values)
+            #print(values)
 
             # General
             general_params['generate_cecs'] = values['-Generate_CEC_Radio-']
@@ -412,25 +412,76 @@ def runVisualMode(window):
             output_params['absolute_plots'] = values['-CBP2-']
             output_params['raw_analysis_results'] = values['-CBP3-']
 
-            ################################
-            ### Run Evaluation Framework ###
-            ################################
+            if event == 'Run Evaluation':
 
-            run_evaluation(
-                general_params,
-                taskset_params,
-                cec_params,
-                selected_analysis_methods,
-                selected_normalization_methods,
-                output_params
-            )
+                ################################
+                ### Run Evaluation Framework ###
+                ################################
 
-            #######################
-            ### Feedback pop-up ###
-            #######################
+                run_evaluation(
+                    general_params,
+                    taskset_params,
+                    cec_params,
+                    selected_analysis_methods,
+                    selected_normalization_methods,
+                    output_params
+                )
 
-            popUp('Info', 
-                ['Run finished without any errors.', 
-               'Results are saved in:', 
-                output_params['output_dir']]
-            )
+                #######################
+                ### Feedback pop-up ###
+                #######################
+
+                popUp('Info', 
+                    ['Run finished without any errors.', 
+                'Results are saved in:', 
+                    output_params['output_dir']]
+                )
+
+            if event == 'Print CLI Commands':
+                generation_command = 'python3 e2eMain.py generate-cecs -o cli_'
+                analysis_command = 'python3 e2eMain.py analyze-cecs -f cli_cause_effect_chains.pickle'
+
+                for param in general_params:
+                    if general_params[param] != False and general_params[param] != '' and param != 'generate_cecs':
+                        if isinstance(general_params[param], bool):
+                            generation_command = generation_command + f' --{param}'
+                            analysis_command = analysis_command + f' --{param}'
+                        else:
+                            generation_command = generation_command + f' --{param}={general_params[param]}'
+                            analysis_command = analysis_command + f' --{param}={general_params[param]}'
+                
+                for param in taskset_params:
+                    if taskset_params[param] != False:
+                        if isinstance(taskset_params[param], bool):
+                            generation_command = generation_command + f' --{param}'
+                        else:
+                            generation_command = generation_command + f' --{param}={taskset_params[param]}'
+
+                for param in cec_params:
+                    if cec_params[param] != False:
+                        if isinstance(cec_params[param], bool):
+                            generation_command = generation_command + f' --{param}'
+                        else:
+                            generation_command = generation_command + f' --{param}={cec_params[param]}'
+
+                for analysis_method in selected_analysis_methods:
+                    analysis_command = analysis_command + f' -a {analysis_method.analysis.__name__}'
+
+                for normalization_method in selected_normalization_methods:
+                    analysis_command = analysis_command + f' -n {normalization_method.analysis.__name__}'
+
+                for param in output_params:
+                    if output_params[param] != False and output_params[param] != '':
+                        if isinstance(output_params[param], bool):
+                            analysis_command = analysis_command + f' --{param}'
+                        else:
+                            analysis_command = analysis_command + f' --{param}={output_params[param]}'
+
+                print('')
+                if general_params['generate_cecs']:
+                    print('###----- 2 Commands -----###')
+                    print(generation_command)
+                    print('')
+                else:
+                    print('###----- 1 Command  -----###')
+                print(analysis_command)

@@ -195,24 +195,26 @@ def check_params(taskset_params, cec_params, warnings=True):
 
 def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
     # check if all selected methods are applicable on cecs
-    methods = analysis_methods + normalization_methods
 
-    if isinstance(cecs[0], tuple):
-        flattened_list = []
-        for cec_tuple in cecs:
-            for cec in list(cec_tuple):
-                flattened_list.append(cec)
-        cecs = flattened_list
+    if len(cecs) > 0:
+        methods = analysis_methods + normalization_methods
 
-    releases = set([cec.base_ts.check_feature('release_pattern') for cec in cecs])
-    communications = set([cec.base_ts.check_feature('communication_policy') for cec in cecs])
-    
-    release_pattern = next(iter(releases)) if len(releases) == 1 else 'mixed'
-    communication_policy = next(iter(communications)) if len(communications) == 1 else 'mixed'
+        if isinstance(cecs[0], tuple):
+            flattened_list = []
+            for cec_tuple in cecs:
+                for cec in list(cec_tuple):
+                    flattened_list.append(cec)
+            cecs = flattened_list
 
-    for method in methods:
-        assert release_pattern in method.features, f'{method.name} does not support release pattern {release_pattern}'
-        assert communication_policy in method.features, f'{method.name} does not support communication policy {communication_policy}'
+        releases = set([cec.base_ts.check_feature('release_pattern') for cec in cecs])
+        communications = set([cec.base_ts.check_feature('communication_policy') for cec in cecs])
+        
+        release_pattern = next(iter(releases)) if len(releases) == 1 else 'mixed'
+        communication_policy = next(iter(communications)) if len(communications) == 1 else 'mixed'
+
+        for method in methods:
+            assert release_pattern in method.features, f'{method.name} does not support release pattern {release_pattern}'
+            assert communication_policy in method.features, f'{method.name} does not support communication policy {communication_policy}'
 
 
 ####################
