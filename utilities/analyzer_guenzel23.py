@@ -8,11 +8,6 @@ Utility file for guenzel_23_inter
 
 
 import itertools
-import utilities.analyzer
-import math
-
-# Method to compute the hyperperiod
-compute_hyper = utilities.analyzer.Analyzer.determine_hyper_period
 
 
 class re_we_analyzer():
@@ -292,7 +287,7 @@ def max_age_local(chain, task_set, schedule_wcet, schedule_bcet):
 
 def execution_zero_schedule(task_set):
     '''Since the dispatcher can only handle execution time >0, we generate a "faked" schedule.'''
-    hyperperiod = compute_hyper(task_set)
+    hyperperiod = task_set.hyperperiod()
     max_phase = max([task.phase for task in task_set])
 
     # Initialize result dictionary.
@@ -345,7 +340,7 @@ def mrt_let(chain, task_set):
     fw = []
 
     # useful values for break-condition and valid check
-    hyper = compute_hyper(task_set)
+    hyper = task_set.hyperperiod()
     max_phase = max([task.phase for task in task_set])
     max_first_read_event = max([ana.rel(task, 0) for task in task_set])
 
@@ -392,7 +387,7 @@ def mda_let(chain, task_set):
     bw = []
 
     # useful values for break-condition and valid check
-    hyper = compute_hyper(task_set)
+    hyper = task_set.hyperperiod()
     max_phase = max([task.phase for task in task_set])
     max_first_read_event = max([ana.rel(task, 0) for task in task_set])
 
