@@ -27,7 +27,9 @@ import time as time
 # debug output
 print_elapsed_time = False
 
+
 class AnalysisMethod:
+    """Class for describing e2e analysis methods"""
 
     def __init__(self, analysis_function, name, name_short, features):
         self.analysis = analysis_function
@@ -37,9 +39,15 @@ class AnalysisMethod:
         self.latencies = []
 
     def reset(self):
+        """Deletes the saved latencies"""
+
         self.latencies = []
 
     def normalize(self, baseline):
+        """Normalizes the latencies of this analysis method to the
+        latencies of the given analysis method
+        """
+
         if len(self.latencies) != len(baseline.latencies):
             return []
         else:
@@ -50,6 +58,7 @@ class AnalysisMethod:
 ### Dictionary with all implemented analysis methods ###
 ########################################################
 
+# dictionary the holds the definitions of all implemented analysis methods with their names and features
 analysesDict = {
     # intern_name : AnalysisMethod(analysis_method, long_name (used in GUI), short_name (used in plots), feature list)
     'davare07' : AnalysisMethod(davare07, 'Davare 2007 (baseline)', 'D07', features=['periodic', 'implicit']),
@@ -148,25 +157,15 @@ default_output_params = {
     'print_to_console' : False
 }
 
-### Helper
-
-def flattened_cec_tuple_list(cecs):
-    if isinstance(cecs[0], tuple):
-        flattened_list = []
-        for cec_tuple in cecs:
-            for cec in list(cec_tuple):
-                flattened_list.append(cec)
-        return flattened_list
-    else:
-        return cecs
-
 
 ######################
 ### Input checking ###
 ######################
 
 def check_params(taskset_params, cec_params, warnings=True):
-    # first check for errors, then for warnings
+    """Checks the given taskset and cause-effect chain parameters for
+    logical errors, in case an error was found an exception is thrown
+    """
 
     # taskset params check
     assert taskset_params['target_util'] >= 0.01
@@ -194,7 +193,9 @@ def check_params(taskset_params, cec_params, warnings=True):
 
 
 def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
-    # check if all selected methods are applicable on cecs
+    """Check if all selected methods are applicable on cecs, in case an 
+    error was found an exception is thrown
+    """
 
     if len(cecs) > 0:
         methods = analysis_methods + normalization_methods
@@ -222,6 +223,8 @@ def check_methods_and_cecs(analysis_methods, normalization_methods, cecs):
 ####################
 
 def performAnalyses(cause_effect_chains, methods, number_of_threads):
+    """Analyzes the given cause-effect chains with the given analysis methods"""
+
     latencies_all = []
 
     # delete values from previous runs
@@ -278,6 +281,8 @@ def performAnalyses(cause_effect_chains, methods, number_of_threads):
 ###########################
 
 def create_interconnected_cecs(cause_effect_chains, cec_params):
+    """Generates interconnected cause-effect chains from local cause-effect chains"""
+
     interconncected_chains = []
 
     while len(interconncected_chains) < cec_params['number_of_inter_cecs']:
@@ -298,6 +303,10 @@ def create_interconnected_cecs(cause_effect_chains, cec_params):
 ###########################
 
 def remove_invalid_tasksets(tasksets):
+    """Returns only those task sets, in which every task
+    meets its deadline
+    """
+
     valid_tasksets = tasksets.copy()
     for taskset in tasksets:
         for task in taskset:
@@ -331,6 +340,9 @@ def generate_cecs(general_params,
                   taskset_generation_params,
                   cec_generation_params,
                   output_params):
+    """Generates a list of cause-effect chains with the
+    given parameters
+    """
     
     ### Parameter Check ###
     
@@ -406,6 +418,10 @@ def generate_cecs(general_params,
 def save_raw_analysis_results(selected_analysis_methods,
                               selected_normalization_methods,
                               output_dir):
+    """Saves the results of the analyses in a csv file in the
+    given output directory
+    """
+
     selected_methods = set(selected_analysis_methods + selected_normalization_methods)
     names_all = []
     latencies_all = []
@@ -421,6 +437,7 @@ def save_raw_analysis_results(selected_analysis_methods,
 
 
 def generate_output(output_params, selected_analysis_methods, selected_normalization_methods):
+    """Generates the output files (diagrams/csv-file) with the results from the analyses"""
 
     if output_params['normalized_plots']:
         if output_params['output_dir'] == '':
@@ -463,6 +480,13 @@ def run_evaluation(general_params,
                    selected_analysis_methods,
                    selected_normalization_methods,
                    output_params):
+    """Runs a complete evaluation
+    
+    Includes the following steps:
+    1. Loading/Generating a list of (interconnected/local) cause-effect chains
+    2. Analyzing the list of cause-effect chains
+    3. Generating the output files (diagrams/csv-file)
+    """
 
     ### Create/Load Chains from file ###
 
@@ -491,7 +515,7 @@ def run_evaluation(general_params,
     schedule_needed = sum([method.features.count('schedule') for method in selected_analysis_methods + selected_normalization_methods]) > 0
     if schedule_needed:
         compute_all_schedules(
-            flattened_cec_tuple_list(cause_effect_chains), 
+            cause_effect_chains, 
             general_params['number_of_threads']
         )
 

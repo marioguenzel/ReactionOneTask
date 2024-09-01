@@ -11,6 +11,20 @@ from multiprocessing import Pool
 from e2eAnalyses.Davare2007 import davare07
 import utilities.event_simulator as es
 
+
+
+# Helper function
+def flattened_cec_tuple_list(cecs):
+    if isinstance(cecs[0], tuple):
+        flattened_list = []
+        for cec_tuple in cecs:
+            for cec in list(cec_tuple):
+                flattened_list.append(cec)
+        return flattened_list
+    else:
+        return cecs
+
+
 class Schedule_Analyzer():
     def __init__(self, schedule, hyperperiod):
         self.schedule = schedule
@@ -123,6 +137,11 @@ def schedule_task_set(ce_chains, task_set):
 
 
 def compute_all_schedules(cause_effect_chains, number_of_threads):
+
+    # cecs can be a list of tuples in case of inteconnected cecs
+    # and have to be flattened first to be scheduled
+    cause_effect_chains = flattened_cec_tuple_list(cause_effect_chains)
+
     taskset_cecs = dict()
     for cause_effect_chain in cause_effect_chains:
         if cause_effect_chain.base_ts in  taskset_cecs.keys():
