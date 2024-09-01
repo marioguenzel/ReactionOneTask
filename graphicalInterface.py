@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 from framework import *
 import webbrowser
+import sys
+import traceback
 
 
 def popUp(title, messages):
@@ -32,7 +34,7 @@ def inititalizeUI():
     ], k='-MENUBAR-')]
 
     layoutGeneral = [sg.Frame('General Settings', [
-        [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
+        [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains (pickle/YAML)', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
         [sg.Radio('Load Cause-Effect Chains from File', "RadioGeneral", default=False, k='-Load_CEC_Radio-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-File_Input-', disabled=True), sg.FileBrowse(file_types=(("CEC File", "*.pickle"),), k="-Browse-", disabled=True)],
         [sg.Text('Threads:'), sg.Input(s=5, k='-Threads_Input-', default_text='1')],
     ], expand_x=True)]
@@ -418,24 +420,47 @@ def runVisualMode(window):
                 ### Run Evaluation Framework ###
                 ################################
 
-                run_evaluation(
-                    general_params,
-                    taskset_params,
-                    cec_params,
-                    selected_analysis_methods,
-                    selected_normalization_methods,
-                    output_params
-                )
+                try:
+                    run_evaluation(
+                        general_params,
+                        taskset_params,
+                        cec_params,
+                        selected_analysis_methods,
+                        selected_normalization_methods,
+                        output_params
+                    )
 
-                #######################
-                ### Feedback pop-up ###
-                #######################
+                    # Positive Feedback Pop-Up
+                    popUp('Info', 
+                        ['Run finished without any errors.', 
+                        'Results are saved in:', 
+                        output_params['output_dir']]
+                    )
 
-                popUp('Info', 
-                    ['Run finished without any errors.', 
-                'Results are saved in:', 
-                    output_params['output_dir']]
-                )
+                except AssertionError:
+                    # Some parameters are wrong
+
+                    _, _, tb = sys.exc_info()
+                    tb_info = traceback.extract_tb(tb)
+                    filename, line, func, text = tb_info[-1]
+
+                    # Negative Feedback Pop-Up
+                    popUp('Assertion Error', 
+                        ['Could not run the Evaluation:',
+                         f'An error occurred on line {line} of {filename} in statement',
+                         f'{text}']
+                    )
+
+                except Exception as exception:
+                    # Unknown error
+
+                    print(exception.__cause__)
+
+                    # Negative Feedback Pop-Up
+                    popUp('Unknown Error', 
+                        ['An unknown error occurred on during the evaluation',
+                         'See the traceback of the error in the system console']
+                    )
 
             if event == 'Print CLI Commands':
                 generation_command = 'python3 e2eMain.py generate-cecs -o cli_'
