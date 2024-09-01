@@ -23,7 +23,7 @@ def gen_taskset(
         min_period,
         max_period,
         use_automotive_periods,
-        rounded=False):
+        seed):
     """Main function to generate a task set with the UUniFast algorithm.
     Output: tasksets as given in tasks.taskset.TaskSet
     with tasks as tasks.task.Task
@@ -34,6 +34,8 @@ def gen_taskset(
 
     """
 
+    np.random.seed(seed)
+
     number_tasks = random.randrange(min_number_tasks, max_number_tasks+1)
     utilizations = uunifast(number_tasks, target_utilization)
 
@@ -42,7 +44,7 @@ def gen_taskset(
         periods = generate_periods_loguniform_discrete(number_tasks, min_period, max_period, automotive_periods)
 
     else:
-        periods = generate_periods_uniform(number_tasks, min_period, max_period, rounded)
+        periods = generate_periods_uniform(number_tasks, min_period, max_period)
         
     # Create taskset by matching both of the above.
     tasks = []
@@ -71,7 +73,11 @@ def gen_cause_effect_chains(
         number_tasks_min, 
         number_tasks_max, 
         number_chains_min, 
-        number_chains_max):
+        number_chains_max,
+        seed):
+    
+    np.random.seed(seed)
+
     cause_effect_chains = []
 
     if number_chains_min == number_chains_max:
@@ -115,15 +121,13 @@ def uunifast(num_tasks, utilization):
         return utilizations
 
 
-def generate_periods_uniform(num_tasks, min_period,
-                             max_period, rounded=False):
+def generate_periods_uniform(num_tasks, min_period, max_period):
     """Generate uniformly distributed periods to create tasks.
 
     Variables:
     num_tasks: number of tasks per set
     min_period: minimal period
     max_period: maximal period
-    rounded: flag to round periods to integers
     """
     # Create random periods.
     periods = np.random.uniform(
@@ -131,21 +135,17 @@ def generate_periods_uniform(num_tasks, min_period,
         high=max_period,
         size=num_tasks)
 
-    if rounded:  # round periods to nearest integer
-        return np.rint(periods).tolist()
-    else:
-        return periods.tolist()
+    return periods.tolist()
 
 
 def generate_periods_loguniform(num_tasks, min_period,
-                                max_period, rounded=False):
+                                max_period):
     """Generate log-uniformly distributed periods to create tasks.
 
     Variables:
     num_tasks: number of tasks per set
     min_period: minimal period
     max_period: maximal period
-    rounded: flag to round periods to integers
     """
     # Create random periods.
     periods = np.exp(np.random.uniform(
@@ -153,10 +153,7 @@ def generate_periods_loguniform(num_tasks, min_period,
         high=np.log(max_period),
         size=num_tasks))
 
-    if rounded:  # round periods to nearest integer
-        return np.rint(periods).tolist()
-    else:
-        return periods.tolist()
+    return periods.tolist()
 
 
 def generate_periods_loguniform_discrete(num_tasks, min_period,
@@ -171,7 +168,7 @@ def generate_periods_loguniform_discrete(num_tasks, min_period,
     """
     # Create periods log-uniformly.
     periods = generate_periods_loguniform(
-        num_tasks, min_period, max_period, rounded=False)
+        num_tasks, min_period, max_period)
     # Round down to the entries of round_down_set.
     rounded_periods = []
     round_down_set.sort(reverse=True)
@@ -191,22 +188,30 @@ def generate_periods_loguniform_discrete(num_tasks, min_period,
 
 def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
     tasksets = []
+    # generate seeds outside of worker threads to avoid duplicate random numbers
+    seeds = [random.randint(0, 2**32 - 1) for _ in range(taskset_generation_params['number_of_tasksets'])]
+
     with Pool(number_of_threads) as pool:
-        tasksets = pool.starmap(gen_taskset, [(
-            taskset_generation_params['target_util'], 
-            taskset_generation_params['min_number_of_tasks'], 
-            taskset_generation_params['max_number_of_tasks'],
-            taskset_generation_params['min_period'],
-            taskset_generation_params['max_period'],
-            taskset_generation_params['use_semi_harmonic_periods'],
-            False
-        )] * taskset_generation_params['number_of_tasksets'])
+        tasksets = pool.starmap(
+            gen_taskset, 
+            zip(
+                [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets'], 
+                [taskset_generation_params['min_number_of_tasks']] * taskset_generation_params['number_of_tasksets'], 
+                [taskset_generation_params['max_number_of_tasks']] * taskset_generation_params['number_of_tasksets'],
+                [taskset_generation_params['min_period']] * taskset_generation_params['number_of_tasksets'],
+                [taskset_generation_params['max_period']] * taskset_generation_params['number_of_tasksets'],
+                [taskset_generation_params['use_semi_harmonic_periods']] * taskset_generation_params['number_of_tasksets'],
+                seeds
+            )
+        )
     return tasksets
 
 
 def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
     cause_effect_chains = []
     number_of_tasksets = len(tasksets)
+    # generate seeds outside of worker threads to avoid duplicate random numbers
+    seeds = [random.randint(0, 2**32 - 1) for _ in range(number_of_tasksets)]
 
     with Pool(number_of_threads) as pool:
         cause_effect_chains = pool.starmap(
@@ -216,7 +221,8 @@ def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
                 [cec_generation_params['min_number_of_tasks_in_chain']] * number_of_tasksets,
                 [cec_generation_params['max_number_of_tasks_in_chain']] * number_of_tasksets,
                 [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
-                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets,
+                seeds
             )
         )
 

@@ -127,36 +127,6 @@ class TaskSet:
             task.priority = self._lst.index(task)
 
 
-def transform(taskset, precision=10000000):
-    """"Multiplies the following values for each task with precision and makes integer.
-    (Important for analyses with hyperperiod)."""
-    transform_arguments = {
-        'rel': ['maxiat', 'miniat', 'period', 'phase'],
-        'dl': ['dl'],
-        'ex': ['wcet', 'bcet'],
-        'comm': []
-    }
-
-    for task in taskset:
-        # get all relevant values:
-        task_vals = dict()
-        for targ in transform_arguments:
-            if hasattr(task, targ):
-                task_feat = getattr(task, targ)
-                task_vals[targ] = dict()
-                for targarg in transform_arguments[targ]:
-                    if hasattr(task_feat, targarg):
-                        task_vals[targ][targarg] = getattr(task_feat, targarg)
-
-        # Transform and set relevant values
-        for targ in task_vals:
-            feat = getattr(task, targ)
-            for targarg in task_vals[targ]:
-                if task_vals[targ][targarg] is not None:
-                    setattr(feat, targarg,
-                            int(task_vals[targ][targarg] * precision))
-
-
 def tda(task, hp_tasks):
     """Implementation of TDA to calculate worst-case response time.
     Source:

@@ -213,6 +213,7 @@ def sample_runnable_acet(period, amount=1, scalingFlag=False):
 
 def gen_taskset(
         util_target,
+        seed,
         period_pdf=[0.03 / 0.85, 0.02 / 0.85, 0.02 / 0.85, 0.25 / 0.85, 0.25 / 0.85, 0.03 / 0.85, 0.2 / 0.85,
                     0.01 / 0.85, 0.04 / 0.85],
         scaling_flag=True,
@@ -229,6 +230,8 @@ def gen_taskset(
     scalingFlag: make WCET out of ACET with scaling
     threshold: accuracy of the targeted utilization
     """
+
+    np.random.seed(seed)
 
     periods = [1, 2, 5, 10, 20, 50, 100, 200, 1000]
 
@@ -282,9 +285,12 @@ def gen_taskset(
 # Cause-effect chain generation.
 ###
 
-def gen_ce_chains(task_set, number_chains_min, number_chains_max):  # TODO update
+def gen_ce_chains(task_set, number_chains_min, number_chains_max, seed):
     """Generate CE chains based on task sets as object of tasks.taskset.TaskSet.
     Each task is object of tasks.task.Task."""
+
+    np.random.seed(seed)
+
     distribution_involved_activation_patterns = stats.rv_discrete(
         values=([1, 2, 3], [0.7, 0.2, 0.1]))
     distribution_number_of_tasks = stats.rv_discrete(
@@ -350,10 +356,16 @@ def gen_ce_chains(task_set, number_chains_min, number_chains_max):  # TODO updat
 
 def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
     tasksets = []
+    # generate seeds outside of worker threads to avoid duplicate random numbers
+    seeds = [random.randint(0, 2**32 - 1) for _ in range(taskset_generation_params['number_of_tasksets'])]
+
     with Pool(number_of_threads) as pool:
-        tasksets = pool.map(
+        tasksets = pool.starmap(
             gen_taskset, 
-            [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets']
+            zip(
+                [taskset_generation_params['target_util']] * taskset_generation_params['number_of_tasksets'],
+                seeds
+            )
         )
     return tasksets
 
@@ -361,6 +373,8 @@ def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
 def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads):
     cause_effect_chains = []
     number_of_tasksets = len(tasksets)
+    # generate seeds outside of worker threads to avoid duplicate random numbers
+    seeds = [random.randint(0, 2**32 - 1) for _ in range(number_of_tasksets)]
 
     with Pool(number_of_threads) as pool:
         cause_effect_chains = pool.starmap(
@@ -368,7 +382,8 @@ def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads)
             zip(
                 tasksets,
                 [cec_generation_params['min_number_of_chains']] * number_of_tasksets,
-                [cec_generation_params['max_number_of_chains']] * number_of_tasksets
+                [cec_generation_params['max_number_of_chains']] * number_of_tasksets,
+                seeds
             )
         )
 
