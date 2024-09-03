@@ -104,7 +104,7 @@ List of papers with analysis methods relevant for the framework:
 | [Kordon 2020](https://hal.science/hal-03041732)                                                   |                                                                               | Yes      | No       | No       | Yes   | MDA          | Requested  |
 | [Martinez 2020](https://link.springer.com/article/10.1007/s11241-020-09350-3)                     |                                                                               | Yes      | No       | Yes      | Yes   | MDA/MRT      | Missing    |
 | [Bi 2022](https://dl.acm.org/doi/abs/10.1145/3489517.3530609)                                     |                                                                               | Yes      | No       | Yes      | No    | MRDA         | Integrated |
-| [Gohari 2022](https://dl.acm.org/doi/abs/10.1145/3534879.3534893)                                 | [np-data-age-analysis](https://github.com/porya-gohary/np-data-age-analysis)  | Yes      | No       | Yes      | No    | MRDA         | Integrated (via system call) |
+| [Gohari 2022](https://dl.acm.org/doi/abs/10.1145/3534879.3534893)                                 | [np-data-age-analysis](https://github.com/porya-gohary/np-data-age-analysis)  | Yes      | No       | Yes      | No    | MRDA         | Integrated (via system call) (see [Notes on Copyright](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/tree/main?tab=readme-ov-file#notes-on-copyright)) |
 | [Günzel 2021](https://ieeexplore.ieee.org/document/9470490)                                       | [end-to-end](https://github.com/tu-dortmund-ls12-rt/end-to-end)               | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
 | [Günzel 2023 (mixed)](https://dl.acm.org/doi/10.1145/3575757.3593640)                             | [end-to-end_mixed](https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed)   | Yes      | Yes      | Yes      | Yes   | MRT          | Integrated |
 | [Günzel 2023 (inter)](https://dl.acm.org/doi/10.1145/3587036)                                     | [end-to-end_inter](https://github.com/tu-dortmund-ls12-rt/end-to-end_inter)   | Yes      | (Yes)    | Yes      | Yes   | MRDA,MDA/MRT | Integrated |
@@ -117,7 +117,7 @@ List of papers with analysis methods relevant for the framework:
 | [Tang 2023](https://ieeexplore.ieee.org/document/10248012)                                        |                                                                               | Yes      | No       | Yes      | No    | ?            | Missing    |
 
 
-## File structure
+## File Structure
 
     .
     ├── benchmarks                      # Folder with all available benchmarks
