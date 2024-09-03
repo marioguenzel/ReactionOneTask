@@ -34,7 +34,7 @@ def inititalizeUI():
     ], k='-MENUBAR-')]
 
     layoutGeneral = [sg.Frame('General Settings', [
-        [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-effect Chains (pickle/YAML)', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
+        [sg.Radio('Generate Cause-Effect Chains', "RadioGeneral", default=True, k='-Generate_CEC_Radio-', enable_events=True), sg.Checkbox('Store generated Cause-Effect Chains (pickle/YAML)', default=False, k='-Store_CECs_Box-', pad=((60,0),(0,0)))],
         [sg.Radio('Load Cause-Effect Chains from File', "RadioGeneral", default=False, k='-Load_CEC_Radio-', enable_events=True), sg.Text('File:', pad=((35,0),(0,0))), sg.Input(s=30, k='-File_Input-', disabled=True), sg.FileBrowse(file_types=(("CEC File", "*.pickle"),), k="-Browse-", disabled=True)],
         [sg.Text('Threads:'), sg.Input(s=5, k='-Threads_Input-', default_text='1')],
     ], expand_x=True)]
@@ -42,14 +42,14 @@ def inititalizeUI():
     layoutTaskset = [sg.Frame('Taskset Configuration', [
         [sg.Radio('Automotive Benchmark', "RadioTaskset", default=True, k='-Automotive_Taskset_Radio-', enable_events=True)],
         [sg.Radio('Uniform Taskset Generation', "RadioTaskset", default=False, k='-Uniform_Taskset_Radio-', enable_events=True)],
-            [sg.Checkbox('Semi-harmonic periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True, enable_events=True)],
-            [sg.Text('Min number Tasks:', pad=((35,0),(0,0))), sg.Input(s=5, k='-MINT_Input-', disabled=True, default_text='40'), sg.Text('Max number Tasks:'), sg.Input(s=5, k='-MAXT_Input-', disabled=True, default_text='60')],
+            [sg.Checkbox('Semi-Harmonic Periods', default=True, k='-Semi_harmonic_Box-', pad=((30,0),(0,0)), disabled=True, enable_events=True)],
+            [sg.Text('Min Number Tasks:', pad=((35,0),(0,0))), sg.Input(s=5, k='-MINT_Input-', disabled=True, default_text='40'), sg.Text('Max Number Tasks:'), sg.Input(s=5, k='-MAXT_Input-', disabled=True, default_text='60')],
             [sg.Text('Min Period:', pad=((35,0),(0,0))), sg.Input(s=10, k='-PMIN_Input-', disabled=True, default_text='1'), sg.Text('Max Period:'), sg.Input(s=10, k='-PMAX_Input-', disabled=True, default_text='2000')],
         [sg.Text('Target Utilization:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=50, key='-Utilization_Spin-', s=(3,1))],
         [sg.Text('Number of Tasksets:'), sg.Input(s=10, k='-Number_Tasksets_Input-', default_text='1')],
         [sg.Text('Percentage of sporadic Tasks in Taskset:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-Sporadic_Ratio_Spin-', s=(3,1))],
-        [sg.Text('Percentage of Tasks using LET communication:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-LET_Ratio_Spin-', s=(3,1))],
-        [sg.Text('BCET percentage (BCET relative to WCET):'), sg.Spin(values=[i for i in range(0, 101)], initial_value=100, key='-BCET_Ratio_Spin-', s=(3,1))]
+        [sg.Text('Percentage of Tasks using LET Communication:'), sg.Spin(values=[i for i in range(0, 101)], initial_value=0, key='-LET_Ratio_Spin-', s=(3,1))],
+        [sg.Text('BCET Percentage (BCET relative to WCET):'), sg.Spin(values=[i for i in range(0, 101)], initial_value=100, key='-BCET_Ratio_Spin-', s=(3,1))]
     ], expand_x=True)]
 
     layoutChain = [sg.Frame('Cause-Effect Chain Configuration', [
@@ -96,9 +96,9 @@ def inititalizeUI():
     ], expand_x=True, size=(None, 220))]
 
     layoutPlot = [sg.Frame('Output Configuration', [
-        [sg.Checkbox('create normalized plots (relative latency reduction)', default=True, k='-CBP1-')],
-        [sg.Checkbox('create absolute plots', default=False, k='-CBP2-')],
-        [sg.Checkbox('export raw analyses results (CSV)', default=False, k='-CBP3-')]
+        [sg.Checkbox('Create normalized Plots (relative Latency Reduction)', default=True, k='-CBP1-')],
+        [sg.Checkbox('Create absolute Plots', default=False, k='-CBP2-')],
+        [sg.Checkbox('Export Analyses Results (CSV)', default=False, k='-CBP3-')]
     ], expand_x=True, expand_y=True)]
 
     ttk_style = 'default'

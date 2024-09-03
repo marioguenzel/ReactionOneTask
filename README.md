@@ -182,3 +182,9 @@ Caution is required when redistributing the applied framework, since the local c
 For creating this framework [PySimpleGUI](https://www.pysimplegui.com/) was used. Since the authors of PySimpleGUI decided to introduce a proprietary license for newer versions of their gui framework, it is currently not possible to use it without a license. However, any version that was published before introducing the proprietary license can still be used as free software, therefore PySimpleGUI 4.60.5 is included in this project. Also, there exist some interesting forks that will maybe replace PySimpleGUI in the future (see: [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI)).
 
 For creating the tikz-output, the code from [JasonGross/tikzplotlib](https://github.com/JasonGross/tikzplotlib) is used. This code was forked from [nschloe/tikzplotlib](https://github.com/nschloe/tikzplotlib) and is currently much better maintained than the repository from the original author.
+
+## Acknowledgements
+
+I would like to thank my mentor Mario Günzel for his support and his valuable feedback for this master's thesis. Thanks to him and Prof. Dr. Jian-Jia Chen, many implementations for end-to-end analysis were provided to the evaluation framework by different research groups.
+
+In addition, I would like to thank Matthias Becker from KTH Royal Institute of Technology, Prof. Jiankang Ren from Dalian University of Technology, Pourya Gohari from Eindhoven University of Technology, and Paolo Pazzaglia from Robert Bosch GmbH, formerly a researcher at Saarland University for contributing source code and additional information for their analyses.
