@@ -171,6 +171,12 @@ List of papers with analysis methods relevant for the framework:
     ├── README.md
     └── requirements.txt
 
+## Notes on Copyright
+
+While this framework is published under the MIT license, one of the integrated analyses, namely the analysis by [Gohari et al.](https://github.com/porya-gohary/np-data-age-analysis), is published under the BSD 3 license.  
+When applying the analysis, their implementation is cloned to the local repository and directly applied from there. 
+Caution is required when redistributing the applied framework, since the local copy of the analysis from Gohari et al. underlies the BSD 3 license.
+
 ## Other Repositories
 
 For creating this framework [PySimpleGUI](https://www.pysimplegui.com/) was used. Since the authors of PySimpleGUI decided to introduce a proprietary license for newer versions of their gui framework, it is currently not possible to use it without a license. However, any version that was published before introducing the proprietary license can still be used as free software, therefore PySimpleGUI 4.60.5 is included in this project. Also, there exist some interesting forks that will maybe replace PySimpleGUI in the future (see: [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI)).
