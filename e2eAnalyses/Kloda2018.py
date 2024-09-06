@@ -54,7 +54,7 @@ def kloda_rec(chain, rel_producer, beginning=True):
     # value is higher. Note: We do not implement a processor change since
     # we consider only the single ECU case. (Kloda cannot be applied to
     # asynchronized ECUs.)
-    if chain.base_ts.higher_prio(producer_task, consumer_task):
+    if chain.base_ts.higher_prio(consumer_task, producer_task):
         q = wcrts[producer_task]
     rel_consumer = (math.ceil((rel_producer + q) / consumer_task.period) * consumer_task.period)
     return (add + rel_consumer - rel_producer + kloda_rec(rem_chain, rel_consumer, beginning=False))
