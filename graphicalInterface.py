@@ -4,14 +4,22 @@ import webbrowser
 import sys
 import traceback
 
+catch_exceptions = False
 
 def popUp(title, messages):
+    """launches a basic pop-up window with a title and
+    a message
+    """
+
     view = list(map(lambda message : [sg.T(message)], messages))
     view.append([sg.Push(), sg.B('OK'), sg.Push()])
     sg.Window(title, [view]).read(close=True)
 
 
 def inititalizeUI():
+    """launches the main window of the GUI
+    """
+
     sg.theme('system default')
 
     # Definition of the user interface layout
@@ -119,6 +127,9 @@ def inititalizeUI():
 
 
 def updateUI(window, event, values):
+    """updates the GUI after an event occurred
+    """
+
     if event == '-Generate_CEC_Radio-':
         window['-Store_CECs_Box-'].update(disabled=False)
         window['-File_Input-'].update(disabled=True)
@@ -239,6 +250,8 @@ def updateUI(window, event, values):
 
 
 def runVisualMode(window):
+    """controls GUI window and reacts to the users input
+    """
 
     while True:
         event, values = window.read()
@@ -420,7 +433,51 @@ def runVisualMode(window):
                 ### Run Evaluation Framework ###
                 ################################
 
-                try:
+                if catch_exceptions:
+                    try:
+                        run_evaluation(
+                            general_params,
+                            taskset_params,
+                            cec_params,
+                            selected_analysis_methods,
+                            selected_normalization_methods,
+                            output_params
+                        )
+
+                        # Positive Feedback Pop-Up
+                        popUp('Info', 
+                            ['Run finished without any errors.', 
+                            'Results are saved in:', 
+                            output_params['output_dir']]
+                        )
+
+                    except AssertionError:
+                        # Some parameters are wrong
+
+                        _, _, tb = sys.exc_info()
+                        tb_info = traceback.extract_tb(tb)
+                        filename, line, func, text = tb_info[-1]
+
+                        # Negative Feedback Pop-Up
+                        popUp('Assertion Error', 
+                            ['Could not run the Evaluation:',
+                            f'An error occurred on line {line} of {filename} in statement',
+                            f'{text}']
+                        )
+
+                    except Exception as exception:
+                        # Unknown error
+
+                        print(exception.__cause__)
+
+                        # Negative Feedback Pop-Up
+                        popUp('Unknown Error', 
+                            ['An unknown error occurred on during the evaluation',
+                            'See the traceback of the error in the system console']
+                        )
+
+                else:
+
                     run_evaluation(
                         general_params,
                         taskset_params,
@@ -435,31 +492,6 @@ def runVisualMode(window):
                         ['Run finished without any errors.', 
                         'Results are saved in:', 
                         output_params['output_dir']]
-                    )
-
-                except AssertionError:
-                    # Some parameters are wrong
-
-                    _, _, tb = sys.exc_info()
-                    tb_info = traceback.extract_tb(tb)
-                    filename, line, func, text = tb_info[-1]
-
-                    # Negative Feedback Pop-Up
-                    popUp('Assertion Error', 
-                        ['Could not run the Evaluation:',
-                         f'An error occurred on line {line} of {filename} in statement',
-                         f'{text}']
-                    )
-
-                except Exception as exception:
-                    # Unknown error
-
-                    print(exception.__cause__)
-
-                    # Negative Feedback Pop-Up
-                    popUp('Unknown Error', 
-                        ['An unknown error occurred on during the evaluation',
-                         'See the traceback of the error in the system console']
                     )
 
             if event == 'Print CLI Commands':

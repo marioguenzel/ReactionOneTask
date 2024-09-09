@@ -52,7 +52,11 @@ def print_help():
     for param in output_params: print(param)
 
 
+# helper function
 def replace_value(dict, key, new_value):
+    """Replaces the value at dict[key] with the given new_value.
+    new_value is parsed into the type of the previous value.
+    """
     old_value = dict[key]
     if new_value == '':
         dict[key] = True
@@ -67,10 +71,12 @@ def replace_value(dict, key, new_value):
 
 
 def runCLIMode(args):
-
-    # cli mode has two options:
-    # 1. create cause-effect chains and store them in a file
-    # 2. load cause-effect chains from a file and analyse them
+    """starts the CLI mode of the framework
+    cli mode has three options:
+    1. create cause-effect chains and store them in a file
+    2. load cause-effect chains from a file and analyse them
+    3. simple mode, analyze cec-file with only one analysis method
+    """
 
     # get default parameters
     general_params = dict(default_general_params)

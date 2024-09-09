@@ -1,10 +1,9 @@
 """
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_inter
 https://github.com/tu-dortmund-ls12-rt/MissRateSimulator/blob/master/
-Utility file for guenzel_23_inter
 
+Utility file for analysis methods that need a schedule
 Simulator to create the schedule
-
 """
 
 from __future__ import division

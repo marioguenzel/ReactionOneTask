@@ -6,6 +6,10 @@ from tasks.job import Job
 #####
 
 def jc_to_abstr(job_chain):
+    """takes a job chain an returns the correspondig
+    abstract integer representation
+    """
+
     abstr = []
     for job in job_chain:
         abstr.append(job.occurrence)
@@ -13,6 +17,10 @@ def jc_to_abstr(job_chain):
 
 
 def abstr_to_jc(abstr, ce_chain):
+    """takes an abstract integer representation and
+    returns the correspondig job chain
+    """
+
     jobs = []
     for task, occurrence in zip(ce_chain, abstr):
         jobs.append(Job(task, occurrence))

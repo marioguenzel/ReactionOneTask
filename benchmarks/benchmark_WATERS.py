@@ -17,38 +17,11 @@ from tasks.taskset import TaskSet
 from cechains.chain import CEChain
 
 
+# task: wcet, period, deadline
+
 ###
 # Task set generation.
 ###
-
-class task(dict):
-    """A task according to our task model.
-    Used only for the purpose of task creation.
-    """
-
-    def __init__(self, execution, period, deadline):
-        """Initialize a task."""
-        dict.__setitem__(self, "execution", float(execution))
-        dict.__setitem__(self, "period", int(period))
-        dict.__setitem__(self, "deadline", float(deadline))
-
-
-def task_transormation(task):
-    """Transform task for creation to our task model for analysis."""
-    return Task(
-        release_pattern='periodic', 
-        deadline_type='implicit', 
-        execution_behaviour='wcet', 
-        communication_policy='implicit', 
-        phase=0, 
-        min_iat=task['period'], 
-        max_iat=task['period'], 
-        period=task['period'], 
-        bcet=task['execution'], 
-        wcet=task['execution'], 
-        deadline=task['deadline'], 
-        priority=None)
-
 
 def sample_runnable_acet(period, amount=1, scalingFlag=False):
     """Create runnables according to the WATERS benchmark.
@@ -246,39 +219,52 @@ def gen_taskset(
     assert sum(amount_sys_runnables.values()) == runnables
 
     # Build tasks from runnables.
-    taskset = []
+    tasks = []
     for per in periods:
         # Random WCETs.
         wcets = sample_runnable_acet(per, amount_sys_runnables[per], scaling_flag)
         # Create Tasks.
         assert len(wcets) == amount_sys_runnables[per]
         for wcet in wcets:
-            taskset.append(task(wcet, per, per))
+            task = Task(
+                release_pattern='periodic', 
+                deadline_type='implicit', 
+                execution_behaviour='wcet', 
+                communication_policy='implicit', 
+                phase=0, 
+                min_iat=per, 
+                max_iat=per, 
+                period=per, 
+                bcet=wcet, 
+                wcet=wcet, 
+                deadline=per, 
+                priority=None
+            )
+            tasks.append(task)
 
     # Shuffle the task set.
-    random.shuffle(taskset)
+    random.shuffle(tasks)
 
     # Select subset of tasks using the subset-sum approximation algorithm.
     util = 0.0
     i = 0
-    this_taskset = []
+    selected_tasks = []
     while True:
         if util < util_target:  # add a task
-            if len(taskset) == 0:
+            if len(tasks) == 0:
                 raise ValueError('Under this setting the targeted utilization of {util_target=} cannot be reached.')
-            new_task = taskset.pop()
-            this_taskset.append(new_task)
-            util += new_task['execution'] / new_task['period']
+            new_task = tasks.pop()
+            selected_tasks.append(new_task)
+            util += new_task.wcet / new_task.period
         elif util > util_target + threshold:  # remove a task
-            old_task = this_taskset.pop()
-            util -= new_task['execution'] / old_task['period']
+            old_task = selected_tasks.pop()
+            util -= new_task.wcet / old_task.period
         else:
             break
 
-    # Transform to our taskset model
-    this_taskset = TaskSet(*[task_transormation(task) for task in this_taskset])
+    taskset = TaskSet(*selected_tasks)
 
-    return this_taskset
+    return taskset
 
 
 ###
@@ -355,6 +341,10 @@ def gen_ce_chains(task_set, number_chains_min, number_chains_max, seed):
 ###
 
 def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
+    """Parallelizes the automotive taskset generation and generates a list of tasksets with
+    the given parameters
+    """
+
     tasksets = []
     # generate seeds outside of worker threads to avoid duplicate random numbers
     seeds = [random.randint(0, 2**32 - 1) for _ in range(taskset_generation_params['number_of_tasksets'])]
@@ -371,6 +361,10 @@ def generate_automotive_tasksets(taskset_generation_params, number_of_threads):
 
 
 def generate_automotive_cecs(tasksets, cec_generation_params, number_of_threads):
+    """Parallelizes the automotive cause-effect chain generation and generates a list of 
+    cause-effect chains with the given parameters
+    """
+
     cause_effect_chains = []
     number_of_tasksets = len(tasksets)
     # generate seeds outside of worker threads to avoid duplicate random numbers

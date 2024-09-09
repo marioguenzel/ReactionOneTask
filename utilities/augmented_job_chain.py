@@ -1,7 +1,6 @@
 """
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed
 Utility file for guenzel_23_inter
-
 """
 
 

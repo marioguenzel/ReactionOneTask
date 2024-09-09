@@ -150,16 +150,3 @@ def _workload(period, wcet, time):
     """
     return wcet * math.ceil(float(time) / period)
 
-
-if __name__ == '__main__':
-    """Debug."""
-    from tasks.task import Task
-
-    tset = (
-        Task(release='periodic', period=10, phase=1, execution='bcwc', wcet=1 / 3, communication='LET'),
-        Task(release='periodic', period=20, phase=10, execution='bcwc', wcet=1 / 2, communication='implicit'),
-        Task(release='periodic', period=50, phase=5, execution='bcwc', wcet=1 / 7, communication='LET')
-    )
-
-    ts = TaskSet(*tset)
-    breakpoint()

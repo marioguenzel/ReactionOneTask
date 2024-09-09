@@ -187,6 +187,10 @@ def generate_periods_loguniform_discrete(num_tasks, min_period,
 ###
 
 def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
+    """Parallelizes the uniform taskset generation and generates a list of tasksets with
+    the given parameters
+    """
+
     tasksets = []
     # generate seeds outside of worker threads to avoid duplicate random numbers
     seeds = [random.randint(0, 2**32 - 1) for _ in range(taskset_generation_params['number_of_tasksets'])]
@@ -208,6 +212,10 @@ def generate_uniform_tasksets(taskset_generation_params, number_of_threads):
 
 
 def generate_random_cecs(tasksets, cec_generation_params, number_of_threads):
+    """Parallelizes the uniform cause-effect chain generation and generates a list of 
+    cause-effect chains with the given parameters
+    """
+
     cause_effect_chains = []
     number_of_tasksets = len(tasksets)
     # generate seeds outside of worker threads to avoid duplicate random numbers

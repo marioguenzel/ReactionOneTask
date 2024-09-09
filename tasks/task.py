@@ -62,11 +62,8 @@ class Task:
 
 
     def print(self):
-        """Quick print of all features for debugging."""
+        """Quick print of all attributes for debugging."""
         print(self)
-        feat_dict = self.__dict__
-        for feat in feat_dict.keys():
-            print(feat, feat_dict[feat])
         print("")
 
 
@@ -91,14 +88,3 @@ class Task:
             self.priority
         )
 
-
-if __name__ == '__main__':
-    """Debugging."""
-    taskset = []
-    taskset.append(Task('sporadic', 'implicit', 'wc', 'implicit', False, 0, 5, 10, None, 1, 2, 5, 10))
-
-    for task in taskset:
-        print('\n', task)
-        task.print()
-
-    #breakpoint()

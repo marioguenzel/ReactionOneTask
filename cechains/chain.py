@@ -13,20 +13,20 @@ class CEChain(TaskSet):
         super().__init__(*args)
 
     def length(self):
+        """returns the length of the cec"""
+
         return len(self._lst)
     
     def contains(self, task):
+        """checks if the given task is in the cec"""
+
         return self._lst.count(task) > 0
     
     def id_list(self):
+        """returns the list of task ids in the cec"""
+
         ids = []
         for task in self._lst:
             ids.append(int(task.id))
         return ids
 
-
-if __name__ == '__main__':
-    from tasks.task import Task
-
-    ce = CEChain(Task(), Task(), Task())
-    breakpoint()

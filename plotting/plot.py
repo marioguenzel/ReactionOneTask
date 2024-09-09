@@ -8,6 +8,10 @@ import tikzplotlib
 
 
 def plot(data, filename, xticks=None, title='', yticks=None, ylimits=None, yscale='linear', yaxis_label=""):
+    """method for creating a single box plot diagram;
+    stores the diagram as pdf and as tex file
+    """
+
     fig, ax = plt.subplots()
     ax.set_title(title)
     ax.boxplot(data,
@@ -51,6 +55,10 @@ def plot(data, filename, xticks=None, title='', yticks=None, ylimits=None, yscal
 def create_normalized_plots(selected_analysis_methods, 
                             selected_normalization_methods, 
                             output_dir):
+    """creates the normalized plots in pdf and tex file format and stores them
+    in the given directory
+    """
+
     for baseline in selected_normalization_methods:
         for method in selected_analysis_methods:
             if method.latencies != []:
@@ -71,6 +79,10 @@ def create_normalized_plots(selected_analysis_methods,
 
 def create_absolute_plots(selected_analysis_methods, 
                           output_dir):
+    """creates the absolute plots in pdf and tex file format and stores them
+    in the given directory
+    """
+
     for method in selected_analysis_methods:
         if method.latencies != []:
             plot(method.latencies, output_dir + method.name_short)
