@@ -6,6 +6,7 @@ Evaluation of the Age Latency of a Real-Time Communicating System using the LET 
 - periodic
 """
 
+
 def kordon20(chain):
 
     return -1

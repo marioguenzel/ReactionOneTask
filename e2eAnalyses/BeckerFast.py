@@ -1,4 +1,5 @@
-"""End-to-End (e2e) Analysis by Becker et al.
+"""
+End-to-End (e2e) Analysis by Becker et al.
 https://doi.org/10.1016/j.sysarc.2017.09.004
 https://doi.org/10.1109/RTCSA.2016.41
 
@@ -6,6 +7,8 @@ Implementation is copied from https://github.com/tu-dortmund-ls12-rt/end-to-end_
 - only minor adjustments
 
 """
+
+
 from cechains.chain import CEChain
 from tasks.task import Task
 from math import ceil

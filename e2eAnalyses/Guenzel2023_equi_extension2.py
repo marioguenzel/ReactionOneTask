@@ -1,10 +1,17 @@
 """
-Analyses from Guenzel et al.:
+Extension of the analysis from Guenzel et al.:
+On the Equivalence of Maximum Reaction Time and Maximum Data Age for Cause-Effect Chains(2023)
+
+The analysis is extended to implicit communication with the response times, similar to:
 Timing Analysis of Asynchronized Distributed Cause-Effect Chains (2021)
 Compositional Timing Analysis of Asynchronized Distributed Cause-effect Chains (2023)
 
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_inter
 and https://github.com/tu-dortmund-ls12-rt/end-to-end
+and https://github.com/tu-dortmund-ls12-rt/mrt_mda/
+
+- implicit
+- periodic
 """
 
 

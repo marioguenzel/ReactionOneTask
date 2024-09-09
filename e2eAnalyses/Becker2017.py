@@ -7,6 +7,8 @@ Implementation is based on a Java implementation provided by Matthias Becker
 - implicit
 - periodic
 """
+
+
 import math
 from tasks.task import Task
 from tasks.job import Job

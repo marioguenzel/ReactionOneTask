@@ -6,6 +6,7 @@ End-to-end latency characterization of task communication models for automotive 
 - periodic
 """
 
+
 def martinez20_impl(chain):
 
     return -1

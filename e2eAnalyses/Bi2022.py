@@ -7,6 +7,8 @@ Implementation was provided directly by the authors and adjusted to fit the syst
 - implicit
 - periodic
 """
+
+
 import math
 
 

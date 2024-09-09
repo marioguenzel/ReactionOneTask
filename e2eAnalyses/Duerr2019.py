@@ -8,6 +8,7 @@ End-to-end timing analysis of sporadic cause-effect chains in distributed system
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L368
 """
 
+
 import itertools
 
 def duerr19(chain):

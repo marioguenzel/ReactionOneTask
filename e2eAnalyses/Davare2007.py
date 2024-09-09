@@ -6,6 +6,7 @@ Period optimization for hard real-time distributed automotive systems.
 - sporadic
 """
 
+
 def davare07(chain):
     wcrts = chain.base_ts.wcrts
     latency = 0

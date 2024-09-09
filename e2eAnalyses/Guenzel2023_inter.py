@@ -5,7 +5,11 @@ Compositional Timing Analysis of Asynchronized Distributed Cause-effect Chains (
 
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_inter
 and https://github.com/tu-dortmund-ls12-rt/end-to-end
+
+- implicit
+- periodic
 """
+
 
 import utilities.analyzer_guenzel23 as analyzer
 

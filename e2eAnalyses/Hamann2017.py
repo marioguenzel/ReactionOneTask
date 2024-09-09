@@ -6,6 +6,7 @@ Communication Centric Design in Complex Automotive Embedded Systems.
 - sporadic
 """
 
+
 def hamann17(chain):
     latency = 0
     for task in chain:

@@ -3,6 +3,9 @@ Analyses from Guenzel et al., 2023:
 Timing Analysis of Cause-Effect Chains with Heterogeneous Communication Mechanisms
 
 Basis from: https://github.com/tu-dortmund-ls12-rt/end-to-end_mixed
+
+- implicit/LET
+- sporadic
 """
 
 

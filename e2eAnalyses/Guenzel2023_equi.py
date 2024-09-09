@@ -1,7 +1,13 @@
-"""Analysis applied in the evaluation.
-Assumptions:
+"""
+Analysis from Guenzel et al:
+On the Equivalence of Maximum Reaction Time and Maximum Data Age for Cause-Effect Chains(2023)
+https://github.com/tu-dortmund-ls12-rt/mrt_mda/
+
 - LET
-- periodic"""
+- periodic
+"""
+
+
 import itertools
 import math
 from cechains.chain import CEChain

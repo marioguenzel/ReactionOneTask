@@ -7,6 +7,8 @@ Latency analysis for data chains of real-time periodic tasks.
 
 Implementation based on https://github.com/tu-dortmund-ls12-rt/end-to-end/blob/master/utilities/analyzer.py#L410
 """
+
+
 import math
 from cechains.chain import CEChain
 

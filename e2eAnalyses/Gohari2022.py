@@ -1,5 +1,17 @@
-# Please note that the code procuces a local copy of the analysis by Gohari et al.: https://github.com/porya-gohary/np-data-age-analysis
-# Since the repository by Gohari et al. is published under BSD 3 license, the local copy of it is subject to the BSD 3 license as well.
+"""
+Analysis from Gohari et al.:
+Data-Age Analysis for Multi-Rate Task Chains under Timing Uncertainty
+
+Please note that the code procuces a local copy of the analysis by Gohari et al.: 
+https://github.com/porya-gohary/np-data-age-analysis
+Since the repository by Gohari et al. is published under BSD 3 license, the local 
+copy of it is subject to the BSD 3 license as well.
+
+- implicit
+- periodic
+"""
+
+
 import subprocess
 from utilities.yaml_export_gohari import export_to_yaml
 from utilities.csv_import_gohari import get_latencies_from_csv
