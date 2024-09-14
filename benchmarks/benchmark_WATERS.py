@@ -235,8 +235,8 @@ def gen_taskset(
                 min_iat=per, 
                 max_iat=per, 
                 period=per, 
-                bcet=wcet, 
-                wcet=wcet, 
+                bcet=float(wcet), 
+                wcet=float(wcet), 
                 deadline=per, 
                 priority=None
             )
