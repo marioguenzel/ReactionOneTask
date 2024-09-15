@@ -89,6 +89,10 @@ The evaluation framework can also be used via the command line. Therefore, multi
     python3.X e2eMain.py analyze-cecs -t 10 -a kloda18 -a duerr19_mrt -a guenzel23_l_mrt -n davare07 -f output/2024-08-04_Test001/cause_effect_chains.pickle --normalized_plots --absolute_plots --raw_analysis_results
     ```
 
+## Evaluation Output
+
+After running an evaluation, the results can be found in the output folder. Every time a new evaluation is started, a new directory is created in the output folder with the current date and a sequential number counting up. The name of the directory is returned by the GUI in a pop-up, after the evaluation has finished. Output diagrams are stored in the PDF and TeX file format, so they can be easily reused in scientific work. CSV output is also available, to allow plotting or using the results with other statistics software.
+
 ## Analyses Overview
 
 List of papers with analysis methods relevant for the framework:
