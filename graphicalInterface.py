@@ -264,7 +264,7 @@ def runVisualMode(window):
             webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/E2EEvaluation')
 
         if event == 'Masterthesis':
-            webbrowser.open_new('https://github.com/Robin-Edmaier/Masterarbeit')
+            webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf')
 
         if event == 'End-to-End':
             webbrowser.open_new('https://github.com/tu-dortmund-ls12-rt/end-to-end')

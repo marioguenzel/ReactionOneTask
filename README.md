@@ -1,5 +1,5 @@
 # E2EEvaluation
-Evaluation framework for end-to-end analysis methods, published as part of my master's thesis (TODO:Link). It integrates many different end-to-end analysis methods and allows to evaluate them on different benchmarks. The framework can be used to perform the following steps:
+Evaluation framework for end-to-end analysis methods, published as part of my [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf). It integrates many different end-to-end analysis methods and allows to evaluate them on different benchmarks. The framework can be used to perform the following steps:
 
 1. Generating task sets
 
