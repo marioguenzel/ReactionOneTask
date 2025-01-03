@@ -1,5 +1,7 @@
 # E2EEvaluation
-Evaluation framework for end-to-end analysis methods, published as part of my [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf). It integrates many different end-to-end analysis methods and allows to evaluate them on different benchmarks. The framework can be used to perform the following steps:
+Evaluation framework for end-to-end analysis methods for cause-effect chains.
+The framework was initiated as part of the [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf) of Robin Edmaier. 
+It integrates many different end-to-end analysis methods and allows to evaluate them on different benchmarks. The framework can be used to perform the following steps:
 
 1. Generating task sets
 
@@ -32,8 +34,11 @@ Install the python packages necessary to launch the evaluation framework. All of
 Otherwise the required python packages can also be installed manually using the following commands:
 
 - ```pip install scipy numpy matplotlib PyYAML```
-- ```pip install pySimpleGUI/PySimpleGUI-4.60.5.tar.gz```
+- ```pip install PySimpleGUI==4.60.5.0```
 - ```pip install git+https://github.com/JasonGross/tikzplotlib.git```
+
+Please note that in the [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf), a file `pySimpleGUI/PySimpleGUI-4.60.5.tar.gz` is utilized for the installation of PySimpleGUI. 
+This file has been removed for the open source publication to avoid potential copyright issues. 
 
 The virtual environment can be deactivated using the following command:
 
@@ -151,8 +156,6 @@ List of papers with analysis methods relevant for the framework:
     ├── output                          # Output directory with evaluation results
     ├── plotting
     │   └── plot.py                     # Methods for creating the box plots
-    ├── pySimpleGUI
-    │   └── PySimpleGUI-4.60.5.tar.gz   # Last free software version of PSG
     ├── tasks
     │   ├── job.py                      # Definition of a job
     │   ├── task.py                     # Definition of a task

@@ -1,6 +1,6 @@
 matplotlib
 numpy
-./pySimpleGUI/PySimpleGUI-4.60.5.tar.gz
+PySimpleGUI==4.60.5.0
 PyYAML
 scipy
 tikzplotlib-patched @ git+https://github.com/JasonGross/tikzplotlib.git@74b820f241f688889195e55442000672d1526fd0
