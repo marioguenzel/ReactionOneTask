@@ -1,4 +1,4 @@
-# E2EEvaluation
+# Evaluation Framework for End-to-End Latency of Cause-Effect Chains
 Evaluation framework for end-to-end analysis methods for cause-effect chains.
 The framework was initiated as part of the [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf) of Robin Edmaier. 
 It integrates many different end-to-end analysis methods and allows to evaluate them on different benchmarks. The framework can be used to perform the following steps:
