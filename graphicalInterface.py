@@ -1,4 +1,5 @@
-import PySimpleGUI as sg
+# import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 from framework import *
 import webbrowser
 import sys
@@ -34,7 +35,8 @@ def inititalizeUI():
             'End-to-End_Equi',
             'np-data-age-analysis',
             'ChainMiss',
-            'PySimpleGUI'
+            # 'PySimpleGUI'
+            'FreeSimpleGUI'
         ]], 
         ['Help', 
             ['About']
@@ -284,8 +286,11 @@ def runVisualMode(window):
         if event == 'ChainMiss':
             webbrowser.open_new('https://github.com/PaoloPazzaglia/ChainMiss')
 
-        if event == 'PySimpleGUI':
-            webbrowser.open_new('https://www.pysimplegui.com/')
+        # if event == 'PySimpleGUI':
+        #     webbrowser.open_new('https://www.pysimplegui.com/')
+        
+        if event == 'FreeSimpleGUI':
+            webbrowser.open_new('https://freesimplegui.readthedocs.io/')
 
         if event == 'About':
             popUp('About', [

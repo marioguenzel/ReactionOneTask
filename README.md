@@ -27,18 +27,19 @@ Create a virtual environment to safely install python packages without dependenc
 - ```python3.X -m venv e2eEval```
 - ```. e2eEval/bin/activate```
 
-Install the python packages necessary to launch the evaluation framework. All of the necessary packages are specified in the requirements.txt, which can be automatically loaded and installed using the following command:
+Install the python packages necessary to launch the evaluation framework. All necessary packages are specified in the requirements.txt, which can be automatically loaded and installed using the following command:
 
 - ```pip install -r requirements.txt```
 
-Otherwise the required python packages can also be installed manually using the following commands:
+Otherwise, the required python packages can also be installed manually using the following commands:
 
 - ```pip install scipy numpy matplotlib PyYAML```
-- ```pip install PySimpleGUI==4.60.5.0```
+- ```pip install FreeSimpleGUI```
 - ```pip install git+https://github.com/JasonGross/tikzplotlib.git```
 
 Please note that in the [master's thesis](https://github.com/tu-dortmund-ls12-rt/E2EEvaluation/blob/main/doc/E2EEvaluation.pdf), a file `pySimpleGUI/PySimpleGUI-4.60.5.tar.gz` is utilized for the installation of PySimpleGUI. 
 This file has been removed for the open source publication to avoid potential copyright issues. 
+Furthermore, the framework is moved to use [FreeSimpleGUI](https://freesimplegui.readthedocs.io/en/latest/) instead. 
 
 The virtual environment can be deactivated using the following command:
 
@@ -56,6 +57,9 @@ To start the graphical user interface, the following commands can be used from t
 - ```python3.X e2eMain.py```
 
 ![GUI](doc/GUI.png)
+
+If you are running MacOs and have problems using tkinter, make sure that tkinter is properly installed (```brew install python-tk```) and try to use the homebrew version to generate the virtual environment (usually at ```/opt/homebrew/bin/python3```) using ```/opt/homebrew/bin/python3 -m venv e2eEval``` at the beginning.
+
 
 ### Command Line Interface
 
@@ -186,7 +190,8 @@ Caution is required when redistributing the applied framework, since the local c
 
 ## Other Repositories
 
-For creating this framework [PySimpleGUI](https://www.pysimplegui.com/) was used. Since the authors of PySimpleGUI decided to introduce a proprietary license for newer versions of their gui framework, it is currently not possible to use it without a license. However, any version that was published before introducing the proprietary license can still be used as free software, therefore PySimpleGUI 4.60.5 is included in this project. Also, there exist some interesting forks that will maybe replace PySimpleGUI in the future (see: [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI)).
+For the initial version of this framework [PySimpleGUI](https://www.pysimplegui.com/) was used. Since the authors of PySimpleGUI decided to introduce a proprietary license for newer versions of their gui framework, it is currently not possible to use it without a license. 
+Therefore, this repository now uses [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI) instead.
 
 For creating the tikz-output, the code from [JasonGross/tikzplotlib](https://github.com/JasonGross/tikzplotlib) is used. This code was forked from [nschloe/tikzplotlib](https://github.com/nschloe/tikzplotlib) and is currently much better maintained than the repository from the original author.
 
