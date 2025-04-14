@@ -25,7 +25,7 @@ def gohari22(cause_effect_chains):
 
     # downloads the implementation from gohari
     result = subprocess.run(
-        ["git", "clone", "git@github.com:porya-gohary/np-data-age-analysis.git", "external/gohari/"],
+        ["git", "clone", "https://github.com/porya-gohary/np-data-age-analysis.git", "external/gohari/"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -37,7 +37,7 @@ def gohari22(cause_effect_chains):
 
     # switches to the commit that is known to work with the evaluation framework
     result = subprocess.run(
-        ["git", "-C", "external/gohari/", "checkout 6516f9e"],
+        ["git", "-C", "external/gohari/", "checkout", "6516f9e"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
