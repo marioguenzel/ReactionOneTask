@@ -92,44 +92,44 @@ def schedule_task_set(ce_chains, task_set):
 
     separate_bcet = task_set[0].bcet != task_set[0].wcet
 
-    try:
-        # Preliminary: compute latency_upper_bound
-        latency_upper_bound = max([davare07(ce) for ce in ce_chains])
+    # try:
+    # Preliminary: compute latency_upper_bound
+    latency_upper_bound = max([davare07(ce) for ce in ce_chains])
 
-        # Main part: Simulation part for wcet/bcet taskset
-        simulator_wcet = es.eventSimulator(task_set, False)
-        if separate_bcet:
-            simulator_bcet = es.eventSimulator(task_set, True)
+    # Main part: Simulation part for wcet/bcet taskset
+    simulator_wcet = es.eventSimulator(task_set, False)
+    if separate_bcet:
+        simulator_bcet = es.eventSimulator(task_set, True)
 
-        # Determination of the variables used to compute the stop
-        # condition of the simulation
-        max_phase = max(task_set, key=lambda task: task.phase).phase
-        max_period = max(task_set, key=lambda task: task.period).period
-        hyper_period = task_set.hyperperiod()
+    # Determination of the variables used to compute the stop
+    # condition of the simulation
+    max_phase = max(task_set, key=lambda task: task.phase).phase
+    max_period = max(task_set, key=lambda task: task.period).period
+    hyper_period = task_set.hyperperiod()
 
-        sched_interval = (
-            2 * hyper_period
-            + max_phase  # interval from paper
-            + latency_upper_bound  # upper bound job chain length
-            + max_period
-        )  # for convenience
+    sched_interval = (
+        2 * hyper_period
+        + max_phase  # interval from paper
+        + latency_upper_bound  # upper bound job chain length
+        + max_period
+    )  # for convenience
 
-        # Stop condition: Number of jobs of lowest priority task.
-        simulator_wcet.dispatcher(int(math.ceil(sched_interval / task_set[-1].period)))
-        if separate_bcet:
-            simulator_bcet.dispatcher(int(math.ceil(sched_interval / task_set[-1].period)))
+    # Stop condition: Number of jobs of lowest priority task.
+    simulator_wcet.dispatcher(int(math.ceil(sched_interval / task_set[-1].period)))
+    if separate_bcet:
+        simulator_bcet.dispatcher(int(math.ceil(sched_interval / task_set[-1].period)))
 
-        # Simulation without early completion.
-        schedules = dict()
-        schedules['wcet'] = simulator_wcet.e2e_result()
-        if separate_bcet:
-            schedules['bcet'] = simulator_bcet.e2e_result()
-        else:
-            schedules['bcet'] = schedules['wcet']
+    # Simulation without early completion.
+    schedules = dict()
+    schedules['wcet'] = simulator_wcet.e2e_result()
+    if separate_bcet:
+        schedules['bcet'] = simulator_bcet.e2e_result()
+    else:
+        schedules['bcet'] = schedules['wcet']
 
 
-    except Exception as e:
-        schedules = None
+    # except Exception as e:
+    #     schedules = None
 
     return (task_set.id, schedules)
 
