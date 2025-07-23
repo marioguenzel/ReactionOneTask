@@ -63,8 +63,8 @@ class Task:
 
     def print(self):
         """Quick print of all attributes for debugging."""
-        print(self)
-        print("")
+        # print(self)
+        print(vars(self))
 
 
     def utilization(self):
