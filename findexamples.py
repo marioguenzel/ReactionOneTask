@@ -200,12 +200,12 @@ def finding1():
 
 
     # Print
-    print("Example Taskset with 3 tasks showing that increasing priority can five worse e2e latency:")
+    print("Example Taskset with 3 tasks showing that increasing priority can give worse e2e latency:")
     for idx, tsk in enumerate(taskset1):
         print(f" - task{idx}: Period={tsk.period}, Phase={tsk.phase}, BCET={tsk.bcet}, WCET={tsk.wcet}")
     
-    print(f"E2E Latency of task2 when having lower priority: {res1}")
-    print(f"E2E Latency of task2 when having higher priority: {res2}")
+    print(f"E2E Latency of task2 when having lower priority than tau1: {res1}")
+    print(f"E2E Latency of task2 when having higher priority than tau1: {res2}")
 
     
 if __name__ == "__main__":
