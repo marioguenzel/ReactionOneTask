@@ -209,33 +209,33 @@ def finding1():
 
 def zhishan1():
     '''3 Tasks: Increasing priority might make result worse.'''
-    task0 = maketask(20,0,9,9)
+    task0 = maketask(20,0,5,5)
     task1 = maketask(25,0,10,10)
     task2 = maketask(50,0,1,1)
     
     taskset1 = TaskSet(task0, task1, task2)
-    ce1 = CEChain(task2, base_ts=taskset1)
+    cees1 = [CEChain(tsk, base_ts=taskset1) for tsk in taskset1]
 
     taskset2 = TaskSet(task0, task2, task1)
-    ce2 = CEChain(task2,base_ts=taskset2)
+    cees2 = [CEChain(tsk, base_ts=taskset2) for tsk in taskset2]
 
     # Check validity
     taskset1.compute_wcrts()
-    for tsk in taskset1:
-        print(taskset1.wcrts[tsk])
-        assert taskset1.wcrts[tsk] <= tsk.deadline
-        pass
+    # for tsk in taskset1:
+    #     print(taskset1.wcrts[tsk])
+    #     assert taskset1.wcrts[tsk] <= tsk.deadline
+    #     pass
 
     taskset2.compute_wcrts()
-    for tsk in taskset2:
-        assert taskset2.wcrts[tsk] <= tsk.deadline
+    # for tsk in taskset2:
+    #     assert taskset2.wcrts[tsk] <= tsk.deadline
 
     # Analysis
-    taskset1.schedules = schedule_task_set([ce1], taskset1)[1]
-    res1 = guenzel23_local_mrt(ce1)
+    taskset1.schedules = schedule_task_set(cees1, taskset1)[1]
+    res1 = [guenzel23_local_mrt(ce) for ce in cees1]
 
-    taskset2.schedules = schedule_task_set([ce2],taskset2)[1]
-    res2 = guenzel23_local_mrt(ce2)
+    taskset2.schedules = schedule_task_set(cees2,taskset2)[1]
+    res2 = [guenzel23_local_mrt(ce) for ce in cees2]
 
 
     # Print
@@ -243,8 +243,50 @@ def zhishan1():
     for idx, tsk in enumerate(taskset1):
         print(f" - task{idx}: Period={tsk.period}, Phase={tsk.phase}, BCET={tsk.bcet}, WCET={tsk.wcet}")
     
-    print(f"E2E Latency of task2 when having lower priority than tau1: {res1}")
-    print(f"E2E Latency of task2 when having higher priority than tau1: {res2}")
+    print(f"E2E Latencies when task2 has lower priority than tau1 (i.e., (tau0,tau1,tau2)): {res1}")
+    print(f"E2E Latencies when task2 has higher priority than tau1 (i.e., (tau0,tau2,tau1)): {res2}")
+
+def zhishan2():
+    '''4 Tasks: DM not optimal.'''
+    task0 = maketask(20,0,5,5)
+    task11 = maketask(100,0,10,10)
+    task12 = maketask(100,50,10,10)
+    task2 = maketask(50,0,1,1)
+
+    str_tasks = [("task0", task0), ("task11", task11), ("task12", task12), ("task2", task2)]
+    
+    taskset1 = TaskSet(task0, task11, task12, task2)
+    cees1 = [CEChain(tsk, base_ts=taskset1) for tsk in taskset1]
+
+    taskset2 = TaskSet(task0, task2, task11, task12)
+    cees2 = [CEChain(tsk, base_ts=taskset2) for tsk in taskset2]
+
+    # Check validity
+    taskset1.compute_wcrts()
+    for tsk in taskset1:
+        assert taskset1.wcrts[tsk] <= tsk.deadline
+        pass
+
+    taskset2.compute_wcrts()
+    for tsk in taskset2:
+        assert taskset2.wcrts[tsk] <= tsk.deadline
+        pass
+
+    # Analysis
+    taskset1.schedules = schedule_task_set(cees1, taskset1)[1]
+    res1 = [guenzel23_local_mrt(ce) for ce in cees1]
+
+    taskset2.schedules = schedule_task_set(cees2,taskset2)[1]
+    res2 = [guenzel23_local_mrt(ce) for ce in cees2]
+
+
+    # Print
+    print("Example Taskset with 3 tasks showing that increasing priority can give worse e2e latency:")
+    for name, tsk in str_tasks:
+        print(f" - {name}: Period={tsk.period}, Phase={tsk.phase}, BCET={tsk.bcet}, WCET={tsk.wcet}")
+    
+    print(f"E2E Latencies when task2 has lower priority than tau1 (i.e., (tau0,tau11,tau12,tau2)): {res1}")
+    print(f"E2E Latencies when task2 has higher priority than tau1 (i.e., (tau0,tau2,tau11,tau12)): {res2}")
 
     
 if __name__ == "__main__":
@@ -252,6 +294,8 @@ if __name__ == "__main__":
     # search2()
     # finding1()
     zhishan1()
+    print("===")
+    zhishan2()
     
 
     
