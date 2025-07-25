@@ -209,7 +209,7 @@ def finding1():
 
 def zhishan1():
     '''3 Tasks: Increasing priority might make result worse.'''
-    task0 = maketask(20,0,10,10)
+    task0 = maketask(20,0,9,9)
     task1 = maketask(25,0,10,10)
     task2 = maketask(50,0,1,1)
     
